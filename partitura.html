@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Partituras Funcional</title>
+    <link rel="stylesheet" href="style_partit.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Convert<span>Music</span></div>
+                <nav>
+                    <ul>
+                        <li><a href="Page_Init.html">Inicio</a></li>
+                        <li>
+                            <a href="#">Herramientas</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="convert.html">Convertidor de Tonalidades</a></li>
+                                <li><a href="partitura.html">Creación de Partituras</a></li>
+                                <li><a href="Search_liryc.html">Buscar Letras</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#">Acerca de</a></li>
+                        <li><a href="#">Contacto</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="controls" class="card">
+            <h2>Crear Partitura</h2>
+            
+            <div class="form-group">
+                <label for="name">Nombre de partitura:</label>
+                <input type="text" id="name" class="form-control" placeholder="Mi melodía">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="note">Nota:</label>
+                    <select id="note" class="form-control">
+                        <option value="seleccione">Seleccione una nota</option>
+                        <option value="c/4">Do</option>
+                        <option value="c#/4">Do#</option>
+                        <option value="d/4">Re</option>
+                        <option value="d#/4">Re#</option>
+                        <option value="e/4">Mi</option>
+                        <option value="f/4">Fa</option>
+                        <option value="f#/4">Fa#</option>
+                        <option value="g/4">Sol</option>
+                        <option value="g#/4">Sol#</option>
+                        <option value="a/4">La</option>
+                        <option value="bb/4">Sib</option>
+                        <option value="B/4">Si</option>
+                        <option value="c/5">Do</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="timeSignature">Compás:</label>
+                    <select id="timeSignature" class="form-control">
+                    <option value="4/4">4/4 (Común)</option>
+                    <option value="3/4">3/4 (Vals)</option>
+                    <option value="2/4">2/4 (Marcha)</option>
+                    <option value="6/8">6/8 (Compuesto)</option>
+                    <option value="5/4">5/4 (Irregular)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="duration">Duración:</label>
+                    <select id="duration" class="form-control">
+                    <option value="">Seleccione duración</option>
+                    <option value="w">Redonda (4 beats)</option>
+                    <option value="h">Blanca (2 beats)</option>
+                    <option value="q">Negra (1 beat)</option>
+                    <option value="8">Corchea (0.5 beats)</option>
+                    <option value="16">Semicorchea (0.25 beats)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button id="addNote" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Agregar Nota
+                </button>
+                <button id="drawScore" class="btn btn-success">
+                    <i class="fas fa-music"></i> Dibujar Partitura
+                </button>
+                <button id="clearScore" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Limpiar Todo
+                </button>
+                <button id="downloadPdf" class="btn btn-secondary" disabled>
+                    <i class="fas fa-download"></i> Descargar PDF
+                </button>
+            </div>
+            
+            <div class="notes-preview">
+                <h3>Notas y silencios agregados:</h3>
+                <div id="noteList" class="empty">No hay elementos agregados aún</div>
+            </div>
+        </section>
+
+        <section id="score" class="card">
+            <h2>Vista previa</h2>
+            <div id="score-content"></div>
+        </section>
+
+        <div id="message" class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Selecciona notas/silencios y haz clic en "Dibujar Partitura"
+        </div>
+    </main>
+
+    <!-- Asegúrate de tener estas librerías en tu HTML -->
+    <script src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="scrip_part.js"></script>
+</body>
+<footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">ConvertMusic</div>
+                <div class="footer-links">
+                    <a href="Page_Init.html">Inicio</a>
+                    <a href="#">Herramientas</a>
+                    <a href="#">Acerca de</a>
+                    <a href="#">Contacto</a>
+                    <a href="#">Términos</a>
+                    <a href="#">Privacidad</a>
+                </div>
+                <div class="copyright">
+                    &copy; 2025 ConvertMusic. Todos los derechos reservados.
+                </div>
+            </div>
+        </div>
+    </footer>
+</html>

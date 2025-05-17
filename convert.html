@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convert Music</title>
+    <link rel="stylesheet" href="style_convert.css">
+</head>
+<header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Convert<span>Music</span></div>
+                <nav>
+                    <ul>
+                        <li><a href="Page_Init.html">Inicio</a></li>
+                        <li>
+                            <a href="#">Herramientas</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="convert.html">Convertidor de Tonalidades</a></li>
+                                <li><a href="partitura.html">Creación de Partituras</a></li>
+                                <li><a href="Search_liryc.html">Buscar Letras</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#">Acerca de</a></li>
+                        <li><a href="#">Contacto</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+<body>
+    <div class="container">
+        <label for="saxophone">Selecciona el tipo de saxofón:</label>
+        <select id="saxophone">
+            <option value="seleccione">Seleccione</option>
+            <option value="alto">Saxofón Alto</option>
+            <option value="soprano">Saxofón Soprano</option>
+        </select>
+
+        <label for="original-tonality">Selecciona la tonalidad original:</label>
+        <select id="original-tonality">
+            <option value="seleccione">Seleccione</option>
+            <option value="C">C</option>
+            <option value="C#">C# / D♭</option>
+            <option value="D">D</option>
+            <option value="D#">D# / E♭</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="F#">F# / G♭</option>
+            <option value="G">G</option>
+            <option value="G#">G# / A♭</option>
+            <option value="A">A</option>
+            <option value="A#">A# / B♭</option>
+            <option value="B">B</option>
+        </select>
+
+        <div id="result" class="result">
+            <p><strong>Tonalidad para el saxofón:</strong> <span id="converted-tonality"></span></p>
+        </div>
+        <div id="result" class="result">
+            <p><strong>Tonalidad para el saxofón:</strong> <span id="converted-tonality"></span></p>
+            <p><strong>Escala:</strong> <span id="scale"></span></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+<footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">Convert<span>Music</span></div>
+                <div class="footer-links">
+                    <a href="Page_Init.html">Inicio</a>
+                    <a href="#">Herramientas</a>
+                    <a href="#">Acerca de</a>
+                    <a href="#">Contacto</a>
+                </div>
+                <div class="copyright">
+                    &copy; 2025 ConvertMusic. Todos los derechos reservados.
+                </div>
+            </div>
+        </div>
+    </footer>
+</html>
