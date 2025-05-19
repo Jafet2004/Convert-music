@@ -71,9 +71,38 @@
         <div id="result" class="result">
             <p><strong>Tonalidad para el saxofón:</strong> <span id="converted-tonality"></span></p>
         </div>
-        <div id="result" class="result">
-            <p><strong>Tonalidad para el saxofón:</strong> <span id="converted-tonality"></span></p>
-            <p><strong>Escala:</strong> <span id="scale"></span></p>
+        <div id="result_tonality" class="result">
+            <p><strong>Escala:</strong> <span id="sax-scale"></span></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <label for="escala">Buscador de escalas</label>
+        <select id="escala">
+            <option value="seleccione">Seleccione</option>
+            <option value="C">C</option>
+            <option value="C#">C# / D♭</option>
+            <option value="D">D</option>
+            <option value="D#">D# / E♭</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="F#">F# / G♭</option>
+            <option value="G">G</option>
+            <option value="G#">G# / A♭</option>
+            <option value="A">A</option>
+            <option value="A#">A# / B♭</option>
+            <option value="B">B</option>
+        </select>
+
+        <label for="typeScale">Tipo de escala:</label>
+        <select id="typeScale">
+            <option value = "seleccione">Seleccione</option>
+            <option value="mayor">Mayor</option>
+            <option value = "menor">Menor</option>
+        </select>
+
+        <div id="result_Scale" class="result">
+            <p><strong>Resultado de escala:</strong> <span id="scale-result"></span></p>
         </div>
     </div>
 
