@@ -46,7 +46,6 @@ function updateTonalityAndScale() {
     resultDiv.style.opacity = 1;
 }
 
-// Objeto con las escalas mayores y menores
 const scales = {
     mayor: {
         'C': 'C, D, E, F, G, A, B, C',
@@ -75,8 +74,110 @@ const scales = {
         'A': 'A, B, C, D, E, F, G, A',
         'A#': 'A#, B#, C#, D#, E#, F#, G#, A#',
         'B': 'B, C#, D, E, F#, G, A, B'
+    },
+    frigio: {
+        'C': 'C, Db, Eb, F, G, Ab, Bb, C',
+        'C#': 'C#, D, E, F#, G#, A, B, C#',
+        'D': 'D, Eb, F, G, A, Bb, C, D',
+        'D#': 'Eb, Fb, Gb, Ab, Bb, Cb, Db, Eb',
+        'E': 'E, F, G, A, B, C, D, E',
+        'F': 'F, Gb, Ab, Bb, C, Db, Eb, F',
+        'F#': 'F#, G, A, B, C#, D, E, F#',
+        'G': 'G, Ab, Bb, C, D, Eb, F, G',
+        'G#': 'G#, A, B, C#, D#, E, F#, G#',
+        'A': 'A, Bb, C, D, E, F, G, A',
+        'Bb': 'Bb, Cb, Db, Eb, F, Gb, Ab, Bb',
+        'B': 'B, C, D, E, F#, G, A, B'
+    },
+    lidio: {
+        'C': 'C, D, E, F#, G, A, B, C',
+        'C#': 'C#, D#, E#, F##, G#, A#, B#, C#',
+        'D': 'D, E, F#, G#, A, B, C#, D',
+        'D#': 'Eb, F, G, A, Bb, C, D, Eb',
+        'E': 'E, F#, G#, A#, B, C#, D#, E',
+        'F': 'F, G, A, B, C, D, E, F',
+        'F#': 'F#, G#, A#, B#, C#, D#, E#, F#',
+        'G': 'G, A, B, C#, D, E, F#, G',
+        'G#': 'G#, A#, B#, C##, D#, E#, F##, G#',
+        'A': 'A, B, C#, D#, E, F#, G#, A',
+        'Bb': 'Bb, C, D, E, F, G, A, Bb',
+        'B': 'B, C#, D#, E#, F#, G#, A#, B'
+    },
+    mixolidio: {
+        'C': 'C, D, E, F, G, A, Bb, C',
+        'C#': 'C#, D#, E#, F#, G#, A#, B, C#',
+        'D': 'D, E, F#, G, A, B, C, D',
+        'D#': 'Eb, F, G, Ab, Bb, C, Db, Eb',
+        'E': 'E, F#, G#, A, B, C#, D, E',
+        'F': 'F, G, A, Bb, C, D, Eb, F',
+        'F#': 'F#, G#, A#, B, C#, D#, E, F#',
+        'G': 'G, A, B, C, D, E, F, G',
+        'G#': 'G#, A#, B#, C#, D#, E#, F#, G#',
+        'A': 'A, B, C#, D, E, F#, G, A',
+        'Bb': 'Bb, C, D, Eb, F, G, Ab, Bb',
+        'B': 'B, C#, D#, E, F#, G#, A, B'
+    },
+    eolico: {
+        'C': 'C, D, Eb, F, G, Ab, Bb, C',
+        'C#': 'C#, D#, E, F#, G#, A, B, C#',
+        'D': 'D, E, F, G, A, Bb, C, D',
+        'D#': 'D#, E#, F#, G#, A#, B, C#, D#',
+        'E': 'E, F#, G, A, B, C, D, E',
+        'F': 'F, G, Ab, Bb, C, Db, Eb, F',
+        'F#': 'F#, G#, A, B, C#, D, E, F#',
+        'G': 'G, A, Bb, C, D, Eb, F, G',
+        'G#': 'G#, A#, B, C#, D#, E, F#, G#',
+        'A': 'A, B, C, D, E, F, G, A',
+        'A#': 'A#, B#, C#, D#, E#, F#, G#, A#',
+        'B': 'B, C#, D, E, F#, G, A, B'
+    },
+    locrio: {
+        'C': 'C, Db, Eb, F, Gb, Ab, Bb, C',
+        'C#': 'C#, D, E, F#, G, A, B, C#',
+        'D': 'D, Eb, F, G, Ab, Bb, C, D',
+        'D#': 'Eb, Fb, Gb, Ab, Bbb, Cb, Db, Eb',
+        'E': 'E, F, G, A, Bb, C, D, E',
+        'F': 'F, Gb, Ab, Bb, Cb, Db, Eb, F',
+        'F#': 'F#, G, A, B, C, D, E, F#',
+        'G': 'G, Ab, Bb, C, Db, Eb, F, G',
+        'G#': 'G#, A, B, C#, D, E, F#, G#',
+        'A': 'A, Bb, C, D, Eb, F, G, A',
+        'Bb': 'Bb, Cb, Db, Eb, Fb, Gb, Ab, Bb',
+        'B': 'B, C, D, E, F, G, A, B'
+    },
+
+    // Escalas pentatónicas derivadas de los modos
+    mayor_pent: {
+        'C': 'C, D, E, G, A',
+        'C#': 'C#, D#, E#, G#, A#',
+        'D': 'D, E, F#, A, B',
+        'D#': 'Eb, F, G, Bb, C',
+        'E': 'E, F#, G#, B, C#',
+        'F': 'F, G, A, C, D',
+        'F#': 'F#, G#, A#, C#, D#',
+        'G': 'G, A, B, D, E',
+        'G#': 'G#, A#, B#, D#, E#',
+        'A': 'A, B, C#, E, F#',
+        'Bb': 'Bb, C, D, F, G',
+        'B': 'B, C#, D#, F#, G#'
+    },
+    menor_pent: {
+        'C': 'C, D, Eb, G, A',
+        'C#': 'C#, D#, E, G#, A#',
+        'D': 'D, E, F, A, B, D',
+        'D#': 'Eb, F, Gb, Bb, C',
+        'E': 'E, F#, G, B, C#',
+        'F': 'F, G, Ab, C, D',
+        'F#': 'F#, G#, A, C#, D#',
+        'G': 'G, A, Bb, D, E',
+        'G#': 'G#, A#, B, D#, E#',
+        'A': 'A, B, C, E, F#',
+        'Bb': 'Bb, C, Db, F, G',
+        'B': 'B, C#, D, F#, G#'
     }
 };
+
+
 
 function searchScale() {
     let selectedScale = document.getElementById('escala').value;
@@ -94,8 +195,6 @@ function searchScale() {
     resultScaleDiv.style.opacity = 1;
 }
 
-// Agregar eventos
-document.getElementById('original-tonality').addEventListener('change', updateTonalityAndScale);
-document.getElementById('saxophone').addEventListener('change', updateTonalityAndScale);
+
 document.getElementById('escala').addEventListener('change', searchScale);
 document.getElementById('typeScale').addEventListener('change', searchScale);
