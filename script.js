@@ -4,6 +4,13 @@ function updateTonalityAndScale() {
     let convertedTonality = '';
     let scale = '';
 
+    // Validar selecciones
+    if (saxophoneType === 'seleccione' || originalTonality === 'seleccione') {
+        document.getElementById('converted-tonality').textContent = '-';
+        document.getElementById('sax-scale').textContent = '-';
+        return;
+    }
+
     if (saxophoneType === 'alto') {
         switch (originalTonality) {
             case 'C': convertedTonality = 'A'; scale = 'A, B, C#, D, E, F#, G#'; break;
@@ -18,7 +25,7 @@ function updateTonalityAndScale() {
             case 'A': convertedTonality = 'F#'; scale = 'F#, G#, A#, B, C#, D#, E#'; break;
             case 'A#': convertedTonality = 'G'; scale = 'G, A, B, C, D, E, F#'; break;
             case 'B': convertedTonality = 'G#'; scale = 'G#, A#, B#, C#, D#, E#, F#'; break;
-            default: convertedTonality = ''; scale = ''; break;
+            default: convertedTonality = '-'; scale = '-'; break;
         }
     } else if (saxophoneType === 'soprano') {
         switch (originalTonality) {
@@ -34,18 +41,36 @@ function updateTonalityAndScale() {
             case 'A': convertedTonality = 'B'; scale = 'B, C#, D#, E, F#, G#, A#'; break;
             case 'A#': convertedTonality = 'C'; scale = 'C, D, E, F, G, A, B'; break;
             case 'B': convertedTonality = 'C#'; scale = 'C#, D#, E#, F#, G#, A#, B#'; break;
-            default: convertedTonality = ''; scale = ''; break;
+            default: convertedTonality = '-'; scale = '-'; break;
         }
     }
 
     document.getElementById('converted-tonality').textContent = convertedTonality;
     document.getElementById('sax-scale').textContent = scale;
-
-    // Activar la animación de aparición
-    let resultDiv = document.getElementById('result');
-    resultDiv.style.opacity = 1;
 }
 
+function updateScale() {
+    const tonality = document.getElementById('escala').value;
+    const scaleType = document.getElementById('typeScale').value;
+    
+    if (tonality === 'seleccione' || scaleType === 'seleccione') {
+        document.getElementById('scale-result').textContent = '-';
+        return;
+    }
+    
+    const scale = scales[scaleType]?.[tonality] || 'Escala no disponible';
+    document.getElementById('scale-result').textContent = scale;
+}
+
+// Añadir event listeners cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('saxophone').addEventListener('change', updateTonalityAndScale);
+    document.getElementById('original-tonality').addEventListener('change', updateTonalityAndScale);
+    document.getElementById('escala').addEventListener('change', updateScale);
+    document.getElementById('typeScale').addEventListener('change', updateScale);
+});
+
+// Objeto scales permanece igual
 const scales = {
     mayor: {
         'C': 'C, D, E, F, G, A, B, C',
@@ -145,8 +170,6 @@ const scales = {
         'Bb': 'Bb, Cb, Db, Eb, Fb, Gb, Ab, Bb',
         'B': 'B, C, D, E, F, G, A, B'
     },
-
-    // Escalas pentatónicas derivadas de los modos
     mayor_pent: {
         'C': 'C, D, E, G, A',
         'C#': 'C#, D#, E#, G#, A#',
@@ -171,30 +194,8 @@ const scales = {
         'F#': 'F#, G#, A, C#, D#',
         'G': 'G, A, Bb, D, E',
         'G#': 'G#, A#, B, D#, E#',
-        'A': 'A, B, C, E, F#',
+        'A': 'A, B, C, E, F',
         'Bb': 'Bb, C, Db, F, G',
         'B': 'B, C#, D, F#, G#'
     }
 };
-
-
-
-function searchScale() {
-    let selectedScale = document.getElementById('escala').value;
-    let scaleType = document.getElementById('typeScale').value;
-    let result = '';
-    
-    if (selectedScale !== 'seleccione' && scaleType !== 'seleccione') {
-        result = scales[scaleType][selectedScale];
-    }
-    
-    document.getElementById('scale-result').textContent = result;
-    
-    // Activar la animación de aparición
-    let resultScaleDiv = document.getElementById('result_Scale');
-    resultScaleDiv.style.opacity = 1;
-}
-
-
-document.getElementById('escala').addEventListener('change', searchScale);
-document.getElementById('typeScale').addEventListener('change', searchScale);
