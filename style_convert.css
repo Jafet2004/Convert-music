@@ -187,10 +187,6 @@ footer {
         margin: 0.5rem 0;
     }
     
-    .dropdown-menu {
-        left: 50%;
-        transform: translateX(-50%);
-    }
     
     .converter-container {
         padding: 1.5rem;
