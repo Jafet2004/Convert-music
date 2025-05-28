@@ -94,34 +94,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displayResults(artist, title, lyrics, videoId) {
-        let videoEmbed = '';
-        if (videoId) {
-            videoEmbed = `
-                <iframe width="400" height="300" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
-            `;
-        }
-
-        resultsDiv.innerHTML = `
-            <div class="lyrics-container">
-                <div class="song-info">
-                    <div>
-                        <h2 class="song-title">${title}</h2>
-                        <h3 class="artist-name">${artist}</h3>
-                    </div>
-                    <div class="action-buttons">
-                        <button id="downloadBtn" class="download-btn">Descargar PDF</button>
-                    </div>
-                </div>
-                <div class="lyrics">${lyrics}</div>
-                <div class="youtube-video">${videoEmbed}</div>
+    let videoEmbed = '';
+    if (videoId) {
+        videoEmbed = `
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
             </div>
         `;
-
-        document.getElementById('downloadBtn').addEventListener('click', () => {
-            downloadLyricsAsPDF(artist, title, lyrics);
-        });
     }
 
+    resultsDiv.innerHTML = `
+        <div class="lyrics-container">
+            <div class="song-info">
+                <div>
+                    <h2 class="song-title">${title}</h2>
+                    <h3 class="artist-name">${artist}</h3>
+                </div>
+                <div class="action-buttons">
+                    <button id="downloadBtn" class="download-btn">Descargar PDF</button>
+                </div>
+            </div>
+            <div class="lyrics">${lyrics}</div>
+            <div class="youtube-video">${videoEmbed}</div>
+        </div>
+    `;
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+        downloadLyricsAsPDF(artist, title, lyrics);
+    });
+}
     function searchArtistTracks(artist, isPrimarySearch = false) {
         const proxyUrl = 'https://api.allorigins.win/get?url=';
         const apiUrl = `https://api.lyrics.ovh/suggest/${encodeURIComponent(artist)}`;
