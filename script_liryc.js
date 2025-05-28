@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let videoEmbed = '';
         if (videoId) {
             videoEmbed = `
-                <iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
+                <iframe width="400" height="300" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
             `;
         }
 
