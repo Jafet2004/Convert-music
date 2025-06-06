@@ -1,0 +1,31 @@
+.bg-holder{
+    position: "absolute";
+    width: 100%;
+    min-height: 100%;
+    top: 0;
+    left: 0;
+    background-size: conver;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+body{
+    font-family: 'Lucida Sans', 'Lucida Sans Regular';
+    background-color: #fff;
+}
+
+
+.btn i{
+    vertical-align: text-top;
+}
+
+.divider-content-center{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    background-color: #fff;
+    font-size: 0.8rem;
+    font-weight: 500;
+}

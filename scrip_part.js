@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const nameInput = document.getElementById('name');
     const noteSelect = document.getElementById('note');
     const durationSelect = document.getElementById('duration');
+    const clefSelect = document.getElementById('clef');
     const addNoteBtn = document.getElementById('addNote');
     const drawScoreBtn = document.getElementById('drawScore');
     const clearScoreBtn = document.getElementById('clearScore');
@@ -122,108 +123,213 @@ document.addEventListener('DOMContentLoaded', function() {
         updateNoteList();
     });
     
-    // Dibujar partitura
-    drawScoreBtn.addEventListener('click', function() {
-        scoreName = nameInput.value.trim() || "Partitura sin nombre";
+// Dibujar partitura
+drawScoreBtn.addEventListener('click', function() {
+    scoreName = nameInput.value.trim() || "Partitura sin nombre";
+    
+    if (notes.length === 0) {
+        showMessage('Debes agregar al menos una nota o silencio', 'danger');
+        return;
+    }
+    
+    try {
+        // Limpiar el contenedor
+        scoreContentDiv.innerHTML = '';
         
-        if (notes.length === 0) {
-            showMessage('Debes agregar al menos una nota o silencio', 'danger');
-            return;
-        }
+        // Crear renderer
+        const renderer = new VF.Renderer(scoreContentDiv, VF.Renderer.Backends.SVG);
+        renderer.resize(650, 200);
+        const context = renderer.getContext();
         
-        try {
-            // Limpiar el contenedor
-            scoreContentDiv.innerHTML = '';
-            
-            // Crear renderer
-            const renderer = new VF.Renderer(scoreContentDiv, VF.Renderer.Backends.SVG);
-            renderer.resize(650, 200);
-            const context = renderer.getContext();
-            
-            // Crear pentagrama
-            const stave = new VF.Stave(10, 40, 600);
-            stave.addClef("treble").addTimeSignature("4/4");
-            stave.setContext(context).draw();
-            
-            // Calcular beats totales
-            let totalBeats = 0;
-            notes.forEach(note => {
-                const dur = note.duration.replace('r', '');
-                totalBeats += 
-                    dur === 'w' ? 4 :
-                    dur === 'h' ? 2 :
-                    dur === 'q' ? 1 :
-                    dur === '8' ? 0.5 :
-                    dur === '16' ? 0.25 : 1;
-            });
+        // Obtener clave seleccionada
+        const clef = clefSelect.value || "treble";
+        
+        // Calcular beats totales
+        let totalBeats = 0;
+        notes.forEach(note => {
+            const dur = note.duration.replace('r', '');
+            totalBeats += 
+                dur === 'w' ? 4 :
+                dur === 'h' ? 2 :
+                dur === 'q' ? 1 :
+                dur === '8' ? 0.5 :
+                dur === '16' ? 0.25 : 1;
+        });
 
-            // Ajustar a compases completos
-            const measures = Math.ceil(totalBeats / 4);
-            const totalBeatsNeeded = measures * 4;
-            
-            // Crear notas/silencios
-            const staveNotes = notes.map(note => {
-                if (note.duration.endsWith('r')) {
-                    return new VF.GhostNote({
-                        duration: note.duration.replace('r', ''),
-                        align_center: true
-                    });
-                }
-                
-                const staveNote = new VF.StaveNote({
-                    keys: [note.key],
-                    duration: note.duration,
-                    clef: "treble"
-                });
-                
-                if (note.key.includes('#')) {
-                    staveNote.addAccidental(0, new VF.Accidental("#"));
-                } else if (note.key.includes('b')) {
-                    staveNote.addAccidental(0, new VF.Accidental("b"));
-                }
-                
-                return staveNote;
-            });
-
-            // Agregar silencios de compensación si es necesario
-            if (totalBeats < totalBeatsNeeded) {
-                const remainingBeats = totalBeatsNeeded - totalBeats;
-                let compensationDuration;
-                
-                if (remainingBeats >= 4) compensationDuration = 'w';
-                else if (remainingBeats >= 2) compensationDuration = 'h';
-                else if (remainingBeats >= 1) compensationDuration = 'q';
-                else if (remainingBeats >= 0.5) compensationDuration = '8';
-                else compensationDuration = '16';
-                
-                staveNotes.push(new VF.GhostNote({
-                    duration: compensationDuration,
+        // Ajustar a compases completos (4/4 por defecto)
+        const beatsPerMeasure = 4;
+        const measures = Math.ceil(totalBeats / beatsPerMeasure);
+        const totalBeatsNeeded = measures * beatsPerMeasure;
+        
+        // Crear notas/silencios
+        const staveNotes = notes.map(note => {
+            if (note.duration.endsWith('r')) {
+                return new VF.GhostNote({
+                    duration: note.duration.replace('r', ''),
                     align_center: true
-                }));
+                });
             }
+            
+            const staveNote = new VF.StaveNote({
+                keys: [note.key],
+                duration: note.duration,
+                clef: clef,
+                auto_stem: true
+            });
+            
+            if (note.key.includes('#')) {
+                staveNote.addAccidental(0, new VF.Accidental("#"));
+            } else if (note.key.includes('b')) {
+                staveNote.addAccidental(0, new VF.Accidental("b"));
+            }
+            
+            return staveNote;
+        });
 
-            // Crear voz
+        // Agregar silencios de compensación si es necesario
+        if (totalBeats < totalBeatsNeeded) {
+            const remainingBeats = totalBeatsNeeded - totalBeats;
+            let compensationDuration;
+            
+            if (remainingBeats >= 4) compensationDuration = 'w';
+            else if (remainingBeats >= 2) compensationDuration = 'h';
+            else if (remainingBeats >= 1) compensationDuration = 'q';
+            else if (remainingBeats >= 0.5) compensationDuration = '8';
+            else compensationDuration = '16';
+            
+            staveNotes.push(new VF.GhostNote({
+                duration: compensationDuration,
+                align_center: true
+            }));
+        }
+
+        // Dividir las notas por compases
+        const measuresNotes = [];
+        let currentMeasureNotes = [];
+        let currentBeats = 0;
+        
+        staveNotes.forEach(note => {
+            const dur = note.duration.replace('r', '');
+            const noteBeats = 
+                dur === 'w' ? 4 :
+                dur === 'h' ? 2 :
+                dur === 'q' ? 1 :
+                dur === '8' ? 0.5 :
+                dur === '16' ? 0.25 : 1;
+            
+            if (currentBeats + noteBeats > beatsPerMeasure) {
+                // Llenar el compás actual con silencios si es necesario
+                const remainingBeats = beatsPerMeasure - currentBeats;
+                if (remainingBeats > 0) {
+                    let restDuration;
+                    if (remainingBeats >= 1) restDuration = 'qr';
+                    else if (remainingBeats >= 0.5) restDuration = '8r';
+                    else restDuration = '16r';
+                    
+                    currentMeasureNotes.push(new VF.GhostNote({
+                        duration: restDuration.replace('r', ''),
+                        align_center: true
+                    }));
+                    currentBeats += remainingBeats;
+                }
+                
+                measuresNotes.push(currentMeasureNotes);
+                currentMeasureNotes = [];
+                currentBeats = 0;
+            }
+            
+            currentMeasureNotes.push(note);
+            currentBeats += noteBeats;
+            
+            if (currentBeats >= beatsPerMeasure) {
+                measuresNotes.push(currentMeasureNotes);
+                currentMeasureNotes = [];
+                currentBeats = 0;
+            }
+        });
+        
+        // Agregar el último compás si queda algo
+        if (currentMeasureNotes.length > 0) {
+            measuresNotes.push(currentMeasureNotes);
+        }
+
+        // Configurar el pentagrama con margen según clave
+        const staveWidth = 600;
+        const measureWidth = staveWidth / measures;
+        let currentX = 10;
+        
+        // Configurar margen inicial basado en la clave
+        let startX;
+        switch(clef) {
+            case "bass":
+                startX = 70;  // Más espacio para clave de Fa
+                break;
+            case "alto":
+                startX = 70;  // Espacio intermedio para clave de Do
+                break;
+            case "treble":
+            default:
+                startX = 70;  // Espacio para clave de Sol
+        }
+
+        // Crear el primer pentagrama con clave y compás
+        let stave = new VF.Stave(currentX, 40, measureWidth);
+        stave.addClef(clef).addTimeSignature("4/4");
+        stave.setNoteStartX(startX);
+        stave.setContext(context).draw();
+        currentX += measureWidth;
+        
+        // Dibujar cada compás con líneas divisorias
+        for (let i = 1; i < measures; i++) {
+            stave = new VF.Stave(currentX, 40, measureWidth);
+            
+            // Mostrar línea divisoria
+            if (i < measures) {
+                stave.setEndBarType(VF.Barline.type.SINGLE);
+            }
+            
+            stave.setContext(context).draw();
+            currentX += measureWidth;
+        }
+
+        // Dibujar las notas en cada compás
+        currentX = 10;
+        measuresNotes.forEach((measureNotes, i) => {
+            // Crear voz para el compás actual
             const voice = new VF.Voice({
-                num_beats: totalBeatsNeeded,
+                num_beats: beatsPerMeasure,
                 beat_value: 4,
                 resolution: Vex.Flow.RESOLUTION
             });
             
-            voice.addTickables(staveNotes);
+            voice.addTickables(measureNotes);
             
-            // Formatear y dibujar
+            // Formatear las notas dentro del espacio del compás
             new VF.Formatter()
                 .joinVoices([voice])
-                .format([voice], 580);
+                .format([voice], measureWidth - 20);
             
-            voice.draw(context, stave);
+            // Crear un stave temporal para dibujar las notas
+            const tempStave = new VF.Stave(currentX, 40, measureWidth);
+            tempStave.setContext(context);
             
-            showMessage('Partitura generada correctamente');
-        } catch (error) {
-            console.error('Error:', error);
-            showMessage('Error al generar la partitura: ' + error.message, 'danger');
-        }
-    });
+            // Aplicar margen solo al primer compás
+            if (i === 0) {
+                tempStave.setNoteStartX(startX);
+            }
+            
+            // Dibujar las notas
+            voice.draw(context, tempStave);
+            
+            currentX += measureWidth;
+        });
+
+        showMessage('Partitura generada correctamente');
+    } catch (error) {
+        console.error('Error:', error);
+        showMessage('Error al generar la partitura: ' + error.message, 'danger');
+    }
+});
     
     // Limpiar todo
     clearScoreBtn.addEventListener('click', function() {

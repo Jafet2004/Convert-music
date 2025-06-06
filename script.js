@@ -189,13 +189,13 @@ const scales = {
         'C#': 'C#, D#, E, G#, A#',
         'D': 'D, E, F, A, B, D',
         'D#': 'Eb, F, Gb, Bb, C',
-        'E': 'E, F#, G, B, C',
+        'E': 'E, F#, G, B, C#',
         'F': 'F, G, Ab, C, D',
         'F#': 'F#, G#, A, C#, D#',
         'G': 'G, A, Bb, D, E',
         'G#': 'G#, A#, B, D#, E#',
         'A': 'A, B, C, E, F',
         'Bb': 'Bb, C, Db, F, G',
-        'B': 'B, C#, D, F#, G'
+        'B': 'B, C#, D, F#, G#'
     }
 };
