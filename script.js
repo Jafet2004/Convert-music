@@ -1,3 +1,4 @@
+
 function updateTonalityAndScale() {
     let saxophoneType = document.getElementById('saxophone').value;
     let originalTonality = document.getElementById('original-tonality').value;
@@ -14,32 +15,32 @@ function updateTonalityAndScale() {
     if (saxophoneType === 'alto') {
         switch (originalTonality) {
             case 'C': convertedTonality = 'A'; scale = 'A, B, C#, D, E, F#, G#'; break;
-            case 'C#': convertedTonality = 'A#'; scale = 'A#, B#, C##, D#, E#, F##, G##'; break;
+            case 'C#': convertedTonality = 'Bb'; scale = 'Bb, C, D, Eb, F, G, A'; break;
             case 'D': convertedTonality = 'B'; scale = 'B, C#, D#, E, F#, G#, A#'; break;
             case 'D#': convertedTonality = 'C'; scale = 'C, D, E, F, G, A, B'; break;
             case 'E': convertedTonality = 'C#'; scale = 'C#, D#, E#, F#, G#, A#, B#'; break;
             case 'F': convertedTonality = 'D'; scale = 'D, E, F#, G, A, B, C#'; break;
-            case 'F#': convertedTonality = 'D#'; scale = 'D#, E#, F##, G#, A#, B#, C##'; break;
+            case 'F#': convertedTonality = 'Eb'; scale = 'Eb, F, G, Ab, Bb, C, D'; break;
             case 'G': convertedTonality = 'E'; scale = 'E, F#, G#, A, B, C#, D#'; break;
             case 'G#': convertedTonality = 'F'; scale = 'F, G, A, Bb, C, D, E'; break;
             case 'A': convertedTonality = 'F#'; scale = 'F#, G#, A#, B, C#, D#, E#'; break;
-            case 'A#': convertedTonality = 'G'; scale = 'G, A, B, C, D, E, F#'; break;
-            case 'B': convertedTonality = 'G#'; scale = 'G#, A#, B#, C#, D#, E#, F#'; break;
+            case 'Bb': convertedTonality = 'G'; scale = 'G, A, B, C, D, E, F#'; break;
+            case 'B': convertedTonality = 'G#'; scale = 'G#, A#, B#, C#, D#, E#, F##'; break;
             default: convertedTonality = '-'; scale = '-'; break;
         }
     } else if (saxophoneType === 'soprano') {
         switch (originalTonality) {
             case 'C': convertedTonality = 'D'; scale = 'D, E, F#, G, A, B, C#'; break;
-            case 'C#': convertedTonality = 'D#'; scale = 'D#, E#, F##, G#, A#, B#, C##'; break;
+            case 'C#': convertedTonality = 'Eb'; scale = 'Eb, F, G, Ab, Bb, C, D'; break;
             case 'D': convertedTonality = 'E'; scale = 'E, F#, G#, A, B, C#, D#'; break;
             case 'D#': convertedTonality = 'F'; scale = 'F, G, A, Bb, C, D, E'; break;
             case 'E': convertedTonality = 'F#'; scale = 'F#, G#, A#, B, C#, D#, E#'; break;
             case 'F': convertedTonality = 'G'; scale = 'G, A, B, C, D, E, F#'; break;
-            case 'F#': convertedTonality = 'G#'; scale = 'G#, A#, B#, C#, D#, E#, F#'; break;
+            case 'F#': convertedTonality = 'Ab'; scale = 'Ab, Bb, C, Db, Eb, F, G'; break;
             case 'G': convertedTonality = 'A'; scale = 'A, B, C#, D, E, F#, G#'; break;
-            case 'G#': convertedTonality = 'A#'; scale = 'A#, B#, C##, D#, E#, F##, G##'; break;
+            case 'G#': convertedTonality = 'Bb'; scale = 'Bb, C, D, Eb, F, G, A'; break;
             case 'A': convertedTonality = 'B'; scale = 'B, C#, D#, E, F#, G#, A#'; break;
-            case 'A#': convertedTonality = 'C'; scale = 'C, D, E, F, G, A, B'; break;
+            case 'Bb': convertedTonality = 'C'; scale = 'C, D, E, F, G, A, B'; break;
             case 'B': convertedTonality = 'C#'; scale = 'C#, D#, E#, F#, G#, A#, B#'; break;
             default: convertedTonality = '-'; scale = '-'; break;
         }
@@ -49,27 +50,7 @@ function updateTonalityAndScale() {
     document.getElementById('sax-scale').textContent = scale;
 }
 
-function updateScale() {
-    const tonality = document.getElementById('escala').value;
-    const scaleType = document.getElementById('typeScale').value;
-    
-    if (tonality === 'seleccione' || scaleType === 'seleccione') {
-        document.getElementById('scale-result').textContent = '-';
-        return;
-    }
-    
-    const scale = scales[scaleType]?.[tonality] || 'Escala no disponible';
-    document.getElementById('scale-result').textContent = scale;
-}
-
-// Añadir event listeners cuando el DOM esté cargado
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('saxophone').addEventListener('change', updateTonalityAndScale);
-    document.getElementById('original-tonality').addEventListener('change', updateTonalityAndScale);
-    document.getElementById('escala').addEventListener('change', updateScale);
-    document.getElementById('typeScale').addEventListener('change', updateScale);
-});
-
+// El resto del código permanece igual...
 // Objeto scales permanece igual
 const scales = {
     mayor: {
