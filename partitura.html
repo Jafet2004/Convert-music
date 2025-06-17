@@ -1,68 +1,69 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Partituras Funcional</title>
-    <link rel="icon" href="CM.png" type="image/x-icon">
-
-    <!-- Para favicon .png (formato moderno) -->
-    <link rel="icon" href="icon.png" type="image/png">
-
-    <!-- Para dispositivos Apple (iPhone, iPad) -->
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
-    <link rel="stylesheet" href="style_partit.css">
+    <link rel="icon" href="/CM.png" type="image/x-icon">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="style_dark.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
-        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
-            <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span style="color: #4fc3f7;">Music</span></div>
-            <nav>
-                <ul class="nav">
-                    <li class="nav-item"><a class="nav-link text-white" href="index.html"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-tools me-1"></i> Herramientas
-                        </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="convert.html"><i class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
-                        <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i> Creación de Partituras</a></li>
-                        <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i> Buscar Letras</a></li>
-                     </ul>
-                </li>
-            </ul>
-        </nav>
-    </div>
-</header>
+
 <body>
+    <header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span
+                    style="color: #4fc3f7;">Music</span></div>
+
+            <div class="d-flex align-items-center">
+                <nav>
+                    <ul class="nav">
+                        <li class="nav-item"><a class="nav-link text-white" href="index.html"><i
+                                    class="fas fa-home me-1"></i> Inicio</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fas fa-tools me-1"></i> Herramientas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="convert.html"><i
+                                            class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
+                                <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i>
+                                        Creación de Partituras</a></li>
+                                <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i>
+                                        Buscar Letras</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Botón de Modo Oscuro/Claro mejorado -->
+                <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
+                    <i class="fas fa-moon" id="darkModeIcon"></i>
+                    <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
     <main class="container py-5">
         <section id="controls" class="card p-4 mb-4">
-            <h2>Crear Partitura <svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" fill="currentColor" class="bi bi-music-note-list" viewBox="0 0 16 16">
-            <path d="M12 13c0 1.105-1.12 2-2.5 2S7 14.105 7 13s1.12-2 2.5-2 2.5.895 2.5 2"/>
-            <path fill-rule="evenodd" d="M12 3v10h-1V3z"/>
-            <path d="M11 2.82a1 1 0 0 1 .804-.98l3-.6A1 1 0 0 1 16 2.22V4l-5 1z"/>
-            <path fill-rule="evenodd" d="M0 11.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m0-4A.5.5 0 0 1 .5 7H8a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m0-4A.5.5 0 0 1 .5 3H8a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5"/>
-            </svg></h2>
+            <h2>Crear Partitura <svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" fill="currentColor"
+                    class="bi bi-music-note-list" viewBox="0 0 16 16">
+                    <path d="M12 13c0 1.105-1.12 2-2.5 2S7 14.105 7 13s1.12-2 2.5-2 2.5.895 2.5 2" />
+                    <path fill-rule="evenodd" d="M12 3v10h-1V3z" />
+                    <path d="M11 2.82a1 1 0 0 1 .804-.98l3-.6A1 1 0 0 1 16 2.22V4l-5 1z" />
+                    <path fill-rule="evenodd"
+                        d="M0 11.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m0-4A.5.5 0 0 1 .5 7H8a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m0-4A.5.5 0 0 1 .5 3H8a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5" />
+                </svg></h2>
             <div class="mb-3">
                 <label for="name" class="form-label">Nombre de partitura:</label>
                 <input type="text" id="name" class="form-control" placeholder="Mi melodía">
             </div>
-
-        <!--<div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="clef" class="form-label">Clave:</label>
-                    <select id="clef" class="form-select">
-                        <option value="treble">Sol</option>
-                        <option value="bass">Fa</option>
-                        <option value="alto">Do</option>
-                    </select>
-                </div>
-            </div>-->
 
             <div class="row">
                 <div class="col-md-4 mb-3">
@@ -71,6 +72,16 @@
                         <option value="treble">Sol</option>
                         <option value="bass">Fa</option>
                         <option value="alto">Do</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="timeSignature" class="form-label">Compás:</label>
+                    <select id="timeSignature" class="form-select">
+                        <option value="4/4">4/4 (Común)</option>
+                        <option value="3/4">3/4 (Vals)</option>
+                        <option value="2/4">2/4 (Marcha)</option>
+                        <option value="6/8">6/8 (Compuesto)</option>
+                        <option value="5/4">5/4 (Irregular)</option>
                     </select>
                 </div>
             </div>
@@ -91,19 +102,8 @@
                         <option value="g#/4">Sol#</option>
                         <option value="a/4">La</option>
                         <option value="bb/4">Sib</option>
-                        <option value="B/4">Si</option>
+                        <option value="b/4">Si</option>
                         <option value="c/5">Do</option>
-                    </select>
-                </div>
-
-                <div class="col-md-4 mb-3">
-                    <label for="timeSignature" class="form-label">Compás:</label>
-                    <select id="timeSignature" class="form-select">
-                        <option value="4/4">4/4 (Común)</option>
-                        <option value="3/4">3/4 (Vals)</option>
-                        <option value="2/4">2/4 (Marcha)</option>
-                        <option value="6/8">6/8 (Compuesto)</option>
-                        <option value="5/4">5/4 (Irregular)</option>
                     </select>
                 </div>
 
@@ -116,6 +116,11 @@
                         <option value="q">Negra (1 t)</option>
                         <option value="8">Corchea (1/2 t)</option>
                         <option value="16">Semicorchea (1/4 t)</option>
+                        <option value="wr">Silencio de redonda</option>
+                        <option value="hr">Silencio de blanca</option>
+                        <option value="qr">Silencio de negra</option>
+                        <option value="8r">Silencio de corchea</option>
+                        <option value="16r">Silencio de semicorchea</option>
                     </select>
                 </div>
             </div>
@@ -149,40 +154,33 @@
         <div id="message" class="alert alert-info mt-4">
             <i class="fas fa-info-circle"></i> Selecciona tus notas y haz clic en "Dibujar Partitura"
         </div>
-</main>
+    </main>
+
     <script src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="scrip_part.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="scrip_part.js"></script>
+    <script src="dark_mode.js"></script>
 </body>
 <footer class="bg-dark text-white py-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
-                    <p class="mt-2">Herramientas musicales para músicos y adoradores.</p>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <h5>Enlaces</h5>
-                    <ul class="nav flex-column">
-                        <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link text-white">Herramientas</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link text-white">Acerca de</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link text-white">Contacto</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <h5>Contacto</h5>
-                    <ul class="nav flex-column">
-                        <li class="nav-item"><a href="tel:+50577011807" class="nav-link text-white"><i class="fas fa-phone me-2"></i>+505 77011807</a></li>
-                        <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i class="fas fa-envelope me-2"></i>Correo para recomendaciones</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="text-center pt-3 border-top">
-                &copy; 2025 ConvertMusic. Todos los derechos reservados.
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
+                <p class="mt-2">Herramientas musicales para músicos y adoradores.</p>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white">Acerca de</a></li>
+                    <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i
+                                class="fas fa-envelope me-2"></i>Contacto</a></li>
+                </ul>
             </div>
         </div>
+        <div class="text-center pt-3 border-top">
+            &copy; 2025 ConvertMusic. Todos los derechos reservados.
+        </div>
+    </div>
 </footer>
+
 </html>

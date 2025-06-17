@@ -1,0 +1,165 @@
+/* Modo oscuro */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+/* Header estático (sticky) */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 1030; /* Mayor que el z-index del dropdown (1000) */
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+
+
+/* Efecto de sombra al hacer scroll */
+header.scrolled {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Modo oscuro para el header sticky */
+.dark-mode header.scrolled {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, #122a41, #0a3a5a);
+}
+
+/* Elementos principales */
+.dark-mode .card,
+.dark-mode .converter-container,
+.dark-mode .search-container,
+.dark-mode .lyrics-container,
+.dark-mode .result,
+.dark-mode .dropdown-menu,
+.dark-mode .input,
+.dark-mode .form-control,
+.dark-mode .form-select {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #333;
+}
+
+/* Sombras */
+.dark-mode .card,
+.dark-mode .converter-container,
+.dark-mode .search-container,
+.dark-mode .lyrics-container,
+.dark-mode .result {
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Elementos interactivos */
+.dark-mode .tool-card,
+.dark-mode .dropdown-menu a {
+    color: #e0e0e0;
+}
+
+.dark-mode .dropdown-menu a:hover {
+    background-color: #333;
+    color: var(--accent-color);
+}
+
+/* Textos */
+.dark-mode .section-title h2,
+.dark-mode .section-title p,
+.dark-mode .section h2,
+.dark-mode .tool-content h3,
+.dark-mode .tool-content p,
+.dark-mode #converted-tonality,
+.dark-mode #scale,
+.dark-mode label,
+.dark-mode .form-label {
+    color: #e0e0e0;
+}
+
+/* Botones */
+.dark-mode .btn-outline-light {
+    border-color: #e0e0e0;
+    color: #e0e0e0;
+}
+
+.dark-mode .btn-outline-light:hover {
+    background-color: #333;
+}
+
+/* Estilos específicos para selects y inputs */
+.dark-mode select,
+.dark-mode .form-select,
+.dark-mode input,
+.dark-mode .form-control {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+}
+
+.dark-mode select:focus,
+.dark-mode .form-select:focus,
+.dark-mode input:focus,
+.dark-mode .form-control:focus {
+    background-color: #333 !important;
+    color: #ffffff !important;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 0.25rem rgba(79, 195, 247, 0.25) !important;
+}
+
+/* Placeholders en modo oscuro */
+.dark-mode ::placeholder {
+    color: #a0a0a0 !important;
+    opacity: 1 !important;
+}
+
+.dark-mode :-ms-input-placeholder {
+    color: #a0a0a0 !important;
+}
+
+.dark-mode ::-ms-input-placeholder {
+    color: #a0a0a0 !important;
+}
+
+/* Opciones de select en modo oscuro */
+.dark-mode option {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+}
+
+/* Estilos para elementos deshabilitados */
+.dark-mode :disabled,
+.dark-mode .form-control:disabled {
+    background-color: #252525 !important;
+    color: #777 !important;
+    border-color: #3a3a3a !important;
+}
+
+/* Score generator specific styles */
+.notes-preview h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+#noteList {
+    padding: 1rem;
+    background-color: var(--light-color);
+    border-radius: 4px;
+    min-height: 60px;
+}
+
+#noteList.empty {
+    color: #6c757d;
+    font-style: italic;
+}
+
+#score-content {
+    min-height: 200px;
+    overflow-x: auto;
+    width: 80%;
+    height: 200px;
+}
+
+footer {
+    background-color: var(--dark-color);
+    color: white;
+    padding: 2rem 0;
+    text-align: center;
+}
