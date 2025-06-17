@@ -29,35 +29,6 @@ body {
 }
 
 
-nav ul {
-    display: flex;
-    list-style: none;
-}
-
-nav ul li {
-    position: relative;
-    margin-left: 1.5rem;
-}
-
-nav ul li a {
-    color: white;
-    text-decoration: none;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-}
-
-nav ul li a:hover {
-    background-color: rgba(255,255,255,0.2);
-}
-
-
-
-nav ul li:hover .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-}
 
 
 
