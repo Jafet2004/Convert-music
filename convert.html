@@ -143,7 +143,7 @@
     </div>
 
     <div class="container converter-container mt-5">
-        <h2>Transpositor de Melodías</h2>
+        <h2>Transportador de Melodías</h2>
 
         <label for="melody-input">Ingresa la melodía en cifrado americano (ej: C, Dm, G7, Em7):</label>
         <textarea id="melody-input" class="form-control" rows="3" placeholder="Ejemplo: C, Am, F, G7"></textarea>
@@ -163,7 +163,11 @@
                 <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="2">
                     <i class="fas fa-angle-double-up"></i> +1 T
                 </button>
+                
             </div>
+            <div class="mt-2">
+            <span id="current-steps" class="badge bg-secondary">0 semitonos</span>
+        </div>
         </div>
 
         <div id="melody-result" class="result mt-4">
