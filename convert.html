@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Convert Music - Herramientas para Músicos</title>
-        <link rel="icon" href="CM.png" type="image/x-icon">
+    <link rel="icon" href="CM.png" type="image/x-icon">
 
     <!-- Para favicon .png (formato moderno) -->
     <link rel="icon" href="icon.png" type="image/png">
@@ -17,46 +18,55 @@
     <link rel="manifest" href="/site.webmanifest">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="style_convert.css">
     <link rel="stylesheet" href="style_dark.css">
-    
+
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;600;700&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
-<header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
-    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
-        <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span style="color: #4fc3f7;">Music</span></div>
-        
-        <div class="d-flex align-items-center">
-            <nav>
-                <ul class="nav">
-                    <li class="nav-item"><a class="nav-link text-white" href="index.html"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-tools me-1"></i> Herramientas
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="convert.html"><i class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
-                            <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i> Creación de Partituras</a></li>
-                            <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i> Buscar Letras</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </nav>
-            
-            <!-- Botón de Modo Oscuro/Claro mejorado -->
-            <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
-                <i class="fas fa-moon" id="darkModeIcon"></i> 
-                <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
-            </button>
+    <header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span
+                    style="color: #4fc3f7;">Music</span></div>
+
+            <div class="d-flex align-items-center">
+                <nav>
+                    <ul class="nav">
+                        <li class="nav-item"><a class="nav-link text-white" href="index.html"><i
+                                    class="fas fa-home me-1"></i> Inicio</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fas fa-tools me-1"></i> Herramientas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="convert.html"><i
+                                            class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
+                                <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i>
+                                        Creación de Partituras</a></li>
+                                <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i>
+                                        Buscar Letras</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Botón de Modo Oscuro/Claro mejorado -->
+                <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
+                    <i class="fas fa-moon" id="darkModeIcon"></i>
+                    <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
+                </button>
+            </div>
         </div>
-    </div>
-</header>
+    </header>
 
     <div class="container">
         <label for="saxophone">Selecciona el tipo de saxofón:</label>
@@ -111,43 +121,84 @@
 
         <label for="typeScale">Tipo de escala:</label>
         <select id="typeScale">
-            <option value = "seleccione">Seleccione</option>
-            <option value="mayor">Jónico(Mayor)</option>
-            <option value = "menor">Dórico(Menor)</option>
-            <option value = "mayor_pent">Mayor Pentatónica</option>
-            <option value = "menor_pent">Menor Pentatónica</option>
-            <option value = "frigio">Frigio</option>
-            <option value = "lidio">Lidio</option>
-            <option value = "mixolidio">Mixolidio</option>
-            <option value = "eolico">Eolico</option>
-            <option value = "locrio">Locrio</option>
+            <option value="seleccione">Seleccione una escala</option>
+
+            <!-- Modos diatónicos -->
+            <option value="mayor">Jónico (Mayor)</option>
+            <option value="dorico">Dórico</option>
+            <option value="frigio">Frigio</option>
+            <option value="lidio">Lidio</option>
+            <option value="mixolidio">Mixolidio</option>
+            <option value="eolico">Eólico (Menor natural)</option>
+            <option value="locrio">Locrio</option>
+
+            <!-- Escalas pentatónicas -->
+            <option value="mayor_pent">Pentatónica Mayor</option>
+            <option value="menor_pent">Pentatónica Menor</option>
         </select>
 
         <div id="result_Scale" class="result">
             <p><strong>Resultado de escala:</strong> <span id="scale-result"></span></p>
         </div>
     </div>
-<script src="dark_mode.js"></script>
+
+    <div class="container converter-container mt-5">
+        <h2>Transpositor de Melodías</h2>
+
+        <label for="melody-input">Ingresa la melodía en cifrado americano (ej: C, Dm, G7, Em7):</label>
+        <textarea id="melody-input" class="form-control" rows="3" placeholder="Ejemplo: C, Am, F, G7"></textarea>
+
+        <div class="transpose-controls mt-3">
+            <label class="mb-2">Transponer:</label>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-1">
+                    <i class="fas fa-arrow-down"></i> -1/2 T
+                </button>
+                <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="1">
+                    <i class="fas fa-arrow-up"></i> +1/2 T
+                </button>
+                <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-2">
+                    <i class="fas fa-angle-double-down"></i> -1 T
+                </button>
+                <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="2">
+                    <i class="fas fa-angle-double-up"></i> +1 T
+                </button>
+            </div>
+        </div>
+
+        <div id="melody-result" class="result mt-4">
+            <p><strong>Tonalidad estimada:</strong> <span id="estimated-key">-</span></p>
+            <p><strong>Melodía original:</strong> <span id="original-melody">-</span></p>
+            <p><strong>Nueva tonalidad:</strong> <span id="new-key">-</span></p>
+            <p><strong>Melodía transportada:</strong> <span id="transposed-melody">-</span></p>
+        </div>
+    </div>
+
+    </div>
+    <script src="dark_mode.js"></script>
+    <script src="transport.js"></script>
 </body>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="script.js"></script>
 <footer class="bg-dark text-white py-4 my-5">
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
-                    <p class="mt-2">Herramientas musicales para músicos y adoradores.</p>
-                    <ul class="nav flex-column">
-                        <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link text-white">Acerca de</a></li>
-                        <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i class="fas fa-envelope me-2"></i>Contacto</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="text-center pt-3 border-top">
-                &copy; 2025 ConvertMusic. Todos los derechos reservados.
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
+                <p class="mt-2">Herramientas musicales para músicos y adoradores.</p>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white">Acerca de</a></li>
+                    <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i
+                                class="fas fa-envelope me-2"></i>Contacto</a></li>
+                </ul>
             </div>
         </div>
+        <div class="text-center pt-3 border-top">
+            &copy; 2025 ConvertMusic. Todos los derechos reservados.
+        </div>
+    </div>
 </footer>
+
 </html>

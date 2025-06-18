@@ -52,18 +52,18 @@ function updateTonalityAndScale() {
 function updateScale() {
     const tonality = document.getElementById('escala').value;
     const scaleType = document.getElementById('typeScale').value;
-    
+
     if (tonality === 'seleccione' || scaleType === 'seleccione') {
         document.getElementById('scale-result').textContent = '-';
         return;
     }
-    
+
     const scale = scales[scaleType]?.[tonality] || 'Escala no disponible';
     document.getElementById('scale-result').textContent = scale;
 }
 
 // Añadir event listeners cuando el DOM esté cargado
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('saxophone').addEventListener('change', updateTonalityAndScale);
     document.getElementById('original-tonality').addEventListener('change', updateTonalityAndScale);
     document.getElementById('escala').addEventListener('change', updateScale);
@@ -86,25 +86,26 @@ const scales = {
         'Bb': 'Bb, C, D, Eb, F, G, A, Bb',
         'B': 'B, C#, D#, E, F#, G#, A#, B'
     },
-    menor: {
-        'C': 'C, D, Eb, F, G, Ab, Bb, C',
-        'C#': 'C#, D#, E, F#, G#, A, B, C#',
-        'D': 'D, E, F, G, A, Bb, C, D',
-        'D#': 'D#, E#, F#, G#, A#, B, C#, D#',
-        'E': 'E, F#, G, A, B, C, D, E',
-        'F': 'F, G, Ab, Bb, C, Db, Eb, F',
-        'F#': 'F#, G#, A, B, C#, D, E, F#',
-        'G': 'G, A, Bb, C, D, Eb, F, G',
-        'G#': 'G#, A#, B, C#, D#, E, F#, G#',
-        'A': 'A, B, C, D, E, F, G, A',
-        'A#': 'A#, B#, C#, D#, E#, F#, G#, A#',
-        'B': 'B, C#, D, E, F#, G, A, B'
+    dorico: {
+        'C': 'C, D, Eb, F, G, A, Bb, C',
+        'C#': 'C#, D#, E, F#, G#, A#, B, C#',
+        'D': 'D, E, F, G, A, B, C, D',
+        'D#': 'D#, F, F#, G#, A#, C, C#, D#',
+        'E': 'E, F#, G, A, B, C#, D, E',
+        'F': 'F, G, Ab, Bb, C, D, Eb, F',
+        'F#': 'F#, G#, A, B, C#, D#, E, F#',
+        'G': 'G, A, Bb, C, D, E, F, G',
+        'G#': 'G#, A#, B, C#, D#, F, F#, G#',
+        'A': 'A, B, C, D, E, F#, G, A',
+        'Bb': 'Bb, C, Db, Eb, F, G, Ab, Bb',
+        'B': 'B, C#, D, E, F#, G#, A, B'
     },
+
     frigio: {
         'C': 'C, Db, Eb, F, G, Ab, Bb, C',
         'C#': 'C#, D, E, F#, G#, A, B, C#',
         'D': 'D, Eb, F, G, A, Bb, C, D',
-        'D#': 'Eb, Fb, Gb, Ab, Bb, Cb, Db, Eb',
+        'D#': 'D#, E, F#, G#, A#, B, C#, D#',
         'E': 'E, F, G, A, B, C, D, E',
         'F': 'F, Gb, Ab, Bb, C, Db, Eb, F',
         'F#': 'F#, G, A, B, C#, D, E, F#',
@@ -118,7 +119,7 @@ const scales = {
         'C': 'C, D, E, F#, G, A, B, C',
         'C#': 'C#, D#, E#, F##, G#, A#, B#, C#',
         'D': 'D, E, F#, G#, A, B, C#, D',
-        'D#': 'Eb, F, G, A, Bb, C, D, Eb',
+        'D#': 'D#, E#, F##, G##, A#, B#, C##, D#',
         'E': 'E, F#, G#, A#, B, C#, D#, E',
         'F': 'F, G, A, B, C, D, E, F',
         'F#': 'F#, G#, A#, B#, C#, D#, E#, F#',
@@ -132,7 +133,7 @@ const scales = {
         'C': 'C, D, E, F, G, A, Bb, C',
         'C#': 'C#, D#, E#, F#, G#, A#, B, C#',
         'D': 'D, E, F#, G, A, B, C, D',
-        'D#': 'Eb, F, G, Ab, Bb, C, Db, Eb',
+        'D#': 'D#, E#, F##, G#, A#, B#, C#, D#',
         'E': 'E, F#, G#, A, B, C#, D, E',
         'F': 'F, G, A, Bb, C, D, Eb, F',
         'F#': 'F#, G#, A#, B, C#, D#, E, F#',
@@ -160,7 +161,7 @@ const scales = {
         'C': 'C, Db, Eb, F, Gb, Ab, Bb, C',
         'C#': 'C#, D, E, F#, G, A, B, C#',
         'D': 'D, Eb, F, G, Ab, Bb, C, D',
-        'D#': 'Eb, Fb, Gb, Ab, Bbb, Cb, Db, Eb',
+        'D#': 'D#, E, F#, G#, A, B, C#, D#',
         'E': 'E, F, G, A, Bb, C, D, E',
         'F': 'F, Gb, Ab, Bb, Cb, Db, Eb, F',
         'F#': 'F#, G, A, B, C, D, E, F#',
@@ -174,7 +175,7 @@ const scales = {
         'C': 'C, D, E, G, A',
         'C#': 'C#, D#, E#, G#, A#',
         'D': 'D, E, F#, A, B',
-        'D#': 'Eb, F, G, Bb, C',
+        'D#': 'D#, E#, F##, A#, B#',
         'E': 'E, F#, G#, B, C#',
         'F': 'F, G, A, C, D',
         'F#': 'F#, G#, A#, C#, D#',
@@ -185,17 +186,17 @@ const scales = {
         'B': 'B, C#, D#, F#, G#'
     },
     menor_pent: {
-        'C': 'C, D, Eb, G, A',
-        'C#': 'C#, D#, E, G#, A#',
-        'D': 'D, E, F, A, B, D',
-        'D#': 'Eb, F, Gb, Bb, C',
-        'E': 'E, F#, G, B, C#',
-        'F': 'F, G, Ab, C, D',
-        'F#': 'F#, G#, A, C#, D#',
-        'G': 'G, A, Bb, D, E',
-        'G#': 'G#, A#, B, D#, E#',
-        'A': 'A, B, C, E, F',
-        'Bb': 'Bb, C, Db, F, G',
-        'B': 'B, C#, D, F#, G#'
+        'C': 'C, Eb, F, G, Bb',
+        'C#': 'C#, E, F#, G#, B',
+        'D': 'D, F, G, A, C',
+        'D#': 'D#, F#, G#, A#, C#',
+        'E': 'E, G, A, B, D',
+        'F': 'F, Ab, Bb, C, Eb',
+        'F#': 'F#, A, B, C#, E',
+        'G': 'G, Bb, C, D, F',
+        'G#': 'G#, B, C#, D#, F#',
+        'A': 'A, C, D, E, G',
+        'Bb': 'Bb, Db, Eb, F, Ab',
+        'B': 'B, D, E, F#, A'
     }
 };
