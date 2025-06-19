@@ -74,7 +74,8 @@ header.scrolled {
 .dark-mode #converted-tonality,
 .dark-mode #scale,
 .dark-mode label,
-.dark-mode .form-label {
+.dark-mode .form-label, 
+.dark-mode .lyrics{
     color: #e0e0e0;
 }
 

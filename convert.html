@@ -143,40 +143,47 @@
     </div>
 
     <div class="container converter-container mt-5">
-        <h2>Transportador de Melodías</h2>
+    <h2>Transportador de Melodías Avanzado</h2>
 
-        <label for="melody-input">Ingresa la melodía en cifrado americano (ej: C, Dm, G7, Em7):</label>
-        <textarea id="melody-input" class="form-control" rows="3" placeholder="Ejemplo: C, Am, F, G7"></textarea>
+    <label for="melody-input">Ingresa acordes y melodía (ej: C, Dm, G7 | C E G A):</label>
+    <textarea id="melody-input" class="form-control" rows="3" 
+              placeholder="Ejemplo: C, Am, F, G7 | C E G A"></textarea>
 
-        <div class="transpose-controls mt-3">
-            <label class="mb-2">Transponer:</label>
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-1">
-                    <i class="fas fa-arrow-down"></i> -1/2 T
-                </button>
-                <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="1">
-                    <i class="fas fa-arrow-up"></i> +1/2 T
-                </button>
-                <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-2">
-                    <i class="fas fa-angle-double-down"></i> -1 T
-                </button>
-                <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="2">
-                    <i class="fas fa-angle-double-up"></i> +1 T
-                </button>
-                
-            </div>
-            <div class="mt-2">
+    <div class="transpose-controls mt-3">
+        <label class="mb-2">Transponer:</label>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-1">
+                <i class="fas fa-arrow-down"></i> -1/2 T
+            </button>
+            <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="1">
+                <i class="fas fa-arrow-up"></i> +1/2 T
+            </button>
+            <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-2">
+                <i class="fas fa-angle-double-down"></i> -1 T
+            </button>
+            <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="2">
+                <i class="fas fa-angle-double-up"></i> +1 T
+            </button>
+            <button type="button" class="btn btn-outline-danger" id="reset-btn">
+                <i class="fas fa-redo"></i> Reiniciar
+            </button>
+        </div>
+        <div class="mt-2">
             <span id="current-steps" class="badge bg-secondary">0 semitonos</span>
         </div>
-        </div>
-
-        <div id="melody-result" class="result mt-4">
-            <p><strong>Tonalidad estimada:</strong> <span id="estimated-key">-</span></p>
-            <p><strong>Melodía original:</strong> <span id="original-melody">-</span></p>
-            <p><strong>Nueva tonalidad:</strong> <span id="new-key">-</span></p>
-            <p><strong>Melodía transportada:</strong> <span id="transposed-melody">-</span></p>
-        </div>
     </div>
+
+    <div id="melody-result" class="result mt-4">
+        <p><strong>Tonalidad original:</strong> 
+           <span id="estimated-key">-</span> 
+           <span class="mode-badge" id="estimated-mode">-</span></p>
+        <p><strong>Melodía original:</strong> <span id="original-melody">-</span></p>
+        <p><strong>Nueva tonalidad:</strong> 
+           <span id="new-key">-</span> 
+           <span class="mode-badge" id="transposed-mode">-</span></p>
+        <p><strong>Melodía transportada:</strong> <span id="transposed-melody">-</span></p>
+    </div>
+</div>
 
     </div>
     <script src="dark_mode.js"></script>
