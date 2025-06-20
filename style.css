@@ -6,7 +6,6 @@
     width: 100%;
     height: 100%;
     background: linear-gradient(135deg, #1a202c 0%, #303a47 100%);
-    /* Fondo con degradado */
     color: white;
     display: flex;
     justify-content: center;
@@ -15,23 +14,28 @@
     opacity: 1;
     transition: opacity 1s ease-out;
     overflow: hidden;
-    /* Para que las notas no se salgan del fondo */
 }
 
 .logo-animation {
     font-family: 'Montserrat', sans-serif;
-    font-size: 4em;
-    /* Aumentar tamaño del logo */
+    font-size: 2em; /* Tamaño base más pequeño para móviles */
     font-weight: bold;
     opacity: 0;
     animation: fadeInUpScale 1.5s ease-in-out forwards;
-    /* Nueva animación */
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    /* Sombra para dar relieve */
+    text-align: center;
+    padding: 0 20px;
 }
 
 .logo-animation span {
     color: #4fc3f7;
+}
+
+/* Media query para pantallas más grandes */
+@media (min-width: 768px) {
+    .logo-animation {
+        font-size: 4em; /* Tamaño más grande para tablets y desktop */
+    }
 }
 
 @keyframes fadeInUpScale {
@@ -39,12 +43,10 @@
         opacity: 0;
         transform: translateY(20px) scale(0.9);
     }
-
     60% {
         opacity: 1;
         transform: translateY(0) scale(1.05);
     }
-
     100% {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -54,63 +56,62 @@
 .musical-note {
     position: absolute;
     color: #64b5f6;
-    /* Color de las notas */
-    font-size: 1.5em;
+    font-size: 1em; /* Tamaño base más pequeño */
     opacity: 0;
     animation: floatNote 3s linear infinite;
-    /* Animación de flotado */
 }
 
+/* Media query para pantallas más grandes */
+@media (min-width: 768px) {
+    .musical-note {
+        font-size: 1.5em; /* Tamaño más grande para tablets y desktop */
+    }
+}
+
+/* Posiciones de las notas musicales */
 .musical-note:nth-child(1) {
     top: 10%;
     left: 20%;
     animation-delay: 0s;
-    font-size: 2em;
+    font-size: 1.2em;
 }
-
 .musical-note:nth-child(2) {
     top: 30%;
     left: 80%;
     animation-delay: 0.5s;
 }
-
 .musical-note:nth-child(3) {
     top: 70%;
     left: 10%;
     animation-delay: 1s;
-    font-size: 2.5em;
+    font-size: 1.5em;
 }
-
 .musical-note:nth-child(4) {
     top: 90%;
     left: 60%;
     animation-delay: 1.5s;
 }
-
 .musical-note:nth-child(5) {
     top: 50%;
     left: 50%;
     animation-delay: 2s;
-    font-size: 3em;
+    font-size: 1.8em;
 }
-
 .musical-note:nth-child(6) {
     top: 20%;
     left: 60%;
     animation-delay: 2.5s;
 }
-
 .musical-note:nth-child(7) {
     top: 80%;
     left: 30%;
     animation-delay: 0.2s;
 }
-
 .musical-note:nth-child(8) {
     top: 40%;
     left: 90%;
     animation-delay: 0.8s;
-    font-size: 1.8em;
+    font-size: 1.3em;
 }
 
 @keyframes floatNote {
@@ -118,25 +119,20 @@
         opacity: 0;
         transform: translateY(20px) rotate(20deg);
     }
-
     20% {
         opacity: 0.8;
         transform: translateY(-20px) rotate(-10deg);
     }
-
     40% {
         transform: translateY(-5px) rotate(5deg);
     }
-
     60% {
         transform: translateY(10px) rotate(-5deg);
     }
-
     80% {
         opacity: 0.5;
         transform: translateY(0px) rotate(10deg);
     }
-
     100% {
         opacity: 0;
         transform: translateY(-30px) rotate(0deg);
