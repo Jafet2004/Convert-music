@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acerca de ConvertMusic | Tu Herramienta Musical Completa</title>
+    <title>Acerca de ConvertMusic | Herramientas musicales creadas con pasión</title>
     <style>
         :root {
             --primary-color: #4a6fa5;
             --primary-dark: #3a5a8c;
             --secondary-color: #166088;
             --accent-color: #4fc3f7;
+            --electric-blue: #00f2fe;
+            --electric-purple: #4facfe;
             --light-color: #f8f9fa;
             --dark-color: #343a40;
             --text-color: #2d3748;
@@ -77,6 +79,52 @@
             opacity: 0;
         }
 
+        /* Barra de carga eléctrica animada */
+        .electric-bar {
+            position: relative;
+            height: 4px;
+            width: 80px;
+            margin: 1rem auto;
+            background: linear-gradient(to right, 
+                transparent, 
+                transparent 20%, 
+                var(--electric-purple) 30%, 
+                var(--electric-blue) 50%, 
+                var(--electric-purple) 70%, 
+                transparent 80%, 
+                transparent);
+            background-size: 200% 100%;
+            border-radius: 4px;
+            overflow: hidden;
+            animation: electricFlow 2s linear infinite;
+        }
+
+        .electric-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to right, 
+                rgba(255, 255, 255, 0.8), 
+                rgba(79, 195, 247, 0.5), 
+                rgba(255, 255, 255, 0.8));
+            background-size: 200% 100%;
+            animation: electricGlow 1.5s linear infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes electricFlow {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        @keyframes electricGlow {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
         /* Sección de misión */
         .mission-section {
             padding: 5rem 0;
@@ -107,89 +155,72 @@
         .mission-card h2 {
             color: var(--secondary-color);
             font-size: 2rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             position: relative;
-        }
-
-        .mission-card h2::after {
-            content: '';
-            display: block;
-            width: 60px;
-            height: 4px;
-            background: var(--accent-color);
-            margin-top: 0.8rem;
-            border-radius: 2px;
+            text-align: center;
         }
 
         .mission-card p {
             font-size: 1.1rem;
             line-height: 1.8;
             margin-bottom: 1.5rem;
+            text-align: center;
         }
 
-        /* Sección de equipo */
-        .team-section {
+        /* Sección del creador */
+        .creator-section {
             padding: 5rem 0;
             background-color: var(--light-color);
             text-align: center;
         }
 
-        .team-section h2 {
+        .creator-section h2 {
             font-size: 2.2rem;
             color: var(--secondary-color);
-            margin-bottom: 3rem;
+            margin-bottom: 1rem;
             position: relative;
-            display: inline-block;
         }
 
-        .team-section h2::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: var(--accent-color);
-            border-radius: 2px;
-        }
-
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .team-member {
+        .creator-card {
             background: white;
             border-radius: var(--border-radius);
             padding: 2rem;
+            max-width: 600px;
+            margin: 2rem auto 0;
             box-shadow: var(--box-shadow);
             transition: transform var(--transition-speed) ease;
         }
 
-        .team-member:hover {
-            transform: translateY(-10px);
+        .creator-card:hover {
+            transform: translateY(-5px);
         }
 
-        .team-member img {
-            width: 120px;
-            height: 120px;
+        .creator-img {
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             object-fit: cover;
-            margin-bottom: 1.5rem;
+            margin: 0 auto 1.5rem;
             border: 4px solid var(--accent-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .team-member h3 {
+        .creator-card h3 {
             color: var(--primary-color);
+            font-size: 1.8rem;
             margin-bottom: 0.5rem;
         }
 
-        .team-member p {
+        .creator-title {
             color: var(--secondary-color);
+            font-size: 1.2rem;
             font-style: italic;
+            margin-bottom: 1.5rem;
+        }
+
+        .creator-bio {
+            text-align: left;
+            line-height: 1.7;
         }
 
         /* Valores */
@@ -228,8 +259,8 @@
         }
 
         .value-card h3::before {
-            content: '✓';
-            color: var(--accent-color);
+            content: '⚡';
+            color: var(--electric-blue);
             font-weight: bold;
         }
 
@@ -250,10 +281,8 @@
                 padding: 1.5rem;
             }
             
-            .team-grid {
-                grid-template-columns: 1fr;
-                max-width: 400px;
-                margin: 3rem auto 0;
+            .creator-card {
+                padding: 1.5rem;
             }
             
             .values-grid {
@@ -266,12 +295,17 @@
                 padding: 3rem 0;
             }
             
-            .mission-section, .team-section, .values-section {
+            .mission-section, .creator-section, .values-section {
                 padding: 3rem 0;
             }
             
-            .mission-card h2 {
+            .mission-card h2, .creator-section h2 {
                 font-size: 1.6rem;
+            }
+            
+            .creator-img {
+                width: 150px;
+                height: 150px;
             }
         }
     </style>
@@ -280,7 +314,8 @@
     <header class="about-header">
         <div class="container">
             <h1>Acerca de ConvertMusic</h1>
-            <p>La plataforma definitiva para músicos que buscan herramientas intuitivas y poderosas para potenciar su creatividad</p>
+            <p>La plataforma definitiva para músicos creada con pasión y conocimiento técnico</p>
+            <div class="electric-bar"></div>
         </div>
     </header>
 
@@ -288,36 +323,25 @@
         <div class="container">
             <div class="mission-card">
                 <h2>Nuestra Misión</h2>
+                <div class="electric-bar"></div>
                 <p>En ConvertMusic, creemos que la música es un lenguaje universal que debe ser accesible para todos. Nuestra misión es eliminar las barreras técnicas que separan a los músicos de su creatividad, proporcionando herramientas intuitivas que simplifican procesos complejos.</p>
-                <p>Fundada en 2023 por un equipo de músicos y desarrolladores apasionados, ConvertMusic nació de la necesidad de tener todas las herramientas esenciales en un solo lugar, con una interfaz limpia y fácil de usar.</p>
+                <p>Fundada en 2025 por Jafet Aguilar, ConvertMusic nació de la necesidad de tener todas las herramientas esenciales en un solo lugar, con una interfaz limpia y fácil de usar.</p>
                 <p>Desde conversión de tonalidades hasta análisis de progresiones armónicas, cada función ha sido diseñada pensando en las necesidades reales de los músicos, tanto profesionales como aficionados.</p>
             </div>
         </div>
     </section>
 
-    <section class="team-section">
+    <section class="creator-section">
         <div class="container">
-            <h2>Conoce Nuestro Equipo</h2>
-            <div class="team-grid">
-                <div class="team-member">
-                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="María Gómez">
-                    <h3>María Gómez</h3>
-                    <p>Fundadora & Desarrolladora</p>
-                </div>
-                <div class="team-member">
-                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Carlos Ruiz">
-                    <h3>Carlos Ruiz</h3>
-                    <p>Director Musical</p>
-                </div>
-                <div class="team-member">
-                    <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Laura Chen">
-                    <h3>Laura Chen</h3>
-                    <p>Diseñadora UX/UI</p>
-                </div>
-                <div class="team-member">
-                    <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="David Park">
-                    <h3>David Park</h3>
-                    <p>Ingeniero de Audio</p>
+            <h2>Creador e Impulsador</h2>
+            <div class="electric-bar"></div>
+            <div class="creator-card">
+                <img src="IMG-20250523-WA0039.jpg" alt="Jafet Aguilar" class="creator-img">
+                <h3>Jafet Aguilar</h3>
+                <p class="creator-title">Director de Alabanza, Pianista e Ingeniero de Sistemas</p>
+                <div class="creator-bio">
+                    <p>Con más de 15 años de experiencia en música y tecnología, Jafet ha combinado sus dos pasiones para crear ConvertMusic. Como director de alabanza, entendió las necesidades prácticas de los músicos, y como ingeniero de sistemas, desarrolló las soluciones técnicas.</p>
+                    <p>Cada función en ConvertMusic ha sido personalmente diseñada e implementada por Jafet, asegurando que cumpla con los más altos estándares tanto musicales como tecnológicos.</p>
                 </div>
             </div>
         </div>
@@ -325,7 +349,8 @@
 
     <section class="values-section">
         <div class="container">
-            <h2 style="color: white; text-align: center; margin-bottom: 3rem;">Nuestros Valores</h2>
+            <h2 style="color: white; text-align: center; margin-bottom: 1rem;">Nuestros Valores</h2>
+            <div class="electric-bar" style="margin-bottom: 3rem;"></div>
             <div class="values-grid">
                 <div class="value-card">
                     <h3>Innovación Musical</h3>
