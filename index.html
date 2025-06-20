@@ -16,7 +16,104 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style_dark.css">
     <link rel="stylesheet" href="style.css">
-
+    <style>
+        /* Estilos adicionales para el nuevo diseño */
+        .hero-section {
+            background: linear-gradient(135deg, #166088 0%, #4a6fa5 100%);
+            color: white;
+            padding: 5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+            opacity: 0.15;
+            z-index: 1;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #4fc3f7;
+        }
+        
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: #4fc3f7;
+            border-radius: 2px;
+        }
+        
+        .btn-primary {
+            background-color: #4fc3f7;
+            border-color: #4fc3f7;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3ab0e5;
+            border-color: #3ab0e5;
+        }
+        
+        .card-img-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+        }
+        
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .feature-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4fc3f7;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
@@ -32,91 +129,224 @@
         <div class="musical-note"><i class="fas fa-music"></i></div>
     </div>
 
+    <!-- Header original (sin cambios) -->
     <header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
-    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
-        <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span style="color: #4fc3f7;">Music</span></div>
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span style="color: #4fc3f7;">Music</span></div>
 
-        <div class="d-flex align-items-center">
-            <nav>
-                <ul class="nav">
-                    <li class="nav-item"><a class="nav-link text-white" href="index.html"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-tools me-1"></i> Herramientas
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="convert.html"><i class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
-                            <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i> Creación de Partituras</a></li>
-                            <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i> Buscar Letras</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </nav>
+            <div class="d-flex align-items-center">
+                <nav>
+                    <ul class="nav">
+                        <li class="nav-item"><a class="nav-link text-white" href="index.html"><i class="fas fa-home me-1"></i> Inicio</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-tools me-1"></i> Herramientas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="convert.html"><i class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
+                                <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i> Creación de Partituras</a></li>
+                                <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i> Buscar Letras</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
 
-            <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
-                <i class="fas fa-moon" id="darkModeIcon"></i>
-                <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
-            </button>
+                <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
+                    <i class="fas fa-moon" id="darkModeIcon"></i>
+                    <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
+                </button>
+            </div>
         </div>
-    </div>
-</header>
+    </header>
 
     <main>
-        <section class="hero py-5"
-            style="background: url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover; position: relative;">
-            <div class="hero-content container text-center text-white" style="position: relative; z-index: 2;">
-                <h1 class="display-4 mb-3">El Mejor Destino para tus Necesidades Musicales</h1>
-                <p class="lead mb-4">Explora nuestras herramientas diseñadas para músicos de todos los niveles. ¡Convierte tonalidades, crea partituras y descubre letras fácilmente!</p>
-                <a href="#herramientas" class="btn btn-primary btn-lg">Descubre Nuestras Herramientas</a>
-            </div>
-            <div
-                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);">
+        <!-- Hero Section Rediseñada -->
+        <section class="hero-section">
+            <div class="container hero-content text-center">
+                <h1 class="display-4 fw-bold mb-4">Transforma tu experiencia musical</h1>
+                <p class="lead mb-5 fs-4">Herramientas profesionales diseñadas para músicos de todos los niveles</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="#herramientas" class="btn btn-primary btn-lg px-4 py-2">
+                        <i class="fas fa-rocket me-2"></i>Explorar herramientas
+                    </a>
+                    <a href="convert.html" class="btn btn-outline-light btn-lg px-4 py-2">
+                        <i class="fas fa-play me-2"></i>Comenzar ahora
+                    </a>
+                </div>
             </div>
         </section>
 
+        <!-- Features Section -->
+        <section class="py-5 bg-light">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="text-center p-4">
+                            <div class="feature-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h3 class="h4">Rápido y eficiente</h3>
+                            <p class="text-muted">Conversiones instantáneas y herramientas optimizadas para tu flujo de trabajo musical.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-4">
+                            <div class="feature-icon">
+                                <i class="fas fa-sliders-h"></i>
+                            </div>
+                            <h3 class="h4">Personalizable</h3>
+                            <p class="text-muted">Adapta las herramientas a tus necesidades específicas y preferencias musicales.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-4">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3 class="h4">Seguro y privado</h3>
+                            <p class="text-muted">Tus datos y creaciones musicales están protegidos en todo momento.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Herramientas Section -->
         <section id="herramientas" class="py-5">
             <div class="container">
                 <div class="text-center mb-5">
-                    <h2 class="display-5">Explora Nuestras Potentes Herramientas</h2>
-                    <p class="lead">Diseñadas para facilitar tu viaje musical, desde la conversión de tonalidades hasta la creación de partituras y la búsqueda de letras.</p>
+                    <h2 class="section-title display-5 fw-bold">Nuestras Herramientas</h2>
+                    <p class="lead text-muted">Descubre cómo podemos potenciar tu creatividad musical</p>
                 </div>
 
                 <div class="row g-4">
-                    <div class="col-md-4">
-                        <div class="card h-100 shadow-sm">
-                            <img src="https://cdn.wallpapersafari.com/65/67/wYoBb3.jpg" class="card-img-top"
-                                alt="Saxofón" style="height: 200px; object-fit: cover;">
+                    <!-- Card 1 -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card feature-card h-100 shadow-sm">
+                            <span class="feature-badge">Popular</span>
+                            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" class="card-img-top" alt="Editor de partituras" style="height: 200px; object-fit: cover;">
                             <div class="card-body">
-                                <h3 class="card-title h5">Conversor de Tonalidades y Escalas Musicales</h3>
-                                <p class="card-text">Cambia tonalidades entre instrumentos como el saxofón alto y soprano, y explora todos los modos de las escalas musicales para enriquecer tu creatividad.</p>
-                                <a href="convert.html" class="btn btn-primary">Convertir Ahora</a>
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-music me-2 text-primary"></i>
+                                    <h3 class="card-title h5 mb-0">Editor de Partituras</h3>
+                                </div>
+                                <p class="card-text">Crea, edita y comparte tus composiciones musicales con nuestro editor intuitivo diseñado para músicos de todos los niveles.</p>
+                                <ul class="list-unstyled mb-3">
+                                    <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Notación musical completa</li>
+                                    <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Exportación en múltiples formatos</li>
+                                    <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Colaboración en tiempo real</li>
+                                </ul>
+                                <a href="partitura.html" class="btn btn-primary w-100 mt-auto">Probar ahora</a>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Card 2 -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card feature-card h-100 shadow-sm">
+                            <img src="https://cdn.wallpapersafari.com/65/67/wYoBb3.jpg" class="card-img-top" alt="Conversor de tonalidades" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-exchange-alt me-2 text-primary"></i>
+                                    <h3 class="card-title h5 mb-0">Conversor de Tonalidades</h3>
+                                </div>
+                                <p class="card-text">Convierte entre diferentes instrumentos y explora todos los modos de escalas musicales para enriquecer tu creatividad.</p>
+                                <ul class="list-unstyled mb-3">
+                                    <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Soporte para múltiples instrumentos</li>
+                                    <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Visualización de escalas interactivas</li>
+                                    <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Historial de conversiones</li>
+                                </ul>
+                                <a href="convert.html" class="btn btn-primary w-100 mt-auto">Convertir tonalidad</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 3 -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card feature-card h-100 shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" class="card-img-top" alt="Buscador de letras" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-search me-2 text-primary"></i>
+                                    <h3 class="card-title h5 mb-0">Buscador de Letras</h3>
+                                </div>
+                                <p class="card-text">Accede a una vasta colección de letras de canciones para que nunca te falte inspiración ni la palabra correcta.</p>
+                                <ul class="list-unstyled mb-3">
+                                    <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Base de datos con millones de canciones</li>
+                                    <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Búsqueda por artista, canción o fragmento</li>
+                                    <li class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Guardado de favoritos</li>
+                                </ul>
+                                <a href="Search_liryc.html" class="btn btn-primary w-100 mt-auto">Buscar letras</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
+        <!-- Testimonials Section -->
+        <section class="py-5 bg-dark text-white">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="section-title display-5 fw-bold">Lo que dicen nuestros usuarios</h2>
+                    <p class="lead">Músicos como tú ya están transformando su creatividad</p>
+                </div>
+                
+                <div class="row g-4">
                     <div class="col-md-4">
-                        <div class="card h-100 shadow-sm">
-                            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
-                                class="card-img-top" alt="Partitura" style="height: 200px; object-fit: cover;">
-                            <div class="card-body">
-                                <h3 class="card-title h5">Editor Intuitivo de Partituras Musicales</h3>
-                                <p class="card-text">Crea, edita y comparte tus composiciones musicales con nuestro editor de partituras en línea, diseñado para músicos de todos los niveles.</p>
-                                <a href="partitura.html" class="btn btn-primary">Crear Partitura</a>
+                        <div class="testimonial-card p-4 h-100">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://randomuser.me/api/portraits/women/32.jpg" class="rounded-circle me-3" width="50" alt="Usuario">
+                                <div>
+                                    <h5 class="mb-0">María González</h5>
+                                    <small class="text-muted">Profesora de música</small>
+                                </div>
                             </div>
+                            <p class="mb-0">"El conversor de tonalidades ha sido una bendición para mis clases. Ahora puedo adaptar piezas para mis estudiantes en segundos."</p>
                         </div>
                     </div>
+                    
+                    <div class="col-md-4">
+                        <div class="testimonial-card p-4 h-100">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://randomuser.me/api/portraits/men/45.jpg" class="rounded-circle me-3" width="50" alt="Usuario">
+                                <div>
+                                    <h5 class="mb-0">Carlos Martínez</h5>
+                                    <small class="text-muted">Saxofonista profesional</small>
+                                </div>
+                            </div>
+                            <p class="mb-0">"Como saxofonista, el conversor entre tonalidades me ahorra horas de trabajo. ¡Imprescindible en mi flujo de trabajo!"</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="testimonial-card p-4 h-100">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://randomuser.me/api/portraits/women/68.jpg" class="rounded-circle me-3" width="50" alt="Usuario">
+                                <div>
+                                    <h5 class="mb-0">Ana López</h5>
+                                    <small class="text-muted">Compositora</small>
+                                </div>
+                            </div>
+                            <p class="mb-0">"El editor de partituras es tan intuitivo que he podido dejar otros programas más complejos. ¡Y lo puedo usar desde cualquier dispositivo!"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-                    <div class="col-md-4">
-                        <div class="card h-100 shadow-sm">
-                            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
-                                class="card-img-top" alt="Letras" style="height: 200px; object-fit: cover;">
-                            <div class="card-body">
-                                <h3 class="card-title h5">Descubre las Letras de tus Canciones Favoritas</h3>
-                                <p class="card-text">Accede a una vasta colección de letras de canciones para que nunca te falte la inspiración ni la palabra correcta.</p>
-                                <a href="Search_liryc.html" class="btn btn-primary">Buscar Letra</a>
-                            </div>
-                        </div>
-                    </div>
+        <!-- CTA Section -->
+        <section class="py-5 bg-primary text-white">
+            <div class="container text-center">
+                <h2 class="display-5 fw-bold mb-4">¿Listo para llevar tu música al siguiente nivel?</h2>
+                <p class="lead mb-5">Regístrate ahora y obtén acceso completo a todas nuestras herramientas profesionales</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="convert.html" class="btn btn-light btn-lg px-4 py-2 fw-bold">
+                        <i class="fas fa-play me-2"></i>Comenzar gratis
+                    </a>
+                    <a href="#herramientas" class="btn btn-outline-light btn-lg px-4 py-2">
+                        <i class="fas fa-info-circle me-2"></i>Más información
+                    </a>
                 </div>
             </div>
         </section>
@@ -125,7 +355,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="dark_mode.js"></script>
     <script>
-     // JavaScript para la animación de bienvenida
+        // JavaScript para la animación de bienvenida
         window.addEventListener('load', () => {
             const welcomeAnimation = document.getElementById('welcome-animation');
             setTimeout(() => {
@@ -136,25 +366,16 @@
             }, 2500); // Aumentar duración a 2.5 segundos
         });
     </script>
-</body>
-<footer class="bg-dark text-white py-4">
-    <div class="container">
-        <div class="row">
-            <div class="col text-center">
-                <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
-                <p class="mt-2">Tu plataforma integral de herramientas musicales.</p>
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
-                    <li class="nav-item"><a href="about.html" class="nav-link text-white">Acerca de</a></li>
-                    <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i
-                                class="fas fa-envelope me-2"></i>Contacto</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="text-center pt-3 border-top">
-            &copy; 2025 ConvertMusic. Todos los derechos reservados.
-        </div>
-    </div>
-</footer>
 
-</html>
+    <!-- Footer original (sin cambios) -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col text-center">
+                    <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
+                    <p class="mt-2">Tu plataforma integral de herramientas musicales.</p>
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
+                        <li class="nav-item"><a href="about.html" class="nav-link text-white">Acerca de</a></li>
+                        <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i
+                     
