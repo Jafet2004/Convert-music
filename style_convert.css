@@ -4,6 +4,7 @@
     --accent-color: #4fc3f7;
     --light-color: #f8f9fa;
     --dark-color: #343a40;
+    --transition-speed: 0.3s;
 }
 
 * {
@@ -20,33 +21,82 @@ body {
     padding: 0;
 }
 
-
-
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(79, 195, 247, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(79, 195, 247, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(79, 195, 247, 0); }
+}
 
-
-
-/* Estilos específicos para la página de conversión */
-.converter-container {
+/* Estilo común para todos los contenedores con barra de carga */
+.converter-container,
+.scale-container,
+.sax-container {
     max-width: 600px;
     margin: 2rem auto;
     padding: 2rem;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-out forwards;
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.converter-container h1 {
+/* Barra de carga superior para todos los contenedores */
+.converter-container::before,
+.scale-container::before,
+.sax-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+}
+
+.converter-container:hover,
+.scale-container:hover,
+.sax-container:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos comunes para los títulos dentro de los contenedores */
+.converter-container h1, .converter-container h2,
+.scale-container h1, .scale-container h2,
+.sax-container h1, .sax-container h2 {
     text-align: center;
     color: var(--secondary-color);
     margin-bottom: 1.5rem;
     font-size: 2rem;
+    position: relative;
+}
+
+/* Subrayado decorativo para títulos */
+.converter-container h1::after, .converter-container h2::after,
+.scale-container h1::after, .scale-container h2::after,
+.sax-container h1::after, .sax-container h2::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: var(--accent-color);
+    margin: 0.5rem auto 0;
+    border-radius: 3px;
 }
 
 label {
@@ -54,30 +104,73 @@ label {
     margin: 1.5rem 0 0.5rem;
     color: var(--primary-color);
     font-weight: 500;
+    transition: color var(--transition-speed) ease;
+}
+
+/* Selects mejorados */
+.select-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.select-wrapper::after {
+    content: '\f078';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+    pointer-events: none;
+    transition: all var(--transition-speed) ease;
 }
 
 select {
     width: 100%;
-    padding: 0.8rem;
+    padding: 0.8rem 1rem;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 1rem;
-    background-color: var(--light-color);
-    transition: border 0.3s ease;
+    background-color: white;
+    transition: all var(--transition-speed) ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 select:focus {
     outline: none;
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.2);
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
+    padding-left: 1.2rem;
 }
 
+select:hover {
+    border-color: var(--primary-color);
+}
+
+select:focus + .select-wrapper::after {
+    color: var(--accent-color);
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Resultados con animación */
 .result {
     margin-top: 2rem;
     padding: 1.5rem;
     background-color: #f8f9fa;
-    border-radius: 4px;
+    border-radius: 6px;
     border-left: 4px solid var(--accent-color);
+    animation: fadeIn 0.6s ease-out;
+    transition: all var(--transition-speed) ease;
+}
+
+.result:hover {
+    transform: translateX(3px);
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
 }
 
 .result p {
@@ -95,68 +188,37 @@ select:focus {
     color: var(--secondary-color);
 }
 
-/* Footer */
-footer {
-    background-color: var(--dark-color);
-    color: white;
-    padding: 2rem 0;
-    text-align: center;
-    margin-top: 2rem;
+/* Botones con animación */
+.btn {
+    transition: all var(--transition-speed) ease;
+    transform: translateY(0);
 }
 
-.footer-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.footer-logo {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+.btn:active {
+    transform: translateY(0);
 }
 
-.footer-logo span {
-    color: var(--accent-color);
-}
-
-.footer-links {
-    display: flex;
-    margin-bottom: 1.5rem;
-}
-
-.footer-links a {
-    color: white;
-    margin: 0 1rem;
-    text-decoration: none;
-}
-
-.footer-links a:hover {
-    color: var(--accent-color);
-}
-
-.copyright {
-    font-size: 0.9rem;
-    color: #aaa;
+.btn-outline-primary:hover {
+    animation: pulse 1s;
 }
 
 /* Estilos responsivos */
 @media (max-width: 768px) {
-    
-    .converter-container {
+    .converter-container,
+    .scale-container,
+    .sax-container {
         padding: 1.5rem;
         margin: 1rem auto;
     }
     
-    .converter-container h1 {
+    .converter-container h1,
+    .scale-container h1,
+    .sax-container h1 {
         font-size: 1.8rem;
     }
-    
-    .footer-links {
-        flex-direction: column;
-    }
-    
-    .footer-links a {
-        margin: 0.5rem 0;
-    }
 }
-

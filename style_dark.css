@@ -28,7 +28,9 @@ header.scrolled {
 
 /* Elementos principales */
 .dark-mode .card,
-.dark-mode .converter-container,
+.dark-mode .converter-container, 
+.dark-mode .scale-container, 
+.dark-mode .sax-container,
 .dark-mode .search-container,
 .dark-mode .lyrics-container,
 .dark-mode .result,
@@ -43,7 +45,7 @@ header.scrolled {
 
 /* Sombras */
 .dark-mode .card,
-.dark-mode .converter-container,
+.dark-mode .converter-container, .scale-container, .sax-container,
 .dark-mode .search-container,
 .dark-mode .lyrics-container,
 .dark-mode .result {

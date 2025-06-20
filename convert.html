@@ -68,7 +68,8 @@
         </div>
     </header>
 
-    <div class="container">
+    <div class="container sax-container">
+        <h2>Convertidor para Sax</h2>
         <label for="saxophone">Selecciona el tipo de saxofón:</label>
         <select id="saxophone">
             <option value="seleccione">Seleccione</option>
@@ -101,8 +102,8 @@
         </div>
     </div>
 
-    <div class="container">
-        <label for="escala">Buscador de escalas</label>
+    <div class="container scale-container">
+        <h2><label for="escala">Buscador de escalas</label></h2>
         <select id="escala">
             <option value="seleccione">Seleccione</option>
             <option value="C">C</option>
@@ -153,16 +154,16 @@
         <label class="mb-2">Transponer:</label>
         <div class="btn-group" role="group">
             <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-1">
-                <i class="fas fa-arrow-down"></i> -1/2 T
+                <i class="fas fa-arrow-down"></i> 1/2 T
             </button>
             <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="1">
-                <i class="fas fa-arrow-up"></i> +1/2 T
+                <i class="fas fa-arrow-up"></i> 1/2 T
             </button>
             <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-2">
-                <i class="fas fa-angle-double-down"></i> -1 T
+                <i class="fas fa-angle-double-down"></i> 1 T
             </button>
             <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="2">
-                <i class="fas fa-angle-double-up"></i> +1 T
+                <i class="fas fa-angle-double-up"></i> 1 T
             </button>
             <button type="button" class="btn btn-outline-danger" id="reset-btn">
                 <i class="fas fa-redo"></i> Reiniciar
@@ -192,12 +193,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="script.js"></script>
-<footer class="bg-dark text-white py-4 my-5">
+
+<footer class="bg-dark text-white py-4">
     <div class="container">
         <div class="row">
-            <div class="col">
+            <div class="col text-center">
                 <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
-                <p class="mt-2">Herramientas musicales para músicos y adoradores.</p>
+                <p class="mt-2">Tu plataforma integral de herramientas musicales.</p>
                 <ul class="nav flex-column">
                     <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
                     <li class="nav-item"><a href="#" class="nav-link text-white">Acerca de</a></li>
@@ -211,5 +213,4 @@
         </div>
     </div>
 </footer>
-
 </html>
