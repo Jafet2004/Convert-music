@@ -41,6 +41,38 @@
             padding: 0 1.5rem;
         }
 
+        /* Flecha de regreso */
+        .back-arrow {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            z-index: 10;
+        }
+
+        .back-arrow:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateX(-3px);
+        }
+
+        .back-arrow::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            border-left: 3px solid white;
+            border-bottom: 3px solid white;
+            transform: rotate(45deg);
+            margin-right: 3px;
+        }
+
         /* Header */
         .about-header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
@@ -288,6 +320,13 @@
             .values-grid {
                 grid-template-columns: 1fr;
             }
+
+            .back-arrow {
+                top: 1rem;
+                left: 1rem;
+                width: 35px;
+                height: 35px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -307,11 +346,24 @@
                 width: 150px;
                 height: 150px;
             }
+
+            .back-arrow {
+                width: 30px;
+                height: 30px;
+            }
+
+            .back-arrow::before {
+                width: 10px;
+                height: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <header class="about-header">
+        <!-- Flecha de regreso -->
+        <a href="javascript:history.back()" class="back-arrow" aria-label="Volver atrás"></a>
+        
         <div class="container">
             <h1>Acerca de ConvertMusic</h1>
             <p>La plataforma definitiva para músicos creada con pasión y conocimiento técnico</p>
@@ -340,7 +392,7 @@
                 <h3>Jafet Aguilar</h3>
                 <p class="creator-title">Director de Alabanza, Pianista e Ingeniero de Sistemas</p>
                 <div class="creator-bio">
-                    <p>Con más de 15 años de experiencia en música y tecnología, Jafet ha combinado sus dos pasiones para crear ConvertMusic. Como director de alabanza, entendió las necesidades prácticas de los músicos, y como ingeniero de sistemas, desarrolló las soluciones técnicas.</p>
+                    <p>Con más de 8 años de experiencia en música y tecnología, Jafet ha combinado sus dos pasiones para crear ConvertMusic. Como director de alabanza, entendió las necesidades prácticas de los músicos, y como ingeniero de sistemas, desarrolló las soluciones técnicas.</p>
                     <p>Cada función en ConvertMusic ha sido personalmente diseñada e implementada por Jafet, asegurando que cumpla con los más altos estándares tanto musicales como tecnológicos.</p>
                 </div>
             </div>
