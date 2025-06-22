@@ -1,44 +1,3 @@
-// Detectar orientación en móviles
-function checkOrientation() {
-    if (window.innerWidth < 768) { // Solo para móviles
-        const isPortrait = window.matchMedia("(orientation: portrait)").matches;
-        if (isPortrait) {
-            document.getElementById('orientation-message').style.display = 'flex';
-            return false;
-        } else {
-            document.getElementById('orientation-message').style.display = 'none';
-            return true;
-        }
-    }
-    return true;
-}
-
-// Verificar orientación al cargar y al cambiar tamaño
-window.addEventListener('load', function() {
-    checkOrientation();
-    
-    // Deshabilitar botones si está en vertical en móvil
-    if (!checkOrientation()) {
-        document.getElementById('drawScore').disabled = true;
-        document.getElementById('previewScore').disabled = true;
-    }
-});
-
-window.addEventListener('resize', function() {
-    const wasPortrait = document.getElementById('orientation-message').style.display === 'flex';
-    const nowValid = checkOrientation();
-    
-    if (wasPortrait && nowValid) {
-        // Se giró a horizontal, habilitar funciones
-        document.getElementById('drawScore').disabled = false;
-        document.getElementById('previewScore').disabled = false;
-    } else if (!wasPortrait && !nowValid) {
-        // Se giró a vertical, deshabilitar funciones
-        document.getElementById('drawScore').disabled = true;
-        document.getElementById('previewScore').disabled = true;
-    }
-});
-
 document.addEventListener('DOMContentLoaded', function() {
     const VF = Vex.Flow;
     const notes = [];
@@ -65,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const noteCountSpan = document.getElementById('noteCount');
     const fullscreenModal = new bootstrap.Modal(document.getElementById('fullscreenModal'));
     
-    // Mapeo de armaduras a alteraciones (completo y consistente)
+    // Mapeo de armaduras a alteraciones
     const keySignatures = {
         'C': { key: 'C', acc: null, type: '#' },
         'G': { key: 'G', acc: 'f#', type: '#' },
@@ -256,11 +215,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Dibujar partitura (versión mejorada)
     function drawScore(container, isFullscreen = false) {
         try {
-            if (window.innerWidth < 768 && !checkOrientation()) {
-                showMessage('Gira tu dispositivo a horizontal para ver la partitura', 'warning');
-                return false;
-            }
-            
             container.innerHTML = '';
             
             const clef = clefSelect.value || "treble";
@@ -292,22 +246,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
                 
-                const staveNote = new VF.StaveNote({
+                return new VF.StaveNote({
                     keys: [note.key],
                     duration: note.duration,
                     clef: clef,
                     auto_stem: true
                 });
-                
-                // Aplicar alteraciones según la armadura
-                if (keyConfig.acc && !note.duration.endsWith('r')) {
-                    const notePitch = note.key.split('/')[0];
-                    if (keyConfig.acc.includes(notePitch)) {
-                        staveNote.addAccidental(0, new VF.Accidental(keyConfig.type === '#' ? '#' : 'b'));
-                    }
-                }
-                
-                return staveNote;
             });
 
             if (totalBeats < totalBeatsNeeded) {
@@ -508,11 +452,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Descargar PDF
     async function downloadPdf(container) {
-        if (window.innerWidth < 768 && !checkOrientation()) {
-            showMessage('Gira tu dispositivo a horizontal para generar el PDF', 'warning');
-            return;
-        }
-        
         if (!container.hasChildNodes() || container.querySelector('svg') === null) {
             showMessage('Primero debes generar la partitura', 'danger');
             return;
