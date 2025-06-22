@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="style_dark.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style_partit.css">
 </head>
 
 <body>
@@ -51,110 +52,187 @@
     </header>
 
     <main class="container py-5">
-        <section id="controls" class="card p-4 mb-4">
-            <h2>Crear Partitura <svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" fill="currentColor"
-                    class="bi bi-music-note-list" viewBox="0 0 16 16">
-                    <path d="M12 13c0 1.105-1.12 2-2.5 2S7 14.105 7 13s1.12-2 2.5-2 2.5.895 2.5 2" />
-                    <path fill-rule="evenodd" d="M12 3v10h-1V3z" />
-                    <path d="M11 2.82a1 1 0 0 1 .804-.98l3-.6A1 1 0 0 1 16 2.22V4l-5 1z" />
-                    <path fill-rule="evenodd"
-                        d="M0 11.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m0-4A.5.5 0 0 1 .5 7H8a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m0-4A.5.5 0 0 1 .5 3H8a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5" />
-                </svg></h2>
-            <div class="mb-3">
-                <label for="name" class="form-label">Nombre de partitura:</label>
-                <input type="text" id="name" class="form-control" placeholder="Mi melodía">
+        <div class="row">
+            <div class="col-lg-4">
+                <section id="controls" class="card p-4 mb-4">
+                    <h2 class="mb-4"><i class="fas fa-sliders-h me-2"></i>Configuración</h2>
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre de partitura:</label>
+                        <input type="text" id="name" class="form-control" placeholder="Mi melodía">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="clef" class="form-label">Clave:</label>
+                            <select id="clef" class="form-select">
+                                <option value="treble">Clave de Sol</option>
+                                <option value="bass">Clave de Fa</option>
+                                <option value="alto">Clave de Do</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="timeSignature" class="form-label">Compás:</label>
+                            <select id="timeSignature" class="form-select">
+                                <option value="4/4">4/4 (Común)</option>
+                                <option value="3/4">3/4 (Vals)</option>
+                                <option value="2/4">2/4 (Marcha)</option>
+                                <option value="6/8">6/8 (Compuesto)</option>
+                                <option value="5/4">5/4 (Irregular)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="keySignature" class="form-label">Armadura:</label>
+                        <select id="keySignature" class="form-select">
+                            <option value="C">Do Mayor / La menor</option>
+                            <option value="G">Sol Mayor / Mi menor</option>
+                            <option value="D">Re Mayor / Si menor</option>
+                            <option value="A">La Mayor / Fa# menor</option>
+                            <option value="E">Mi Mayor / Do# menor</option>
+                            <option value="B">Si Mayor / Sol# menor</option>
+                            <option value="F#">Fa# Mayor / Re# menor</option>
+                            <option value="C#">Do# Mayor / La# menor</option>
+                            <option value="F">Fa Mayor / Re menor</option>
+                            <option value="Bb">Sib Mayor / Sol menor</option>
+                            <option value="Eb">Mib Mayor / Do menor</option>
+                            <option value="Ab">Lab Mayor / Fa menor</option>
+                            <option value="Db">Reb Mayor / Sib menor</option>
+                            <option value="Gb">Solb Mayor / Mib menor</option>
+                            <option value="Cb">Dob Mayor / Lab menor</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="note" class="form-label">Nota:</label>
+                        <select id="note" class="form-select">
+                            <option value="seleccione">Seleccione una nota</option>
+                            <option value="c/4">Do</option>
+                            <option value="d/4">Re</option>
+                            <option value="e/4">Mi</option>
+                            <option value="f/4">Fa</option>
+                            <option value="g/4">Sol</option>
+                            <option value="a/4">La</option>
+                            <option value="b/4">Si</option>
+                            <option value="c/5">Do (8va)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="duration" class="form-label">Duración:</label>
+                        <select id="duration" class="form-select">
+                            <option value="">Seleccione duración</option>
+                            <option value="w">Redonda (4 t)</option>
+                            <option value="h">Blanca (2 t)</option>
+                            <option value="q">Negra (1 t)</option>
+                            <option value="8">Corchea (1/2 t)</option>
+                            <option value="16">Semicorchea (1/4 t)</option>
+                            <option value="wr">Silencio de redonda</option>
+                            <option value="hr">Silencio de blanca</option>
+                            <option value="qr">Silencio de negra</option>
+                            <option value="8r">Silencio de corchea</option>
+                            <option value="16r">Silencio de semicorchea</option>
+                        </select>
+                    </div>
+
+                    <div class="button-group d-flex flex-wrap gap-2 mb-4">
+                        <button id="addNote" class="btn btn-primary flex-grow-1">
+                            <i class="fas fa-plus me-1"></i> <span class="d-none d-sm-inline">Agregar Nota</span>
+                        </button>
+                        <button id="clearNote" class="btn btn-outline-secondary flex-grow-1">
+                            <i class="fas fa-undo me-1"></i> <span class="d-none d-sm-inline">Deshacer</span>
+                        </button>
+                        <button id="clearAll" class="btn btn-outline-danger flex-grow-1">
+                            <i class="fas fa-trash-alt me-1"></i> <span class="d-none d-sm-inline">Limpiar Todo</span>
+                        </button>
+                    </div>
+
+                    <div class="notes-preview">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h3 class="mb-0"><i class="fas fa-list-ul me-2"></i>Notas agregadas</h3>
+                            <span class="badge bg-primary rounded-pill" id="noteCount">0</span>
+                        </div>
+                        <div id="noteList" class="p-3 bg-light border rounded" style="min-height: 150px; max-height: 200px; overflow-y: auto;">
+                            No hay elementos agregados aún
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="clef" class="form-label">Clave:</label>
-                    <select id="clef" class="form-select">
-                        <option value="treble">Sol</option>
-                        <option value="bass">Fa</option>
-                        <option value="alto">Do</option>
-                    </select>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="timeSignature" class="form-label">Compás:</label>
-                    <select id="timeSignature" class="form-select">
-                        <option value="4/4">4/4 (Común)</option>
-                        <option value="3/4">3/4 (Vals)</option>
-                        <option value="2/4">2/4 (Marcha)</option>
-                        <option value="6/8">6/8 (Compuesto)</option>
-                        <option value="5/4">5/4 (Irregular)</option>
-                    </select>
-                </div>
+            <div class="col-lg-8">
+                <section id="preview-section" class="card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="mb-0"><i class="fas fa-music me-2"></i>Vista previa</h2>
+                        <div class="button-group d-flex flex-wrap gap-2">
+                            <button id="drawScore" class="btn btn-success flex-grow-1">
+                                <i class="fas fa-eye me-1"></i> <span class="d-none d-sm-inline">Ver Partitura</span>
+                            </button>
+                            <button id="previewScore" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-expand me-1"></i> <span class="d-none d-sm-inline">Pantalla Completa</span>
+                            </button>
+                            <button id="downloadPdf" class="btn btn-secondary flex-grow-1" disabled>
+                                <i class="fas fa-download me-1"></i> <span class="d-none d-sm-inline">Descargar</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="score-content" class="w-100 overflow-auto border rounded bg-white p-3" style="min-height: 300px;">
+                        <div class="d-flex justify-content-center align-items-center h-100 text-muted">
+                            <div class="text-center">
+                                <i class="fas fa-music fa-3x mb-3"></i>
+                                <p>Agrega notas y haz clic en "Ver Partitura"</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
-
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="note" class="form-label">Nota:</label>
-                    <select id="note" class="form-select">
-                        <option value="seleccione">Seleccione una nota</option>
-                        <option value="c/4">Do</option>
-                        <option value="c#/4">Do#</option>
-                        <option value="d/4">Re</option>
-                        <option value="d#/4">Re#</option>
-                        <option value="e/4">Mi</option>
-                        <option value="f/4">Fa</option>
-                        <option value="f#/4">Fa#</option>
-                        <option value="g/4">Sol</option>
-                        <option value="g#/4">Sol#</option>
-                        <option value="a/4">La</option>
-                        <option value="bb/4">Sib</option>
-                        <option value="b/4">Si</option>
-                        <option value="c/5">Do</option>
-                    </select>
-                </div>
-
-                <div class="col-md-4 mb-3">
-                    <label for="duration" class="form-label">Duración:</label>
-                    <select id="duration" class="form-select">
-                        <option value="">Seleccione duración</option>
-                        <option value="w">Redonda (4 t)</option>
-                        <option value="h">Blanca (2 t)</option>
-                        <option value="q">Negra (1 t)</option>
-                        <option value="8">Corchea (1/2 t)</option>
-                        <option value="16">Semicorchea (1/4 t)</option>
-                        <option value="wr">Silencio de redonda</option>
-                        <option value="hr">Silencio de blanca</option>
-                        <option value="qr">Silencio de negra</option>
-                        <option value="8r">Silencio de corchea</option>
-                        <option value="16r">Silencio de semicorchea</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="button-group d-flex flex-wrap gap-2">
-                <button id="addNote" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Agregar Nota
-                </button>
-                <button id="drawScore" class="btn btn-success">
-                    <i class="fas fa-music"></i> Dibujar Partitura
-                </button>
-                <button id="clearScore" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Limpiar Todo
-                </button>
-                <button id="downloadPdf" class="btn btn-secondary" disabled>
-                    <i class="fas fa-download"></i> Descargar PDF
-                </button>
-            </div>
-
-            <div class="notes-preview mt-4">
-                <h3>Notas agregadas:</h3>
-                <div id="noteList" class="p-3 bg-light border rounded">No hay elementos agregados aún</div>
-            </div>
-        </section>
-
-        <section id="score" class="card p-4">
-            <h2>Vista previa</h2>
-            <div id="score-content" class="w-100 overflow-auto" style="min-height: 200px; height: 200px;"></div>
-        </section>
+        </div>
 
         <div id="message" class="alert alert-info mt-4">
-            <i class="fas fa-info-circle"></i> Selecciona tus notas y haz clic en "Dibujar Partitura"
+            <i class="fas fa-info-circle"></i> Comienza seleccionando las notas para tu partitura
+        </div>
+
+        <!-- Modal para vista de pantalla completa -->
+        <div class="modal fade" id="fullscreenModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="fullscreenModalTitle">Partitura Completa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body d-flex flex-column">
+                        <div id="fullscreen-score" class="flex-grow-1 overflow-auto p-3"></div>
+                        <div class="mt-3 text-center">
+                            <button id="downloadFromModal" class="btn btn-primary">
+                                <i class="fas fa-download me-2"></i>Descargar PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
+
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
+                    <p class="mt-2">Herramientas musicales para músicos y adoradores.</p>
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
+                        <li class="nav-item"><a href="about.html" class="nav-link text-white">Acerca de</a></li>
+                        <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i
+                                    class="fas fa-envelope me-2"></i>Contacto</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center pt-3 border-top">
+                &copy; 2025 ConvertMusic. Todos los derechos reservados.
+            </div>
+        </div>
+    </footer>
 
     <script src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -163,24 +241,4 @@
     <script src="scrip_part.js"></script>
     <script src="dark_mode.js"></script>
 </body>
-<footer class="bg-dark text-white py-4">
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
-                <p class="mt-2">Herramientas musicales para músicos y adoradores.</p>
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
-                    <li class="nav-item"><a href="about.html" class="nav-link text-white">Acerca de</a></li>
-                    <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i
-                                class="fas fa-envelope me-2"></i>Contacto</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="text-center pt-3 border-top">
-            &copy; 2025 ConvertMusic. Todos los derechos reservados.
-        </div>
-    </div>
-</footer>
-
 </html>
