@@ -40,7 +40,6 @@
                     </ul>
                 </nav>
 
-                <!-- Botón de Modo Oscuro/Claro mejorado -->
                 <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
                     <i class="fas fa-moon" id="darkModeIcon"></i>
                     <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
@@ -81,40 +80,38 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="keySignature" class="form-label">Armadura:</label>
-                        <select id="keySignature" class="form-select">
-                            <option value="C">Do Mayor / La menor</option>
-                            <option value="G">Sol Mayor / Mi menor</option>
-                            <option value="D">Re Mayor / Si menor</option>
-                            <option value="A">La Mayor / Fa# menor</option>
-                            <option value="E">Mi Mayor / Do# menor</option>
-                            <option value="B">Si Mayor / Sol# menor</option>
-                            <option value="F#">Fa# Mayor / Re# menor</option>
-                            <option value="C#">Do# Mayor / La# menor</option>
-                            <option value="F">Fa Mayor / Re menor</option>
-                            <option value="Bb">Sib Mayor / Sol menor</option>
-                            <option value="Eb">Mib Mayor / Do menor</option>
-                            <option value="Ab">Lab Mayor / Fa menor</option>
-                            <option value="Db">Reb Mayor / Sib menor</option>
-                            <option value="Gb">Solb Mayor / Mib menor</option>
-                            <option value="Cb">Dob Mayor / Lab menor</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="keySignature" class="form-label">Armadura:</label>
+                            <select id="keySignature" class="form-select">
+                                <option value="C">Do Mayor / La menor</option>
+                                <option value="G">Sol Mayor / Mi menor</option>
+                                <option value="D">Re Mayor / Si menor</option>
+                                <option value="A">La Mayor / Fa# menor</option>
+                                <option value="E">Mi Mayor / Do# menor</option>
+                                <option value="B">Si Mayor / Sol# menor</option>
+                                <option value="F#">Fa# Mayor / Re# menor</option>
+                                <option value="C#">Do# Mayor / La# menor</option>
+                                <option value="F">Fa Mayor / Re menor</option>
+                                <option value="Bb">Sib Mayor / Sol menor</option>
+                                <option value="Eb">Mib Mayor / Do menor</option>
+                                <option value="Ab">Lab Mayor / Fa menor</option>
+                                <option value="Db">Reb Mayor / Sib menor</option>
+                                <option value="Gb">Solb Mayor / Mib menor</option>
+                                <option value="Cb">Dob Mayor / Lab menor</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="tempo" class="form-label">Tempo (BPM):</label>
+                            <input type="number" id="tempo" class="form-control" value="120" min="40" max="240">
+                        </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="note" class="form-label">Nota:</label>
                         <select id="note" class="form-select">
                             <option value="seleccione">Seleccione una nota</option>
-                            <option value="c/4">Do</option>
-                            <option value="d/4">Re</option>
-                            <option value="e/4">Mi</option>
-                            <option value="f/4">Fa</option>
-                            <option value="g/4">Sol</option>
-                            <option value="a/4">La</option>
-                            <option value="b/4">Si</option>
-                            <option value="c/5">Do (8va)</option>
-                        </select>
+                            </select>
                     </div>
 
                     <div class="mb-3">
@@ -191,7 +188,6 @@
             <i class="fas fa-info-circle"></i> Comienza seleccionando las notas para tu partitura
         </div>
 
-        <!-- Modal para vista de pantalla completa -->
         <div class="modal fade" id="fullscreenModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-fullscreen">
                 <div class="modal-content">
@@ -200,7 +196,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body d-flex flex-column">
-                        <div id="fullscreen-score" class="flex-grow-1 overflow-auto p-3"></div>
+                        <div id="fullscreen-score" class="flex-grow-1 overflow-auto p-3 bg-white"></div>
                         <div class="mt-3 text-center">
                             <button id="downloadFromModal" class="btn btn-primary">
                                 <i class="fas fa-download me-2"></i>Descargar PDF
@@ -213,29 +209,15 @@
     </main>
 
     <footer class="bg-dark text-white py-4">
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
-                    <p class="mt-2">Herramientas musicales para músicos y adoradores.</p>
-                    <ul class="nav flex-column">
-                        <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
-                        <li class="nav-item"><a href="about.html" class="nav-link text-white">Acerca de</a></li>
-                        <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i
-                                    class="fas fa-envelope me-2"></i>Contacto</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="text-center pt-3 border-top">
-                &copy; 2025 ConvertMusic. Todos los derechos reservados.
-            </div>
+        <div class="container text-center">
+            &copy; 2025 ConvertMusic. Todos los derechos reservados.
         </div>
     </footer>
 
     <script src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="scrip_part.js"></script>
     <script src="dark_mode.js"></script>
 </body>

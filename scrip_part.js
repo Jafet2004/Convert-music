@@ -1,15 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Variables globales
     const VF = Vex.Flow;
-    const notes = [];
-    let scoreName = "Partitura sin nombre";
-    
+    let notes = [];
+    let scoreName = "Mi melodía";
+
     // Elementos del DOM
     const nameInput = document.getElementById('name');
-    const noteSelect = document.getElementById('note');
-    const durationSelect = document.getElementById('duration');
     const clefSelect = document.getElementById('clef');
     const timeSignatureSelect = document.getElementById('timeSignature');
     const keySignatureSelect = document.getElementById('keySignature');
+    const tempoInput = document.getElementById('tempo');
+    const noteSelect = document.getElementById('note');
+    const durationSelect = document.getElementById('duration');
     const addNoteBtn = document.getElementById('addNote');
     const clearNoteBtn = document.getElementById('clearNote');
     const clearAllBtn = document.getElementById('clearAll');
@@ -17,508 +19,392 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewScoreBtn = document.getElementById('previewScore');
     const downloadPdfBtn = document.getElementById('downloadPdf');
     const downloadFromModalBtn = document.getElementById('downloadFromModal');
-    const noteListDiv = document.getElementById('noteList');
-    const scoreContentDiv = document.getElementById('score-content');
-    const fullscreenScoreDiv = document.getElementById('fullscreen-score');
+    const noteList = document.getElementById('noteList');
+    const noteCount = document.getElementById('noteCount');
+    const scoreContent = document.getElementById('score-content');
+    const fullscreenScore = document.getElementById('fullscreen-score');
     const messageDiv = document.getElementById('message');
-    const noteCountSpan = document.getElementById('noteCount');
     const fullscreenModal = new bootstrap.Modal(document.getElementById('fullscreenModal'));
-    
-    // Mapeo de armaduras a alteraciones
+
+    // Mapeo de armaduras
     const keySignatures = {
-        'C': { key: 'C', acc: null, type: '#' },
-        'G': { key: 'G', acc: 'f#', type: '#' },
-        'D': { key: 'D', acc: 'f#c#', type: '#' },
-        'A': { key: 'A', acc: 'f#c#g#', type: '#' },
-        'E': { key: 'E', acc: 'f#c#g#d#', type: '#' },
-        'B': { key: 'B', acc: 'f#c#g#d#a#', type: '#' },
-        'F#': { key: 'F#', acc: 'f#c#g#d#a#e#', type: '#' },
-        'C#': { key: 'C#', acc: 'f#c#g#d#a#e#b#', type: '#' },
-        'F': { key: 'F', acc: 'b', type: 'b' },
-        'Bb': { key: 'Bb', acc: 'bbeb', type: 'b' },
-        'Eb': { key: 'Eb', acc: 'bbebab', type: 'b' },
-        'Ab': { key: 'Ab', acc: 'bbebabdb', type: 'b' },
-        'Db': { key: 'Db', acc: 'bbebabdbgb', type: 'b' },
-        'Gb': { key: 'Gb', acc: 'bbebabdbgbcb', type: 'b' },
-        'Cb': { key: 'Cb', acc: 'bbebabdbgbcbfb', type: 'b' }
+        'C': { key: 'C' }, 'G': { key: 'G' }, 'D': { key: 'D' }, 'A': { key: 'A' },
+        'E': { key: 'E' }, 'B': { key: 'B' }, 'F#': { key: 'F#' }, 'C#': { key: 'C#' },
+        'F': { key: 'F' }, 'Bb': { key: 'Bb' }, 'Eb': { key: 'Eb' }, 'Ab': { key: 'Ab' },
+        'Db': { key: 'Db' }, 'Gb': { key: 'Gb' }, 'Cb': { key: 'Cb' }
     };
-    
-    // Función para mostrar mensajes
-    function showMessage(text, type = 'info') {
-        messageDiv.innerHTML = `<i class="fas fa-${type === 'info' ? 'info-circle' : type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${text}`;
-        messageDiv.className = `alert alert-${type} d-flex align-items-center`;
-        
-        if (type !== 'info') {
-            setTimeout(() => {
-                showMessage('Selecciona tus notas y haz clic en "Ver Partitura"', 'info');
-            }, 3000);
-        }
-    }
-    
-    // Función para limpiar completamente
-    function clearAll() {
-        if (notes.length === 0) {
-            showMessage('No hay notas para limpiar', 'info');
-            return;
-        }
-        
-        notes.length = 0;
+
+    // Inicialización
+    init();
+
+    function init() {
+        // Configurar event listeners
+        nameInput.addEventListener('change', updateScoreName);
+        clefSelect.addEventListener('change', () => updateNoteOptions(clefSelect.value));
+        addNoteBtn.addEventListener('click', addNote);
+        clearNoteBtn.addEventListener('click', clearLastNote);
+        clearAllBtn.addEventListener('click', clearAllNotes);
+        drawScoreBtn.addEventListener('click', drawScoreHandler);
+        previewScoreBtn.addEventListener('click', showFullscreenPreview);
+        downloadPdfBtn.addEventListener('click', () => downloadScore(scoreContent));
+        downloadFromModalBtn.addEventListener('click', () => downloadScore(fullscreenScore));
+
+        // Configuración inicial
+        updateScoreName();
+        updateNoteOptions(clefSelect.value);
         updateNoteList();
-        clearScorePreview();
-        showMessage('Todas las notas han sido eliminadas', 'success');
+        showMessage('Selecciona notas/silencios y haz clic en "Ver Partitura"', 'info');
     }
 
-    // Función para limpiar la vista previa
-    function clearScorePreview() {
-        scoreContentDiv.innerHTML = `
-            <div class="d-flex justify-content-center align-items-center h-100 text-muted">
-                <div class="text-center">
-                    <i class="fas fa-music fa-3x mb-3"></i>
-                    <p>Agrega notas y haz clic en "Ver Partitura"</p>
-                </div>
-            </div>
-        `;
-        downloadPdfBtn.disabled = true;
+    function updateNoteOptions(clef) {
+        noteSelect.innerHTML = '<option value="seleccione" selected>Seleccione una nota</option>';
+        const notesForClef = {
+            'treble': [
+                { value: 'c/4', name: 'Do4' }, { value: 'd/4', name: 'Re4' }, { value: 'e/4', name: 'Mi4' }, { value: 'f/4', name: 'Fa4' },
+                { value: 'g/4', name: 'Sol4' }, { value: 'a/4', name: 'La4' }, { value: 'b/4', name: 'Si4' },
+                { value: 'c/5', name: 'Do5' }, { value: 'd/5', name: 'Re5' }, { value: 'e/5', name: 'Mi5' }
+            ], 'bass': [
+                { value: 'c/2', name: 'Do2' }, { value: 'd/2', name: 'Re2' }, { value: 'e/2', name: 'Mi2' }, { value: 'f/2', name: 'Fa2' },
+                { value: 'g/2', name: 'Sol2' }, { value: 'a/2', name: 'La2' }, { value: 'b/2', name: 'Si2' },
+                { value: 'c/3', name: 'Do3' }, { value: 'd/3', name: 'Re3' }, { value: 'e/3', name: 'Mi3' }
+            ], 'alto': [
+                { value: 'f/3', name: 'Fa3' }, { value: 'g/3', name: 'Sol3' }, { value: 'a/3', name: 'La3' }, { value: 'b/3', name: 'Si3' },
+                { value: 'c/4', name: 'Do4 (central)' }, { value: 'd/4', name: 'Re4' }, { value: 'e/4', name: 'Mi4' },
+                { value: 'f/4', name: 'Fa4' }, { value: 'g/4', name: 'Sol4' }, { value: 'a/4', name: 'La4' }
+            ]
+        };
+        notesForClef[clef].forEach(note => {
+            const option = document.createElement('option');
+            option.value = note.value;
+            option.textContent = note.name;
+            noteSelect.appendChild(option);
+        });
     }
 
-    // Actualizar lista de notas
-    function updateNoteList() {
-        if (notes.length === 0) {
-            noteListDiv.textContent = 'No hay elementos agregados aún';
-            noteListDiv.className = 'p-3 bg-light border rounded empty';
-            noteCountSpan.textContent = '0';
-            downloadPdfBtn.disabled = true;
-            clearScorePreview();
+    function updateScoreName() {
+        scoreName = nameInput.value.trim() || "Mi melodía";
+    }
+
+    function showMessage(text, type = 'info') {
+        const icons = { 'info': 'info-circle', 'success': 'check-circle', 'warning': 'exclamation-circle', 'danger': 'exclamation-triangle' };
+        messageDiv.innerHTML = `<i class="fas fa-${icons[type]} me-2"></i>${text}`;
+        messageDiv.className = `alert alert-${type} d-flex align-items-center`;
+        if (type !== 'info') {
+            setTimeout(() => showMessage('Listo para agregar más elementos a tu partitura.', 'info'), 3000);
+        }
+    }
+
+    function addNote() {
+        const noteValue = noteSelect.value;
+        const durationValue = durationSelect.value;
+        if (!durationValue) {
+            showMessage("Debes seleccionar una duración", "danger");
             return;
         }
-        
-        noteListDiv.innerHTML = notes.map((note, index) => {
-            if (note.duration.endsWith('r')) {
-                const durationSymbol = getDurationSymbol(note.duration);
-                return `<div class="py-1 d-flex justify-content-between align-items-center">
-                    <span>${index + 1}. ${durationSymbol}</span>
-                    <button class="btn btn-sm btn-outline-danger remove-note" data-index="${index}">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>`;
-            } else {
-                const noteName = getNoteName(note.key);
-                const durationSymbol = getDurationSymbol(note.duration);
-                return `<div class="py-1 d-flex justify-content-between align-items-center">
-                    <span>${index + 1}. ${noteName} ${durationSymbol}</span>
-                    <button class="btn btn-sm btn-outline-danger remove-note" data-index="${index}">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>`;
-            }
-        }).join('');
-        
-        noteListDiv.className = 'p-3 bg-light border rounded';
-        noteCountSpan.textContent = notes.length;
-        downloadPdfBtn.disabled = false;
-        
-        // Agregar event listeners a los botones de eliminar
+        if (!durationValue.endsWith('r') && noteValue === "seleccione") {
+            showMessage("Para notas musicales debes seleccionar una nota", "danger");
+            return;
+        }
+        notes.push({ key: noteValue, duration: durationValue });
+        updateNoteList();
+        enableButtons();
+        noteSelect.value = 'seleccione';
+        durationSelect.value = '';
+        showMessage(`Elemento agregado: ${getNoteDescription(notes[notes.length-1])}`, "success");
+    }
+
+    function getNoteDescription(note) {
+        if (note.duration.endsWith('r')) return getDurationSymbol(note.duration);
+        const noteName = getNoteName(note.key);
+        const durationName = getDurationSymbol(note.duration);
+        return `${noteName} (${durationName})`;
+    }
+
+    function getNoteName(noteValue) {
+        const allOptions = document.querySelectorAll('#note option');
+        const option = Array.from(allOptions).find(opt => opt.value === noteValue);
+        return option ? option.textContent : noteValue;
+    }
+
+    function getDurationSymbol(duration) {
+        const option = Array.from(durationSelect.options).find(opt => opt.value === duration);
+        return option ? option.textContent : duration;
+    }
+
+    function clearLastNote() {
+        if (notes.length > 0) {
+            const removedNote = notes.pop();
+            updateNoteList();
+            if (notes.length === 0) disableButtons();
+            showMessage(`Elemento eliminado: ${getNoteDescription(removedNote)}`, "success");
+        } else {
+            showMessage("No hay notas para eliminar", "warning");
+        }
+    }
+
+    function clearAllNotes() {
+        if (notes.length > 0) {
+            notes = [];
+            updateNoteList();
+            disableButtons();
+            clearScorePreview();
+            showMessage("Todas las notas han sido eliminadas", "success");
+        } else {
+            showMessage("No hay notas para eliminar", "warning");
+        }
+    }
+
+    function updateNoteList() {
+        noteCount.textContent = notes.length;
+        if (notes.length === 0) {
+            noteList.innerHTML = "No hay elementos agregados aún";
+            noteList.className = 'p-3 bg-light border rounded empty';
+            return;
+        }
+        let html = '<div class="list-group">';
+        notes.forEach((note, index) => {
+            html += `<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <span>${index + 1}. ${getNoteDescription(note)}</span>
+                <button class="btn btn-sm btn-outline-danger remove-note" data-index="${index}"><i class="fas fa-times"></i></button>
+            </div>`;
+        });
+        html += '</div>';
+        noteList.innerHTML = html;
+        noteList.className = 'p-3 bg-light border rounded';
         document.querySelectorAll('.remove-note').forEach(btn => {
             btn.addEventListener('click', function() {
                 const index = parseInt(this.getAttribute('data-index'));
-                notes.splice(index, 1);
+                const removedNote = notes.splice(index, 1)[0];
                 updateNoteList();
-                showMessage('Nota eliminada', 'success');
+                showMessage(`Elemento eliminado: ${getNoteDescription(removedNote)}`, "success");
+                if (notes.length === 0) disableButtons();
             });
         });
     }
-    
-    // Obtener nombre de la nota
-    function getNoteName(noteValue) {
-        const noteMap = {
-            'c/4': 'Do', 'd/4': 'Re', 'e/4': 'Mi', 'f/4': 'Fa',
-            'g/4': 'Sol', 'a/4': 'La', 'b/4': 'Si', 'c/5': 'Do (8va)'
-        };
-        return noteMap[noteValue] || noteValue;
+
+    function enableButtons() {
+        drawScoreBtn.disabled = false;
+        previewScoreBtn.disabled = false;
+        downloadPdfBtn.disabled = false;
     }
-    
-    // Obtener símbolo de duración
-    function getDurationSymbol(duration) {
-        const durationMap = {
-            'q': 'Negra (♪)', '8': 'Corchea (♫)', '16': 'Semicorchea (♬)',
-            'h': 'Blanca (𝅗)', 'w': 'Redonda (𝅝)', 'qr': 'Silencio de negra (𝄽)',
-            '8r': 'Silencio de corchea (𝄾)', '16r': 'Silencio de semicorchea (𝄿)',
-            'hr': 'Silencio de blanca (𝄻)', 'wr': 'Silencio de redonda (𝄺)'
-        };
-        return durationMap[duration] || duration;
+
+    function disableButtons() {
+        drawScoreBtn.disabled = true;
+        previewScoreBtn.disabled = true;
+        downloadPdfBtn.disabled = true;
     }
-    
-    // Validar selección antes de agregar nota
-    function validateSelection() {
-        if (!durationSelect.value) {
-            showMessage('Debes seleccionar una duración', 'danger');
-            return false;
-        }
-        
-        if (!durationSelect.value.endsWith('r') && noteSelect.value === 'seleccione') {
-            showMessage('Para notas musicales debes seleccionar una nota', 'danger');
-            return false;
-        }
-        
-        return true;
+
+    function clearScorePreview() {
+        scoreContent.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100 text-muted"><div class="text-center">
+            <i class="fas fa-music fa-3x mb-3"></i><p>Agrega notas y haz clic en "Ver Partitura"</p>
+        </div></div>`;
     }
-    
-    // Agregar nota o silencio
-    addNoteBtn.addEventListener('click', function() {
-        if (!validateSelection()) return;
-        
-        const selectedNote = noteSelect.value;
-        const duration = durationSelect.value;
-        
-        if (duration.endsWith('r')) {
-            const durationName = getDurationSymbol(duration);
-            notes.push({
-                key: '',
-                duration: duration,
-                name: durationName
-            });
-            showMessage(`${durationName} agregado`, 'success');
-        } else {
-            const noteName = getNoteName(selectedNote);
-            const durationName = getDurationSymbol(duration);
-            notes.push({
-                key: selectedNote,
-                duration: duration,
-                name: noteName
-            });
-            showMessage(`Nota ${noteName} (${durationName}) agregada`, 'success');
-        }
-        
-        // Resetear selecciones
-        noteSelect.value = 'seleccione';
-        durationSelect.value = '';
-        
-        updateNoteList();
-        clearScorePreview();
-    });
-    
-    // Eliminar última nota
-    clearNoteBtn.addEventListener('click', function() {
+
+    function drawScoreHandler() {
         if (notes.length === 0) {
-            showMessage('No hay notas para eliminar', 'info');
+            showMessage('Debes agregar al menos una nota o silencio', 'danger');
             return;
         }
-        
-        const removedNote = notes.pop();
-        showMessage(`Nota "${removedNote.name}" eliminada`, 'success');
-        updateNoteList();
-    });
+        if (drawScore(scoreContent)) {
+            showMessage('Partitura generada correctamente', 'success');
+        }
+    }
 
-    // Limpiar todas las notas
-    clearAllBtn.addEventListener('click', clearAll);
-    
-    // Dibujar partitura (versión mejorada)
+    function createVexFlowNote(noteData) {
+        const clef = clefSelect.value;
+        let keys;
+        // La posición vertical de los silencios depende de la clave
+        if (noteData.duration.endsWith('r')) {
+            keys = [clef === 'bass' ? 'd/3' : 'b/4'];
+        } else {
+            keys = [noteData.key];
+        }
+        return new VF.StaveNote({ keys: keys, duration: noteData.duration, clef: clef, auto_stem: true });
+    }
+
+    function getDurationFromTicks(ticks) {
+        // VexFlow RESOLUTION es 960 por negra (quarter note)
+        const quarterTicks = VF.RESOLUTION / 4;
+        
+        if (ticks === quarterTicks) return 'qr';
+        if (ticks === quarterTicks / 2) return '8r';
+        if (ticks === quarterTicks / 4) return '16r';
+        if (ticks === quarterTicks * 2) return 'hr';
+        if (ticks === quarterTicks * 4) return 'wr';
+        
+        // Para valores no estándar, intentamos aproximar
+        if (ticks > quarterTicks * 2) return 'wr'; // Redondear a redonda
+        if (ticks > quarterTicks) return 'hr';     // Redondear a blanca
+        if (ticks > quarterTicks / 2) return 'qr'; // Redondear a negra
+        return '16r'; // Por defecto usar semicorchea
+    }
+
     function drawScore(container, isFullscreen = false) {
         try {
             container.innerHTML = '';
-            
-            const clef = clefSelect.value || "treble";
-            const timeSignature = timeSignatureSelect.value || "4/4";
-            const keySignature = keySignatureSelect.value || "C";
+            const clef = clefSelect.value;
+            const timeSignature = timeSignatureSelect.value;
+            const key = keySignatureSelect.value;
+            const tempo = tempoInput.value || 120;
+
             const [beatsPerMeasure, beatValue] = timeSignature.split('/').map(Number);
-            const keyConfig = keySignatures[keySignature];
-            
-            let totalBeats = 0;
-            notes.forEach(note => {
-                const dur = note.duration.replace('r', '');
-                let noteBeats = 
-                    dur === 'w' ? 4 :
-                    dur === 'h' ? 2 :
-                    dur === 'q' ? 1 :
-                    dur === '8' ? 0.5 :
-                    dur === '16' ? 0.25 : 1;
-                totalBeats += noteBeats;
-            });
+            const ticksPerMeasure = (4 / beatValue) * beatsPerMeasure * VF.RESOLUTION / 4;
 
-            const measures = Math.ceil(totalBeats / beatsPerMeasure);
-            const totalBeatsNeeded = measures * beatsPerMeasure;
-            
-            const staveNotes = notes.map(note => {
-                if (note.duration.endsWith('r')) {
-                    return new VF.GhostNote({
-                        duration: note.duration.replace('r', ''),
-                        align_center: true
-                    });
-                }
-                
-                return new VF.StaveNote({
-                    keys: [note.key],
-                    duration: note.duration,
-                    clef: clef,
-                    auto_stem: true
-                });
-            });
+            // 1. Convertir nuestras notas a notas de VexFlow
+            const vexNotes = notes.map(createVexFlowNote);
 
-            if (totalBeats < totalBeatsNeeded) {
-                const remainingBeats = totalBeatsNeeded - totalBeats;
-                let compensationDuration;
-                
-                if (remainingBeats >= 4) compensationDuration = 'wr';
-                else if (remainingBeats >= 2) compensationDuration = 'hr';
-                else if (remainingBeats >= 1) compensationDuration = 'qr';
-                else if (remainingBeats >= 0.5) compensationDuration = '8r';
-                else compensationDuration = '16r';
-                
-                staveNotes.push(new VF.GhostNote({
-                    duration: compensationDuration.replace('r', ''),
-                    align_center: true
-                }));
-            }
-
-            const measuresNotes = [];
-            let currentMeasureNotes = [];
-            let currentBeats = 0;
+            // 2. Dividir las notas en compases
+            const measures = [];
+            let currentMeasure = [];
+            let currentTicks = 0;
             
-            staveNotes.forEach(note => {
-                const dur = note.duration.replace('r', '');
-                let noteBeats = 
-                    dur === 'w' ? 4 :
-                    dur === 'h' ? 2 :
-                    dur === 'q' ? 1 :
-                    dur === '8' ? 0.5 :
-                    dur === '16' ? 0.25 : 1;
+            vexNotes.forEach(note => {
+                const noteTicks = note.getTicks().value();
                 
-                if (currentBeats + noteBeats > beatsPerMeasure) {
-                    const remainingBeats = beatsPerMeasure - currentBeats;
-                    if (remainingBeats > 0) {
-                        let restDuration;
-                        if (remainingBeats >= 1) restDuration = 'qr';
-                        else if (remainingBeats >= 0.5) restDuration = '8r';
-                        else restDuration = '16r';
-                        
-                        currentMeasureNotes.push(new VF.GhostNote({
-                            duration: restDuration.replace('r', ''),
-                            align_center: true
-                        }));
-                        currentBeats += remainingBeats;
+                // Si agregar esta nota excede el compás
+                if (currentTicks + noteTicks > ticksPerMeasure) {
+                    // Calcular cuánto falta para completar el compás
+                    const remainingTicks = ticksPerMeasure - currentTicks;
+                    
+                    // Si hay espacio restante, agregar un silencio
+                    if (remainingTicks > 0) {
+                        try {
+                            const restDuration = getDurationFromTicks(remainingTicks);
+                            currentMeasure.push(new VF.GhostNote({ duration: restDuration }));
+                            currentTicks += remainingTicks;
+                        } catch (e) {
+                            console.warn("No se pudo crear silencio para", remainingTicks, "ticks");
+                        }
                     }
                     
-                    measuresNotes.push(currentMeasureNotes);
-                    currentMeasureNotes = [];
-                    currentBeats = 0;
-                }
-                
-                currentMeasureNotes.push(note);
-                currentBeats += noteBeats;
-                
-                if (currentBeats >= beatsPerMeasure) {
-                    measuresNotes.push(currentMeasureNotes);
-                    currentMeasureNotes = [];
-                    currentBeats = 0;
-                }
-            });
-            
-            if (currentMeasureNotes.length > 0) {
-                measuresNotes.push(currentMeasureNotes);
-            }
-
-            // Configuración responsiva
-            const staveHeight = 120;
-            const stavePadding = 30;
-            const measuresPerLine = isFullscreen ? 
-                Math.min(measures, 6) : 
-                Math.min(measures, window.innerWidth < 768 ? 2 : 3);
-            const totalLines = Math.ceil(measuresNotes.length / measuresPerLine);
-            
-            const containerWidth = container.offsetWidth - 40;
-            const staveWidth = isFullscreen ? 
-                Math.min(measuresPerLine * 200, window.innerWidth - 100) : 
-                Math.min(measuresPerLine * 180, containerWidth);
-            
-            container.style.height = `${totalLines * (staveHeight + stavePadding)}px`;
-            
-            const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
-            renderer.resize(staveWidth, totalLines * (staveHeight + stavePadding));
-            const context = renderer.getContext();
-            context.scale(0.9, 0.9);
-            
-            for (let line = 0; line < totalLines; line++) {
-                const startMeasure = line * measuresPerLine;
-                const endMeasure = Math.min((line + 1) * measuresPerLine, measuresNotes.length);
-                const lineMeasures = endMeasure - startMeasure;
-                const measureWidth = staveWidth / lineMeasures;
-                
-                let currentX = 20;
-                const currentY = 40 + line * (staveHeight + stavePadding);
-                
-                let startX = 80;
-                if (clef === "bass") startX = 90;
-                else if (clef === "alto") startX = 85;
-
-                let stave = new VF.Stave(currentX, currentY, measureWidth);
-                
-                if (line === 0) {
-                    stave.addClef(clef);
-                    
-                    if (keySignature !== 'C') {
-                        stave.addKeySignature(keyConfig.key);
-                    }
-                    
-                    stave.addTimeSignature(timeSignature);
+                    // Guardar el compás completo y comenzar uno nuevo
+                    measures.push(currentMeasure);
+                    currentMeasure = [note];
+                    currentTicks = noteTicks;
                 } else {
-                    stave.addClef(clef);
+                    currentMeasure.push(note);
+                    currentTicks += noteTicks;
                 }
-                
-                stave.setNoteStartX(startX);
-                stave.setContext(context).draw();
-                currentX += measureWidth;
-                
-                for (let i = 1; i < lineMeasures; i++) {
-                    stave = new VF.Stave(currentX, currentY, measureWidth);
-                    
-                    if (i < lineMeasures) {
-                        stave.setEndBarType(VF.Barline.type.SINGLE);
-                    }
-                    
-                    stave.setContext(context).draw();
-                    currentX += measureWidth;
-                }
+            });
 
-                currentX = 20;
-                for (let i = 0; i < lineMeasures; i++) {
-                    const measureIndex = startMeasure + i;
-                    if (measureIndex >= measuresNotes.length) break;
-                    
-                    const measureNotes = measuresNotes[measureIndex];
-                    
-                    const voice = new VF.Voice({
-                        num_beats: beatsPerMeasure,
-                        beat_value: beatValue,
-                        resolution: Vex.Flow.RESOLUTION
-                    });
-                    
-                    voice.addTickables(measureNotes);
-                    
-                    new VF.Formatter()
-                        .joinVoices([voice])
-                        .format([voice], measureWidth - 50);
-                    
-                    const tempStave = new VF.Stave(currentX, currentY, measureWidth);
-                    tempStave.setContext(context);
-                    
-                    if (line === 0 && i === 0) {
-                        tempStave.setNoteStartX(startX);
+            // Añadir el último compás aunque esté incompleto
+            if (currentMeasure.length > 0) {
+                const remainingTicks = ticksPerMeasure - currentTicks;
+                
+                // Si el compás está incompleto, agregar silencio final
+                if (remainingTicks > 0) {
+                    try {
+                        const restDuration = getDurationFromTicks(remainingTicks);
+                        currentMeasure.push(new VF.GhostNote({ duration: restDuration }));
+                    } catch (e) {
+                        console.warn("No se pudo crear silencio final para", remainingTicks, "ticks");
                     }
-                    
-                    voice.draw(context, tempStave);
-                    
-                    currentX += measureWidth;
                 }
+                
+                measures.push(currentMeasure);
             }
 
-            return true;
+            // 3. Configurar renderizado y dimensiones
+            const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
+            const containerWidth = container.clientWidth;
+            renderer.resize(containerWidth, 500); // Altura inicial, se ajustará
+            const context = renderer.getContext();
+
+            const staveWidth = isFullscreen ? (containerWidth / 4) : (containerWidth / 3);
+            const headerWidth = 120;
+            const noteStaveWidth = staveWidth - 20;
+
+            let currentX = 0;
+            let currentY = 40;
+            let stavesDrawnOnLine = 0;
+            let totalHeight = 0;
+
+            // 4. Dibujar pentagramas y notas, línea por línea
+            for (let i = 0; i < measures.length; i++) {
+                const isFirstMeasureOfLine = stavesDrawnOnLine === 0;
+                let stave;
+
+                if (isFirstMeasureOfLine) {
+                    currentX = 0;
+                    if (i > 0) currentY += 120; // Bajar para la nueva línea
+                    stave = new VF.Stave(currentX, currentY, headerWidth);
+                    stave.addClef(clef);
+                    if (i === 0) { // Solo en el primer compás de toda la pieza
+                        stave.addKeySignature(key);
+                        stave.addTimeSignature(timeSignature);
+                        stave.setTempo({ duration: 'q', bpm: tempo }, -10);
+                    }
+                    stave.setContext(context).draw();
+                    currentX += headerWidth;
+                }
+
+                stave = new VF.Stave(currentX, currentY, noteStaveWidth);
+                stave.setContext(context).draw();
+
+                // Formatear y dibujar las notas para este compás
+                const measureNotes = measures[i];
+                VF.Beam.generateBeams(measureNotes.filter(n => !(n instanceof VF.GhostNote)));
+                VF.Formatter.FormatAndDraw(context, stave, measureNotes);
+
+                currentX += noteStaveWidth;
+                stavesDrawnOnLine++;
+
+                const measuresPerLine = isFullscreen ? 4 : (containerWidth < 600 ? 2 : 3);
+                if (stavesDrawnOnLine >= measuresPerLine) {
+                    stavesDrawnOnLine = 0;
+                }
+                totalHeight = currentY + 120;
+            }
+
+            renderer.resize(containerWidth, totalHeight + 40);
+
         } catch (error) {
-            console.error('Error:', error);
-            showMessage('Error al generar la partitura: ' + error.message, 'danger');
+            console.error('Error al generar partitura:', error);
+            showMessage("Error al generar la partitura: " + error.message, "danger");
             return false;
         }
+        return true;
     }
-    
-    // Mostrar partitura en vista previa
-    drawScoreBtn.addEventListener('click', function() {
-        scoreName = nameInput.value.trim() || "Partitura sin nombre";
-        
-        if (notes.length === 0) {
-            showMessage('Debes agregar al menos una nota o silencio', 'danger');
-            return;
-        }
-        
-        if (drawScore(scoreContentDiv)) {
-            showMessage('Partitura generada correctamente', 'success');
-        }
-    });
 
-    // Mostrar partitura en pantalla completa
-    previewScoreBtn.addEventListener('click', function() {
-        scoreName = nameInput.value.trim() || "Partitura sin nombre";
-        
+    function showFullscreenPreview() {
         if (notes.length === 0) {
             showMessage('Debes agregar al menos una nota o silencio', 'danger');
             return;
         }
-        
         document.getElementById('fullscreenModalTitle').textContent = scoreName;
-        
-        if (drawScore(fullscreenScoreDiv, true)) {
+        if (drawScore(fullscreenScore, true)) {
             fullscreenModal.show();
-            showMessage('Partitura mostrada en pantalla completa', 'success');
         }
-    });
-    
-    // Descargar PDF
-    async function downloadPdf(container) {
+    }
+
+    async function downloadScore(container) {
         if (!container.hasChildNodes() || container.querySelector('svg') === null) {
             showMessage('Primero debes generar la partitura', 'danger');
             return;
         }
-        
         try {
             showMessage('Generando PDF...', 'info');
-            
-            // Crear un contenedor temporal para el SVG
-            const tempDiv = document.createElement('div');
-            tempDiv.style.position = 'absolute';
-            tempDiv.style.left = '-9999px';
-            tempDiv.style.width = container.offsetWidth + 'px';
-            tempDiv.style.height = container.offsetHeight + 'px';
-            document.body.appendChild(tempDiv);
-            
-            // Clonar el SVG al contenedor temporal
-            const svgClone = container.querySelector('svg').cloneNode(true);
-            tempDiv.appendChild(svgClone);
-            
-            // Usar html2canvas para renderizar
-            const canvas = await html2canvas(tempDiv, {
-                scale: 2,
-                logging: false,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: null,
-                removeContainer: true
-            });
-            
-            document.body.removeChild(tempDiv);
-            
+            const canvas = await html2canvas(container, { scale: 2, backgroundColor: '#ffffff' });
             const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-                orientation: 'landscape',
-                unit: 'mm'
-            });
-            
-            // Ajustar tamaño del PDF al contenido
-            const imgData = canvas.toDataURL('image/png');
-            const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            
-            pdf.setFontSize(16);
-            pdf.text(scoreName, pdf.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
-            
-            pdf.addImage(imgData, 'PNG', 10, 25, pdfWidth, pdfHeight);
-            pdf.save(`${scoreName}.pdf`);
-            
+            const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const margin = 15;
+            const imgWidth = pdfWidth - (2 * margin);
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            pdf.setFontSize(18);
+            pdf.text(scoreName, pdfWidth / 2, margin, { align: 'center' });
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, margin + 10, imgWidth, imgHeight > (pdfHeight - margin - 20) ? (pdfHeight - margin - 20) : imgHeight);
+            pdf.setFontSize(10);
+            pdf.text("Generado con ConvertMusic", pdfWidth / 2, pdfHeight - 10, { align: 'center' });
+
+            const fileName = `${(scoreName || 'partitura').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+            pdf.save(fileName);
             showMessage('PDF descargado correctamente', 'success');
         } catch (error) {
-            console.error(error);
-            showMessage('Error al generar PDF: ' + error.message, 'danger');
+            console.error('Error al generar PDF:', error);
+            showMessage('Error al generar el PDF: ' + error.message, 'danger');
         }
     }
-    
-    // Evento para el botón de descarga desde el modal
-    downloadFromModalBtn.addEventListener('click', function() {
-        downloadPdf(fullscreenScoreDiv);
-    });
-    
-    // Descargar PDF desde vista previa
-    downloadPdfBtn.addEventListener('click', function() {
-        downloadPdf(scoreContentDiv);
-    });
-    
-    // Inicialización
-    updateNoteList();
-    showMessage('Selecciona notas/silencios y haz clic en "Ver Partitura"', 'info');
 });
