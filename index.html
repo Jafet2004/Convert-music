@@ -8,585 +8,42 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4361ee;
-            --primary-light: #4895ef;
-            --secondary: #3f37c9;
-            --dark: #1a1a2e;
-            --light: #f8f9fa;
-            --gray: #6c757d;
-            --glass: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --card-bg: rgba(255, 255, 255, 0.8);
-        }
-
-        [data-theme="dark"] {
-            --primary: #4895ef;
-            --primary-light: #4cc9f0;
-            --secondary: #4361ee;
-            --dark: #f8f9fa;
-            --light: #1a1a2e;
-            --gray: #adb5bd;
-            --glass: rgba(26, 26, 46, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --card-bg: rgba(26, 26, 46, 0.8);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--light);
-            color: var(--dark);
-            transition: all 0.4s ease;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* Welcome Animation */
-        #welcome-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 1;
-            transition: opacity 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-
-        .welcome-content {
-            text-align: center;
-            transform: translateY(20px);
-            opacity: 0;
-            animation: fadeInUp 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-        }
-
-        .logo-animation {
-            font-size: 3.5rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, #4361ee, #4895ef, #4cc9f0);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 1.5rem;
-            letter-spacing: -1px;
-        }
-
-        .loading-container {
-            width: 300px;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .loading-bar {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 0;
-            background: linear-gradient(90deg, #4361ee, #4895ef, #4cc9f0);
-            animation: loading 2s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-        }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes loading {
-            to { width: 100%; }
-        }
-
-        /* Glassmorphism Header */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            background: var(--glass);
-            border-bottom: 1px solid var(--glass-border);
-            z-index: 1000;
-            transition: all 0.4s ease;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link {
-            color: var(--dark);
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: var(--primary);
-            transform: translateX(-50%);
-            transition: width 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--primary);
-        }
-
-        .nav-link:hover::after {
-            width: 70%;
-        }
-
-        .dropdown-menu {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .dropdown-item {
-            color: var(--dark);
-            transition: all 0.2s ease;
-        }
-
-        .dropdown-item:hover {
-            background: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            padding-top: 80px;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(67, 97, 238, 0.1) 0%, rgba(0,0,0,0) 70%);
-            z-index: -1;
-            animation: pulse 15s infinite alternate;
-        }
-
-        .hero-content {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            line-height: 1.2;
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            color: var(--gray);
-            margin-bottom: 2.5rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            border: none;
-            color: white;
-            padding: 0.75rem 2rem;
-            font-size: 1rem;
-            font-weight: 500;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
-        }
-
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .btn-primary:hover::after {
-            opacity: 1;
-        }
-
-        /* Tools Section */
-        .section-tools {
-            padding: 6rem 0;
-            position: relative;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            text-align: center;
-            color: var(--dark);
-        }
-
-        .section-subtitle {
-            font-size: 1.1rem;
-            color: var(--gray);
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto 4rem;
-        }
-
-        .tool-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 16px;
-            border: 1px solid var(--glass-border);
-            padding: 2rem;
-            transition: all 0.4s ease;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-        }
-
-        .tool-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        .tool-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(72, 149, 239, 0.05));
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .tool-card:hover::before {
-            opacity: 1;
-        }
-
-        .tool-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
-        }
-
-        .tool-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--dark);
-        }
-
-        .tool-description {
-            color: var(--gray);
-            margin-bottom: 1.5rem;
-        }
-
-        .tool-features {
-            list-style: none;
-            padding: 0;
-            margin-bottom: 2rem;
-        }
-
-        .tool-features li {
-            margin-bottom: 0.5rem;
-            position: relative;
-            padding-left: 1.75rem;
-            color: var(--gray);
-        }
-
-        .tool-features li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .tool-link {
-            display: inline-flex;
-            align-items: center;
-            color: var(--primary);
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .tool-link i {
-            margin-left: 0.5rem;
-            transition: transform 0.3s ease;
-        }
-
-        .tool-link:hover {
-            color: var(--primary-light);
-        }
-
-        .tool-link:hover i {
-            transform: translateX(3px);
-        }
-
-        /* Floating Elements */
-        .floating-element {
-            position: absolute;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            opacity: 0.1;
-            filter: blur(30px);
-            z-index: -1;
-        }
-
-        .floating-element-1 {
-            width: 300px;
-            height: 300px;
-            top: -100px;
-            right: -100px;
-            animation: float 15s infinite ease-in-out;
-        }
-
-        .floating-element-2 {
-            width: 400px;
-            height: 400px;
-            bottom: -150px;
-            left: -150px;
-            animation: float 18s infinite ease-in-out reverse;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.3; }
-            100% { transform: scale(1.2); opacity: 0.1; }
-        }
-
-        /* Footer */
-        footer {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-top: 1px solid var(--glass-border);
-            padding: 4rem 0 2rem;
-            position: relative;
-        }
-
-        .footer-logo {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 1.5rem;
-            display: inline-block;
-        }
-
-        .footer-description {
-            color: var(--gray);
-            max-width: 400px;
-            margin-bottom: 2rem;
-        }
-
-        .footer-links-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 1.5rem;
-        }
-
-        .footer-links {
-            list-style: none;
-            padding: 0;
-        }
-
-        .footer-links li {
-            margin-bottom: 0.75rem;
-        }
-
-        .footer-links a {
-            color: var(--gray);
-            text-decoration: none;
-            transition: color 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .footer-links a i {
-            margin-right: 0.5rem;
-            width: 20px;
-            text-align: center;
-        }
-
-        .footer-links a:hover {
-            color: var(--primary);
-        }
-
-        .footer-bottom {
-            border-top: 1px solid var(--glass-border);
-            padding-top: 2rem;
-            margin-top: 3rem;
-            text-align: center;
-            color: var(--gray);
-        }
-
-        /* Dark Mode Toggle */
-        #darkModeToggle {
-            background: none;
-            border: none;
-            color: var(--dark);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        #darkModeToggle:hover {
-            background: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 992px) {
-            .hero h1 {
-                font-size: 2.8rem;
-            }
-            
-            .section-title {
-                font-size: 2.2rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.2rem;
-            }
-            
-            .hero p {
-                font-size: 1.1rem;
-            }
-            
-            .logo-animation {
-                font-size: 2.5rem;
-            }
-            
-            .section-title {
-                font-size: 1.8rem;
-            }
-            
-            .tool-card {
-                padding: 1.5rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-            
-            .logo {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <!-- Welcome Animation -->
     <div id="welcome-animation">
         <div class="welcome-content">
-            <div class="logo-animation">ConvertMusic</div>
+            <div class="logo-animation">Convert-Music</div>
             <div class="loading-container">
                 <div class="loading-bar"></div>
             </div>
         </div>
     </div>
 
-    <!-- Header -->
-    <header>
+        <header class="main-header">
         <div class="container">
             <nav class="navbar navbar-expand-lg">
                 <div class="container-fluid">
-                    <a class="navbar-brand logo" href="#">ConvertMusic</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <a class="navbar-brand logo" href="#">
+                        <span class="logo-text">Convert<span class="logo-highlight">Music</span></span>
+                    </a>
+                    
+                    <div class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                         <i class="fas fa-bars"></i>
-                    </button>
+                    </div>
+                    
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item">
-                                <a class="nav-link active" href="#">Inicio</a>
+                                <a class="nav-link active" href="index.html">
+                                    <i class="fas fa-home me-2"></i>Inicio
+                                </a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                    Herramientas
+                                    <i class="fas fa-tools me-2"></i>Herramientas
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="convert.html"><i class="fas fa-exchange-alt me-2"></i>Conversor de Tonalidades</a></li>
@@ -594,10 +51,11 @@
                                     <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-2"></i>Buscar Letras</a></li>
                                 </ul>
                             </li>
-                            <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                                <button id="darkModeToggle" class="btn">
-                                    <i class="fas fa-moon" id="darkModeIcon"></i>
-                                </button>
+                            <li class="nav-item">
+                                <div id="darkModeToggle" class="btn btn-outline-light ms-lg-3">
+                                    <i class="fas fa-moon me-1"></i>
+                                    <span class="d-none d-lg-inline"></span>
+                                </div>
                             </li>
                         </ul>
                     </div>
@@ -605,7 +63,6 @@
             </nav>
         </div>
     </header>
-
     <!-- Hero Section -->
     <section class="hero">
         <div class="floating-element floating-element-1"></div>
@@ -701,7 +158,7 @@
                     <ul class="footer-links">
                         <li><a href="#"><i class="fas fa-chevron-right"></i> Inicio</a></li>
                         <li><a href="#herramientas"><i class="fas fa-chevron-right"></i> Herramientas</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Acerca de</a></li>
+                        <li><a href="about.html"><i class="fas fa-chevron-right"></i> Acerca de</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
@@ -726,74 +183,6 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Welcome Animation
-        window.addEventListener('load', () => {
-            const welcomeAnimation = document.getElementById('welcome-animation');
-            setTimeout(() => {
-                welcomeAnimation.style.opacity = '0';
-                setTimeout(() => {
-                    welcomeAnimation.style.display = 'none';
-                }, 800);
-            }, 2000);
-        });
-
-        // Dark Mode Toggle
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const darkModeIcon = document.getElementById('darkModeIcon');
-        
-        // Check for saved theme preference or use device preference
-        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-        const currentTheme = localStorage.getItem('theme');
-        
-        if (currentTheme === 'dark' || (!currentTheme && prefersDarkScheme.matches)) {
-            document.body.setAttribute('data-theme', 'dark');
-            darkModeIcon.classList.replace('fa-moon', 'fa-sun');
-        }
-        
-        darkModeToggle.addEventListener('click', () => {
-            const currentTheme = document.body.getAttribute('data-theme');
-            
-            if (currentTheme === 'dark') {
-                document.body.removeAttribute('data-theme');
-                darkModeIcon.classList.replace('fa-sun', 'fa-moon');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.body.setAttribute('data-theme', 'dark');
-                darkModeIcon.classList.replace('fa-moon', 'fa-sun');
-                localStorage.setItem('theme', 'dark');
-            }
-        });
-
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 80,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-
-        // Header scroll effect
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            if (window.scrollY > 50) {
-                header.style.background = 'rgba(26, 26, 46, 0.9)';
-                header.style.boxShadow = '0 4px 20px rgba(0,0,0,0.1)';
-            } else {
-                header.style.background = 'var(--glass)';
-                header.style.boxShadow = 'none';
-            }
-        });
-    </script>
+    <script src="script_ind.js"></script>
 </body>
 </html>
