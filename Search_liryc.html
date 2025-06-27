@@ -27,6 +27,7 @@
                             <li><a class="dropdown-item" href="convert.html"><i class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
                             <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i> Creación de Partituras</a></li>
                             <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i> Buscar Letras</a></li>
+                            <li><a class="dropdown-item" href="afinador.html"><i class="fas fa-sliders-h me-1"></i> Afinador Musical</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -67,34 +68,40 @@
                     </div>
                 </div>
 
-                <!-- Sección para descargar videos
-                <div class="download-section">
-                    <h2 class="text-center mb-4"><i class="fas fa-download me-2"></i>Descargar Audio/Video</h2>
-                    <div class="form-group">
-                        <label for="videoUrl" class="form-label fw-bold">URL de YouTube:</label>
-                        <input type="text" id="videoUrl" class="form-control form-control-lg" placeholder="Ej: https://www.youtube.com/watch?v=...">
-                    </div>
-                    <div class="download-options">
-                        <button id="downloadMp3" class="btn btn-mp3 btn-lg btn-download py-2">
-                            <i class="fas fa-music me-1"></i> Descargar MP3
-                        </button>
-                        <button id="downloadMp4" class="btn btn-mp4 btn-lg btn-download py-2">
-                            <i class="fas fa-video me-1"></i> Descargar MP4
-                        </button>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress">
-                            <div id="downloadProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
-                        </div>
-                        <div class="progress-text" id="progressText">Preparando descarga...</div>
-                    </div>
-                </div>-->
+                
 
-                <div id="results">
-                    <!-- Aquí se mostrarán los resultados -->
-                </div>
+<!-- Modal para registrar nueva letra -->
+<!--
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registerModalLabel">Registrar Nueva Letra</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm">
+                    <div class="mb-3">
+                        <label for="newArtist" class="form-label">Artista</label>
+                        <input type="text" class="form-control" id="newArtist" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newTitle" class="form-label">Título de la Canción</label>
+                        <input type="text" class="form-control" id="newTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newLyrics" class="form-label">Letra</label>
+                        <textarea class="form-control" id="newLyrics" rows="8" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="submitLyrics">Guardar Letra</button>
             </div>
         </div>
+    </div>
+</div>-->
     </main>
 
     <footer class="bg-dark text-white py-4">
@@ -121,6 +128,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="script_liryc.js"></script>
     <script src="dark_mode.js"></script>
+    <script src="script_register_liryc.js"></script>
 </body>
 
 </html>

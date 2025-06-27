@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convert Music - Afinador Profesional</title>
+    <link rel="icon" href="CM.png" type="image/x-icon">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_afi.css">
+</head>
+
+<body>
+    <header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span
+                    style="color: #4fc3f7;">Music</span></div>
+
+            <div class="d-flex align-items-center">
+                <nav>
+                    <ul class="nav">
+                        <li class="nav-item"><a class="nav-link text-white" href="index.html"><i
+                                    class="fas fa-home me-1"></i> Inicio</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fas fa-tools me-1"></i> Herramientas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="convert.html"><i
+                                            class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
+                                <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i>
+                                        Creación de Partituras</a></li>
+                                <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i>
+                                        Buscar Letras</a></li>
+                                <li><a class="dropdown-item" href="afinador.html"><i class="fas fa-sliders-h me-1"></i> 
+                                        Afinador Musical</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Botón de Modo Oscuro/Claro mejorado -->
+                <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
+                    <i class="fas fa-moon" id="darkModeIcon"></i>
+                    <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Alerta para permisos de micrófono -->
+    <div class="alert alert-warning alert-dismissible fade show permission-alert" role="alert">
+        <strong>Permiso requerido:</strong> Por favor permite el acceso al micrófono para usar el afinador.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="container tuner-container">
+        <div class="tuner-header">
+            <h2>Afinador Profesional</h2>
+            <p>Afinador preciso para guitarra, violín y bajo con detección de frecuencia en tiempo real</p>
+        </div>
+
+        <ul class="nav nav-tabs" id="tunerTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="guitar-tab" data-bs-toggle="tab" data-bs-target="#guitar" type="button" role="tab" aria-controls="guitar" aria-selected="true">
+                    <i class="fas fa-guitar me-2"></i>Guitarra
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="violin-tab" data-bs-toggle="tab" data-bs-target="#violin" type="button" role="tab" aria-controls="violin" aria-selected="false">
+                    <i class="fas fa-violin me-2"></i>Violín
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="bass-tab" data-bs-toggle="tab" data-bs-target="#bass" type="button" role="tab" aria-controls="bass" aria-selected="false">
+                    <i class="fas fa-guitar me-2"></i>Bajo
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="tunerTabContent">
+            <!-- Pestaña de Guitarra -->
+            <div class="tab-pane fade show active" id="guitar" role="tabpanel" aria-labelledby="guitar-tab">
+                <div class="instrument-info">
+                    <h3>Guitarra Estándar</h3>
+                    <p>Afinación estándar: E2 A2 D3 G3 B3 E4</p>
+                </div>
+
+                <div class="tuner-display">
+                    <div class="note-display" id="guitar-note">--</div>
+                    <div class="frequency-display" id="guitar-frequency">0 Hz</div>
+                    
+                    <div class="tuner-visual">
+                        <div class="scale"></div>
+                        <div class="needle" id="guitar-needle"></div>
+                        <div class="scale-markers">
+                            <div class="scale-marker" style="left: 10%;" data-value="-50"></div>
+                            <div class="scale-marker" style="left: 30%;" data-value="-25"></div>
+                            <div class="scale-marker center" style="left: 50%;" data-value="0"></div>
+                            <div class="scale-marker" style="left: 70%;" data-value="+25"></div>
+                            <div class="scale-marker" style="left: 90%;" data-value="+50"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="accuracy-indicator">
+                        <div class="accuracy-marker" id="guitar-accuracy"></div>
+                    </div>
+                    
+                    <div class="volume-indicator">
+                        <div class="volume-level" id="guitar-volume"></div>
+                    </div>
+                    
+                    <div class="tuner-status" id="guitar-status">Presiona "Iniciar" para comenzar a afinar</div>
+                </div>
+
+                <div class="strings-container">
+                    <div class="string" data-note="E2" data-frequency="82.41">
+                        <div class="string-name">6ª Cuerda</div>
+                        <div class="string-note">E</div>
+                        <div class="string-frequency">82.41 Hz</div>
+                    </div>
+                    <div class="string" data-note="A2" data-frequency="110.00">
+                        <div class="string-name">5ª Cuerda</div>
+                        <div class="string-note">A</div>
+                        <div class="string-frequency">110.00 Hz</div>
+                    </div>
+                    <div class="string" data-note="D3" data-frequency="146.83">
+                        <div class="string-name">4ª Cuerda</div>
+                        <div class="string-note">D</div>
+                        <div class="string-frequency">146.83 Hz</div>
+                    </div>
+                    <div class="string" data-note="G3" data-frequency="196.00">
+                        <div class="string-name">3ª Cuerda</div>
+                        <div class="string-note">G</div>
+                        <div class="string-frequency">196.00 Hz</div>
+                    </div>
+                    <div class="string" data-note="B3" data-frequency="246.94">
+                        <div class="string-name">2ª Cuerda</div>
+                        <div class="string-note">B</div>
+                        <div class="string-frequency">246.94 Hz</div>
+                    </div>
+                    <div class="string" data-note="E4" data-frequency="329.63">
+                        <div class="string-name">1ª Cuerda</div>
+                        <div class="string-note">E</div>
+                        <div class="string-frequency">329.63 Hz</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-tuner btn-start" id="guitar-start">
+                        <i class="fas fa-play me-2"></i>Iniciar
+                    </button>
+                    <button class="btn btn-tuner btn-stop" id="guitar-stop" disabled>
+                        <i class="fas fa-stop me-2"></i>Detener
+                    </button>
+                </div>
+                
+                <div class="tuner-help">
+                    <h4><i class="fas fa-info-circle me-2"></i>Cómo afinar tu guitarra:</h4>
+                    <ul>
+                        <li>Conecta tu guitarra eléctrica directamente o usa un micrófono externo para mejor precisión</li>
+                        <li>Selecciona la cuerda que quieres afinar</li>
+                        <li>Toca la cuerda al aire (sin presionar trastes)</li>
+                        <li>Ajusta la clavija hasta que la aguja se centre (color verde)</li>
+                        <li>Comienza por la 6ª cuerda (E grave) y ve subiendo hasta la 1ª (E agudo)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Pestaña de Violín -->
+            <div class="tab-pane fade" id="violin" role="tabpanel" aria-labelledby="violin-tab">
+                <div class="instrument-info">
+                    <h3>Violín Estándar</h3>
+                    <p>Afinación estándar: G3 D4 A4 E5</p>
+                </div>
+
+                <div class="tuner-display">
+                    <div class="note-display" id="violin-note">--</div>
+                    <div class="frequency-display" id="violin-frequency">0 Hz</div>
+                    
+                    <div class="tuner-visual">
+                        <div class="scale"></div>
+                        <div class="needle" id="violin-needle"></div>
+                        <div class="scale-markers">
+                            <div class="scale-marker" style="left: 10%;" data-value="-50"></div>
+                            <div class="scale-marker" style="left: 30%;" data-value="-25"></div>
+                            <div class="scale-marker center" style="left: 50%;" data-value="0"></div>
+                            <div class="scale-marker" style="left: 70%;" data-value="+25"></div>
+                            <div class="scale-marker" style="left: 90%;" data-value="+50"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="accuracy-indicator">
+                        <div class="accuracy-marker" id="violin-accuracy"></div>
+                    </div>
+                    
+                    <div class="volume-indicator">
+                        <div class="volume-level" id="violin-volume"></div>
+                    </div>
+                    
+                    <div class="tuner-status" id="violin-status">Presiona "Iniciar" para comenzar a afinar</div>
+                </div>
+
+                <div class="strings-container">
+                    <div class="string" data-note="G3" data-frequency="196.00">
+                        <div class="string-name">4ª Cuerda</div>
+                        <div class="string-note">G</div>
+                        <div class="string-frequency">196.00 Hz</div>
+                    </div>
+                    <div class="string" data-note="D4" data-frequency="293.66">
+                        <div class="string-name">3ª Cuerda</div>
+                        <div class="string-note">D</div>
+                        <div class="string-frequency">293.66 Hz</div>
+                    </div>
+                    <div class="string" data-note="A4" data-frequency="440.00">
+                        <div class="string-name">2ª Cuerda</div>
+                        <div class="string-note">A</div>
+                        <div class="string-frequency">440.00 Hz</div>
+                    </div>
+                    <div class="string" data-note="E5" data-frequency="659.25">
+                        <div class="string-name">1ª Cuerda</div>
+                        <div class="string-note">E</div>
+                        <div class="string-frequency">659.25 Hz</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-tuner btn-start" id="violin-start">
+                        <i class="fas fa-play me-2"></i>Iniciar
+                    </button>
+                    <button class="btn btn-tuner btn-stop" id="violin-stop" disabled>
+                        <i class="fas fa-stop me-2"></i>Detener
+                    </button>
+                </div>
+                
+                <div class="tuner-help">
+                    <h4><i class="fas fa-info-circle me-2"></i>Cómo afinar tu violín:</h4>
+                    <ul>
+                        <li>Usa un entorno silencioso para mejor detección</li>
+                        <li>Selecciona la cuerda que quieres afinar</li>
+                        <li>Toca la cuerda al aire (sin presionar con los dedos)</li>
+                        <li>Ajusta la clavija hasta que la aguja se centre (color verde)</li>
+                        <li>Para ajustes finos, usa los afinadores de precisión (si tu violín los tiene)</li>
+                        <li>Comienza por la cuerda G (la más grave) y ve subiendo</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Pestaña de Bajo -->
+            <div class="tab-pane fade" id="bass" role="tabpanel" aria-labelledby="bass-tab">
+                <div class="instrument-info">
+                    <h3>Bajo Estándar</h3>
+                    <p>Afinación estándar: E1 A1 D2 G2</p>
+                </div>
+
+                <div class="tuner-display">
+                    <div class="note-display" id="bass-note">--</div>
+                    <div class="frequency-display" id="bass-frequency">0 Hz</div>
+                    
+                    <div class="tuner-visual">
+                        <div class="scale"></div>
+                        <div class="needle" id="bass-needle"></div>
+                        <div class="scale-markers">
+                            <div class="scale-marker" style="left: 10%;" data-value="-50"></div>
+                            <div class="scale-marker" style="left: 30%;" data-value="-25"></div>
+                            <div class="scale-marker center" style="left: 50%;" data-value="0"></div>
+                            <div class="scale-marker" style="left: 70%;" data-value="+25"></div>
+                            <div class="scale-marker" style="left: 90%;" data-value="+50"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="accuracy-indicator">
+                        <div class="accuracy-marker" id="bass-accuracy"></div>
+                    </div>
+                    
+                    <div class="volume-indicator">
+                        <div class="volume-level" id="bass-volume"></div>
+                    </div>
+                    
+                    <div class="tuner-status" id="bass-status">Presiona "Iniciar" para comenzar a afinar</div>
+                </div>
+
+                <div class="strings-container">
+                    <div class="string" data-note="E1" data-frequency="41.20">
+                        <div class="string-name">4ª Cuerda</div>
+                        <div class="string-note">E</div>
+                        <div class="string-frequency">41.20 Hz</div>
+                    </div>
+                    <div class="string" data-note="A1" data-frequency="55.00">
+                        <div class="string-name">3ª Cuerda</div>
+                        <div class="string-note">A</div>
+                        <div class="string-frequency">55.00 Hz</div>
+                    </div>
+                    <div class="string" data-note="D2" data-frequency="73.42">
+                        <div class="string-name">2ª Cuerda</div>
+                        <div class="string-note">D</div>
+                        <div class="string-frequency">73.42 Hz</div>
+                    </div>
+                    <div class="string" data-note="G2" data-frequency="98.00">
+                        <div class="string-name">1ª Cuerda</div>
+                        <div class="string-note">G</div>
+                        <div class="string-frequency">98.00 Hz</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-tuner btn-start" id="bass-start">
+                        <i class="fas fa-play me-2"></i>Iniciar
+                    </button>
+                    <button class="btn btn-tuner btn-stop" id="bass-stop" disabled>
+                        <i class="fas fa-stop me-2"></i>Detener
+                    </button>
+                </div>
+                
+                <div class="tuner-help">
+                    <h4><i class="fas fa-info-circle me-2"></i>Cómo afinar tu bajo:</h4>
+                    <ul>
+                        <li>Para bajos, es recomendable usar un cable directo (DI) o un micrófono de buena calidad</li>
+                        <li>Selecciona la cuerda que quieres afinar</li>
+                        <li>Toca la cuerda al aire (sin presionar trastes)</li>
+                        <li>Ajusta la clavija hasta que la aguja se centre (color verde)</li>
+                        <li>Comienza por la 4ª cuerda (E grave) y ve subiendo hasta la 1ª (G)</li>
+                        <li>Las frecuencias graves pueden requerir más tiempo para ser detectadas con precisión</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Sección de Acordes de Guitarra (colocar antes del footer) -->
+<div class="container chords-container mt-5">
+    <div class="accordion" id="chordsAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="chordsHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#chordsCollapse" aria-expanded="false" aria-controls="chordsCollapse">
+                    <i class="fas fa-guitar me-2"></i> Explora los principales acordes para guitarra
+                </button>
+            </h2>
+            <div id="chordsCollapse" class="accordion-collapse collapse" aria-labelledby="chordsHeading" 
+                 data-bs-parent="#chordsAccordion">
+                <div class="accordion-body">
+                    <!-- Filtros de Acordes -->
+                    <div class="chords-filters mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="chordTypeFilter" class="form-label">Tipo de Acorde</label>
+                                <select class="form-select" id="chordTypeFilter">
+                                    <option value="all">Todos los tipos</option>
+                                    <option value="major">Mayores</option>
+                                    <option value="minor">Menores</option>
+                                    <option value="7">Séptima</option>
+                                    <option value="m7">Menor séptima</option>
+                                    <option value="maj7">Mayor séptima</option>
+                                    <option value="sus2">Sus2</option>
+                                    <option value="sus4">Sus4</option>
+                                    <option value="dim">Disminuido</option>
+                                    <option value="aug">Aumentado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="noteFilter" class="form-label">Nota Principal</label>
+                                <select class="form-select" id="noteFilter">
+                                    <option value="all">Todas las notas</option>
+                                    <option value="C">C</option>
+                                    <option value="C#">C#/Db</option>
+                                    <option value="D">D</option>
+                                    <option value="D#">D#/Eb</option>
+                                    <option value="E">E</option>
+                                    <option value="F">F</option>
+                                    <option value="F#">F#/Gb</option>
+                                    <option value="G">G</option>
+                                    <option value="G#">G#/Ab</option>
+                                    <option value="A">A</option>
+                                    <option value="A#">A#/Bb</option>
+                                    <option value="B">B</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="difficultyFilter" class="form-label">Dificultad</label>
+                                <select class="form-select" id="difficultyFilter">
+                                    <option value="all">Todas</option>
+                                    <option value="easy">Fácil</option>
+                                    <option value="medium">Media</option>
+                                    <option value="hard">Difícil</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="btn btn-primary w-100" id="applyFilters">Aplicar Filtros</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Acordes -->
+                    <div class="chords-grid" id="chordsGrid">
+                        <!-- Los acordes se cargarán aquí dinámicamente -->
+                    </div>
+
+                    <!-- Plantilla de Acorde -->
+                    <template id="chordTemplate">
+                        <div class="chord-card">
+                            <div class="chord-diagram">
+                                <div class="chord-name"></div>
+                                <div class="guitar-neck">
+                                    <div class="nut"></div>
+                                    <div class="frets">
+                                        <div class="fret first-fret">
+                                            <div class="fret-position">1</div>
+                                            <div class="strings">
+                                                <div class="string" data-string="6"></div>
+                                                <div class="string" data-string="5"></div>
+                                                <div class="string" data-string="4"></div>
+                                                <div class="string" data-string="3"></div>
+                                                <div class="string" data-string="2"></div>
+                                                <div class="string" data-string="1"></div>
+                                            </div>
+                                        </div>
+                                        <div class="fret">
+                                            <div class="strings">
+                                                <div class="string" data-string="6"></div>
+                                                <div class="string" data-string="5"></div>
+                                                <div class="string" data-string="4"></div>
+                                                <div class="string" data-string="3"></div>
+                                                <div class="string" data-string="2"></div>
+                                                <div class="string" data-string="1"></div>
+                                            </div>
+                                        </div>
+                                        <div class="fret">
+                                            <div class="strings">
+                                                <div class="string" data-string="6"></div>
+                                                <div class="string" data-string="5"></div>
+                                                <div class="string" data-string="4"></div>
+                                                <div class="string" data-string="3"></div>
+                                                <div class="string" data-string="2"></div>
+                                                <div class="string" data-string="1"></div>
+                                            </div>
+                                        </div>
+                                        <div class="fret">
+                                            <div class="strings">
+                                                <div class="string" data-string="6"></div>
+                                                <div class="string" data-string="5"></div>
+                                                <div class="string" data-string="4"></div>
+                                                <div class="string" data-string="3"></div>
+                                                <div class="string" data-string="2"></div>
+                                                <div class="string" data-string="1"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="open-strings">
+                                        <div class="open-string" data-string="6"></div>
+                                        <div class="open-string" data-string="5"></div>
+                                        <div class="open-string" data-string="4"></div>
+                                        <div class="open-string" data-string="3"></div>
+                                        <div class="open-string" data-string="2"></div>
+                                        <div class="open-string" data-string="1"></div>
+                                    </div>
+                                    <div class="finger-positions"></div>
+                                </div>
+                            </div>
+                            <div class="chord-info">
+                                <div class="chord-type"></div>
+                                <div class="chord-notes"></div>
+                                <button class="btn btn-sm btn-outline-secondary play-chord">
+                                    <i class="fas fa-play me-1"></i>Escuchar
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para la sección de acordes */
+    .chords-container {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .accordion-button {
+        font-weight: 600;
+        color: #166088;
+        background-color: rgba(22, 96, 136, 0.1);
+    }
+
+    .accordion-button:not(.collapsed) {
+        color: white;
+        background-color: #166088;
+    }
+
+    .accordion-button:not(.collapsed)::after {
+        filter: brightness(0) invert(1);
+    }
+
+    .chords-filters {
+        background-color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .chords-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .chord-card {
+        background-color: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .chord-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .chord-diagram {
+        padding: 1rem;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+        position: relative;
+    }
+
+    .chord-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        color: #166088;
+    }
+
+    .chord-info {
+        padding: 1rem;
+    }
+
+    .chord-type {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+
+    .chord-notes {
+        font-size: 0.85rem;
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+
+    .play-chord {
+        width: 100%;
+    }
+
+    /* Estilos para el diagrama de guitarra */
+    .guitar-neck {
+        width: 160px;
+        height: 180px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .nut {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background-color: #333;
+        z-index: 2;
+    }
+
+    .frets {
+        position: absolute;
+        top: 5px;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 5px);
+    }
+
+    .fret {
+        position: relative;
+        height: 25%;
+        border-bottom: 2px solid #ccc;
+        display: flex;
+    }
+
+    .first-fret {
+        height: 30%;
+    }
+
+    .fret-position {
+        position: absolute;
+        left: -20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 10px;
+        color: #666;
+    }
+
+    .strings {
+        display: flex;
+        width: 100%;
+        height: 100%;
+    }
+
+    .string {
+        flex: 1;
+        position: relative;
+    }
+
+    .string::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 2px;
+        height: 100%;
+        background-color: #666;
+        transform: translateX(-50%);
+    }
+
+    .open-strings {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        display: flex;
+    }
+
+    .open-string {
+        flex: 1;
+        position: relative;
+    }
+
+    .finger-positions {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    .finger-dot {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #4a6fa5;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: bold;
+        transform: translate(-50%, -50%);
+        z-index: 3;
+    }
+
+    .muted-string {
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #ff4d4d;
+        font-size: 16px;
+        z-index: 3;
+    }
+
+    .barre {
+        position: absolute;
+        height: 20px;
+        background-color: rgba(74, 111, 165, 0.7);
+        border-radius: 10px;
+        z-index: 2;
+    }
+
+    @media (max-width: 768px) {
+        .chords-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        }
+        
+        .guitar-neck {
+            width: 140px;
+            height: 160px;
+        }
+    }
+</style>
+
+<script>
+    // Datos de acordes con diagramas completos
+    const chordsData = [
+        // Acordes mayores
+        { 
+            name: "C", 
+            type: "major", 
+            notes: ["C", "E", "G"], 
+            difficulty: "easy", 
+            diagram: [
+                { string: 5, fret: 3, finger: 3 },
+                { string: 4, fret: 2, finger: 2 },
+                { string: 2, fret: 1, finger: 1 }
+            ],
+            muted: [6],
+            open: [3, 1]
+        },
+        { 
+            name: "G", 
+            type: "major", 
+            notes: ["G", "B", "D"], 
+            difficulty: "easy", 
+            diagram: [
+                { string: 6, fret: 3, finger: 2 },
+                { string: 5, fret: 2, finger: 1 },
+                { string: 1, fret: 3, finger: 4 }
+            ],
+            open: [4, 3, 2]
+        },
+        { 
+            name: "D", 
+            type: "major", 
+            notes: ["D", "F#", "A"], 
+            difficulty: "medium", 
+            diagram: [
+                { string: 3, fret: 2, finger: 1 },
+                { string: 1, fret: 2, finger: 3 },
+                { string: 2, fret: 3, finger: 2 }
+            ],
+            muted: [6, 5],
+            open: [4]
+        },
+        { 
+            name: "A", 
+            type: "major", 
+            notes: ["A", "C#", "E"], 
+            difficulty: "easy", 
+            diagram: [
+                { string: 4, fret: 2, finger: 1 },
+                { string: 3, fret: 2, finger: 2 },
+                { string: 2, fret: 2, finger: 3 }
+            ],
+            open: [5, 1]
+        },
+        { 
+            name: "E", 
+            type: "major", 
+            notes: ["E", "G#", "B"], 
+            difficulty: "easy", 
+            diagram: [
+                { string: 3, fret: 1, finger: 1 },
+                { string: 5, fret: 2, finger: 2 },
+                { string: 4, fret: 2, finger: 3 }
+            ],
+            open: [6, 2, 1]
+        },
+        { 
+            name: "F", 
+            type: "major", 
+            notes: ["F", "A", "C"], 
+            difficulty: "medium", 
+            diagram: [
+                { string: 6, fret: 1, finger: 1, barre: { from: 1, to: 6 } },
+                { string: 5, fret: 3, finger: 3 },
+                { string: 4, fret: 3, finger: 4 },
+                { string: 3, fret: 2, finger: 2 }
+            ]
+        },
+        
+        // Acordes menores
+        { 
+            name: "Am", 
+            type: "minor", 
+            notes: ["A", "C", "E"], 
+            difficulty: "easy", 
+            diagram: [
+                { string: 4, fret: 2, finger: 1 },
+                { string: 3, fret: 2, finger: 2 },
+                { string: 2, fret: 1, finger: 3 }
+            ],
+            open: [5, 1]
+        },
+        { 
+            name: "Em", 
+            type: "minor", 
+            notes: ["E", "G", "B"], 
+            difficulty: "easy", 
+            diagram: [
+                { string: 5, fret: 2, finger: 2 },
+                { string: 4, fret: 2, finger: 3 }
+            ],
+            open: [6, 3, 2, 1]
+        },
+        { 
+            name: "Dm", 
+            type: "minor", 
+            notes: ["D", "F", "A"], 
+            difficulty: "medium", 
+            diagram: [
+                { string: 3, fret: 2, finger: 1 },
+                { string: 1, fret: 1, finger: 3 },
+                { string: 2, fret: 3, finger: 2 }
+            ],
+            muted: [6, 5],
+            open: [4]
+        },
+        
+        // Acordes con sostenidos/bemoles
+        { 
+            name: "C#", 
+            type: "major", 
+            notes: ["C#", "F", "G#"], 
+            difficulty: "hard", 
+            diagram: [
+                { string: 6, fret: 4, finger: 1, barre: { from: 1, to: 6 } },
+                { string: 5, fret: 6, finger: 3 },
+                { string: 4, fret: 6, finger: 4 },
+                { string: 3, fret: 5, finger: 2 }
+            ]
+        },
+        { 
+            name: "F#", 
+            type: "major", 
+            notes: ["F#", "A#", "C#"], 
+            difficulty: "hard", 
+            diagram: [
+                { string: 6, fret: 2, finger: 1, barre: { from: 1, to: 6 } },
+                { string: 5, fret: 4, finger: 3 },
+                { string: 4, fret: 4, finger: 4 },
+                { string: 3, fret: 3, finger: 2 }
+            ]
+        },
+        { 
+            name: "Bb", 
+            type: "major", 
+            notes: ["Bb", "D", "F"], 
+            difficulty: "medium", 
+            diagram: [
+                { string: 5, fret: 1, finger: 1 },
+                { string: 4, fret: 3, finger: 3 },
+                { string: 3, fret: 3, finger: 4 },
+                { string: 2, fret: 3, finger: 2 }
+            ],
+            muted: [6]
+        },
+        
+        // Acordes de séptima
+        { 
+            name: "C7", 
+            type: "7", 
+            notes: ["C", "E", "G", "Bb"], 
+            difficulty: "medium", 
+            diagram: [
+                { string: 5, fret: 3, finger: 3 },
+                { string: 4, fret: 2, finger: 2 },
+                { string: 3, fret: 3, finger: 4 }
+            ],
+            open: [2, 1]
+        },
+        { 
+            name: "G7", 
+            type: "7", 
+            notes: ["G", "B", "D", "F"], 
+            difficulty: "easy", 
+            diagram: [
+                { string: 6, fret: 3, finger: 2 },
+                { string: 5, fret: 2, finger: 1 },
+                { string: 3, fret: 3, finger: 4 }
+            ],
+            open: [4, 2, 1]
+        }
+    ];
+
+    // Función para dibujar el diagrama del acorde
+    function drawChordDiagram(container, chord) {
+        const fingerPositions = container.querySelector('.finger-positions');
+        fingerPositions.innerHTML = '';
+        
+        // Dibujar puntos de los dedos
+        chord.diagram.forEach(pos => {
+            const dot = document.createElement('div');
+            dot.className = 'finger-dot';
+            
+            // Calcular posición vertical (fret)
+            let topPercent;
+            if (pos.fret === 0) {
+                topPercent = 0;
+            } else if (pos.fret === 1) {
+                topPercent = 15; // Justo debajo del nut
+            } else {
+                topPercent = 15 + (pos.fret - 1) * 25;
+            }
+            
+            // Calcular posición horizontal (string)
+            const leftPercent = (6 - pos.string) * (100 / 5);
+            
+            dot.style.left = `${leftPercent}%`;
+            dot.style.top = `${topPercent}%`;
+            dot.textContent = pos.finger || '';
+            
+            fingerPositions.appendChild(dot);
+            
+            // Dibujar barres si existen
+            if (pos.barre) {
+                const barre = document.createElement('div');
+                barre.className = 'barre';
+                
+                const fromString = pos.barre.from;
+                const toString = pos.barre.to;
+                
+                const leftPercent = (6 - fromString) * (100 / 5);
+                const rightPercent = (6 - toString) * (100 / 5);
+                
+                barre.style.left = `${rightPercent}%`;
+                barre.style.width = `${leftPercent - rightPercent}%`;
+                barre.style.top = `${topPercent - 10}%`;
+                
+                fingerPositions.appendChild(barre);
+            }
+        });
+        
+        // Marcar cuerdas muteadas
+        if (chord.muted) {
+            chord.muted.forEach(string => {
+                const muted = document.createElement('div');
+                muted.className = 'muted-string';
+                muted.innerHTML = '×';
+                
+                const leftPercent = (6 - string) * (100 / 5);
+                muted.style.left = `${leftPercent}%`;
+                
+                fingerPositions.appendChild(muted);
+            });
+        }
+        
+        // Marcar cuerdas al aire
+        if (chord.open) {
+            chord.open.forEach(string => {
+                const open = document.createElement('div');
+                open.className = 'muted-string';
+                open.innerHTML = '○';
+                open.style.color = '#4CAF50';
+                
+                const leftPercent = (6 - string) * (100 / 5);
+                open.style.left = `${leftPercent}%`;
+                open.style.top = '-5px';
+                
+                fingerPositions.appendChild(open);
+            });
+        }
+    }
+
+    // Función para renderizar los acordes
+    function renderChords(filters = {}) {
+        const chordsGrid = document.getElementById('chordsGrid');
+        chordsGrid.innerHTML = '';
+        
+        const filteredChords = chordsData.filter(chord => {
+            // Aplicar filtros
+            if (filters.type && filters.type !== 'all' && chord.type !== filters.type) return false;
+            if (filters.note && filters.note !== 'all') {
+                const rootNote = chord.name.replace(/[^A-G#b]/g, '');
+                if (filters.note.includes('/')) {
+                    // Para notas como C#/Db
+                    const notes = filters.note.split('/');
+                    if (!notes.some(n => rootNote === n)) return false;
+                } else if (rootNote !== filters.note) {
+                    return false;
+                }
+            }
+            if (filters.difficulty && filters.difficulty !== 'all' && chord.difficulty !== filters.difficulty) return false;
+            return true;
+        });
+        
+        if (filteredChords.length === 0) {
+            chordsGrid.innerHTML = '<div class="col-12 text-center py-4">No se encontraron acordes con los filtros seleccionados</div>';
+            return;
+        }
+        
+        const template = document.getElementById('chordTemplate');
+        
+        filteredChords.forEach(chord => {
+            const clone = template.content.cloneNode(true);
+            const chordCard = clone.querySelector('.chord-card');
+            
+            // Configurar la información del acorde
+            clone.querySelector('.chord-name').textContent = chord.name;
+            
+            // Mostrar el tipo de acorde con formato
+            let typeText = '';
+            switch(chord.type) {
+                case 'major': typeText = 'Mayor'; break;
+                case 'minor': typeText = 'Menor'; break;
+                case '7': typeText = 'Séptima'; break;
+                case 'm7': typeText = 'Menor séptima'; break;
+                case 'maj7': typeText = 'Mayor séptima'; break;
+                case 'sus2': typeText = 'Sus2'; break;
+                case 'sus4': typeText = 'Sus4'; break;
+                case 'dim': typeText = 'Disminuido'; break;
+                case 'aug': typeText = 'Aumentado'; break;
+                default: typeText = chord.type;
+            }
+            clone.querySelector('.chord-type').textContent = typeText;
+            
+            // Mostrar las notas del acorde
+            clone.querySelector('.chord-notes').textContent = chord.notes.join(' - ');
+            
+            // Dibujar el diagrama del acorde
+            drawChordDiagram(clone, chord);
+            
+            chordsGrid.appendChild(clone);
+        });
+    }
+    
+    // Event listeners para los filtros
+    document.getElementById('applyFilters').addEventListener('click', () => {
+        const filters = {
+            type: document.getElementById('chordTypeFilter').value,
+            note: document.getElementById('noteFilter').value,
+            difficulty: document.getElementById('difficultyFilter').value
+        };
+        renderChords(filters);
+    });
+    
+    // Renderizar todos los acordes cuando se abre el acordeón
+    document.getElementById('chordsCollapse').addEventListener('shown.bs.collapse', () => {
+        renderChords();
+    });
+</script>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="afi.js"></script>
+</body>
+<footer class="bg-dark text-white py-4 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col text-center">
+                    <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
+                    <p class="mt-2">Tu plataforma integral de herramientas musicales.</p>
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
+                        <li class="nav-item"><a href="about.html" class="nav-link text-white">Acerca de</a></li>
+                        <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i
+                                    class="fas fa-envelope me-2"></i>Contacto</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center pt-3 border-top">
+                &copy; 2025 ConvertMusic. Todos los derechos reservados.
+            </div>
+        </div>
+    </footer>
+
+</html>
