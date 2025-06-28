@@ -345,65 +345,7 @@
         }
 
         /* Modo oscuro */
-        body.dark-mode {
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-
-        body.dark-mode .tuner-container {
-            background-color: #1e1e1e;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        body.dark-mode .tuner-header h2 {
-            color: var(--accent-color);
-        }
-
-        body.dark-mode .tuner-display {
-            background-color: #2d2d2d;
-        }
-
-        body.dark-mode .strings-container .string {
-            background-color: #2d2d2d;
-            color: #e0e0e0;
-        }
-
-        body.dark-mode .strings-container .string:hover {
-            background-color: #3d3d3d;
-        }
-
-        body.dark-mode .string-name, 
-        body.dark-mode .string-note {
-            color: var(--accent-color);
-        }
-
-        body.dark-mode .nav-tabs .nav-link {
-            color: #b0b0b0;
-        }
-
-        body.dark-mode .nav-tabs .nav-link.active {
-            color: var(--accent-color);
-        }
-
-        body.dark-mode .frequency-display,
-        body.dark-mode .tuner-status,
-        body.dark-mode .instrument-info p {
-            color: #b0b0b0;
-        }
-
-        body.dark-mode .tuner-help {
-            background-color: #2d2d2d;
-            color: #e0e0e0;
-        }
-
-        body.dark-mode .scale {
-            background-color: #444;
-        }
-
-        body.dark-mode .scale-marker::after {
-            color: #b0b0b0;
-        }
-
+        
         /* Animaciones */
         @keyframes pulse {
             0% { transform: scale(1); }

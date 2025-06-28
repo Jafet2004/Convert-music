@@ -1,30 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Modo oscuro (sin cambios)
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const darkModeIcon = document.getElementById('darkModeIcon');
-    const darkModeText = document.getElementById('darkModeText');
-    
-    if (localStorage.getItem('darkMode') === 'enabled') {
-        document.body.classList.add('dark-mode');
-        darkModeIcon.classList.replace('fa-moon', 'fa-sun');
-        darkModeText.textContent = 'Modo Claro';
-    }
-    
-    darkModeToggle.addEventListener('click', function() {
-        document.body.classList.toggle('dark-mode');
-        
-        if (document.body.classList.contains('dark-mode')) {
-            localStorage.setItem('darkMode', 'enabled');
-            darkModeIcon.classList.replace('fa-moon', 'fa-sun');
-            darkModeText.textContent = 'Modo Claro';
-        } else {
-            localStorage.setItem('darkMode', 'disabled');
-            darkModeIcon.classList.replace('fa-sun', 'fa-moon');
-            darkModeText.textContent = 'Modo Oscuro';
-        }
-    });
-    
-    // Configuración del afinador para cada instrumento
+// Configuración del afinador para cada instrumento
     setupTuner('guitar');
     setupTuner('violin');
     setupTuner('bass');

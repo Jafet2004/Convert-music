@@ -407,4 +407,90 @@ document.addEventListener('DOMContentLoaded', function() {
             showMessage('Error al generar el PDF: ' + error.message, 'danger');
         }
     }
+
+    // Función para guardar la partitura actual
+function saveCurrentScore() {
+    if (!notes || notes.length === 0) {
+        showMessage('No hay notas para guardar', 'warning');
+        return false;
+    }
+    
+    try {
+        const scoreName = document.getElementById('name').value || 'Partitura sin nombre';
+        const clef = document.getElementById('clef').value;
+        const timeSignature = document.getElementById('timeSignature').value;
+        const keySignature = document.getElementById('keySignature').value;
+        const tempo = document.getElementById('tempo').value || 120;
+        
+        // Serializar las notas correctamente para VexFlow
+        const serializedNotes = notes.map(note => {
+            // Para silencios, usar posición según la clave
+            const keys = note.duration.endsWith('r') ? 
+                [clef === 'bass' ? 'd/3' : 'b/4'] : 
+                [note.key];
+            
+            return {
+                keys: keys,
+                duration: note.duration,
+                stem_direction: clef === 'bass' ? -1 : 1, // Dirección del tallo
+                clef: clef
+            };
+        });
+        
+        const scoreData = {
+            name: scoreName,
+            clef: clef,
+            timeSignature: timeSignature,
+            keySignature: keySignature,
+            tempo: tempo,
+            notes: serializedNotes,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Obtener partituras existentes
+        let savedScores = JSON.parse(localStorage.getItem('savedScores') || '[]');
+        
+        // Evitar duplicados exactos
+        const isDuplicate = savedScores.some(existing => 
+            JSON.stringify(existing.notes) === JSON.stringify(scoreData.notes) &&
+            existing.clef === scoreData.clef &&
+            existing.timeSignature === scoreData.timeSignature
+        );
+        
+        if (isDuplicate) {
+            showMessage('Esta partitura ya está guardada', 'warning');
+            return false;
+        }
+        
+        savedScores.push(scoreData);
+        localStorage.setItem('savedScores', JSON.stringify(savedScores));
+        
+        showMessage(`"${scoreName}" guardada correctamente`, 'success');
+        return true;
+    } catch (error) {
+        console.error('Error al guardar partitura:', error);
+        showMessage('Error al guardar la partitura: ' + error.message, 'danger');
+        return false;
+    }
+}
+
+// Event listener para el botón de guardar
+document.getElementById('saveScore')?.addEventListener('click', function() {
+    // Validar que hay notas antes de guardar
+    if (notes.length === 0) {
+        showMessage('No hay notas para guardar', 'warning');
+        return;
+    }
+    
+    // Renderizar primero para validar
+    const success = drawScore(scoreContent);
+    if (success) {
+        saveCurrentScore();
+    }
+});
+
+// Event listener para el botón de ver partituras
+document.getElementById('viewScores')?.addEventListener('click', function() {
+    window.location.href = 'mis_partituras.html';
+});
 });

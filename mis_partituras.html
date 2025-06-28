@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Partituras - ConvertMusic</title>
+    <link rel="icon" href="CM.png" type="image/x-icon">
+    <link rel="icon" href="icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="style_dark.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .score-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .score-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .empty-state {
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .clef-icon {
+            font-size: 1.5rem;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-arrow-left back-button " onclick="window.history.back()"></i>
+                <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span
+                        style="color: #4fc3f7;">Music</span></div>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <nav>
+                    <ul class="nav">
+                        <li class="nav-item"><a class="nav-link text-white" href="index.html"><i
+                                    class="fas fa-home me-1"></i> Inicio</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fas fa-tools me-1"></i> Herramientas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="convert.html"><i
+                                            class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
+                                <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i>
+                                        Creación de Partituras</a></li>
+                                <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i>
+                                        Buscar Letras</a></li>
+                                <li><a class="dropdown-item" href="afinador.html"><i class="fas fa-sliders-h me-1"></i> 
+                                    Afinador Musical</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+
+                <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
+                    <i class="fas fa-moon" id="darkModeIcon"></i>
+                    <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <main class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-music me-2"></i>Mis Partituras</h1>
+            <a href="partitura.html" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Nueva Partitura
+            </a>
+        </div>
+
+        <div id="scores-container" class="row">
+            <!-- Las partituras se cargarán aquí dinámicamente -->
+        </div>
+
+        <div id="empty-state" class="empty-state text-muted">
+            <i class="fas fa-music fa-4x mb-3"></i>
+            <h3>No tienes partituras guardadas</h3>
+            <p class="mb-4">Crea una nueva partitura y guárdala para verla aquí</p>
+            <a href="partitura.html" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Crear Partitura
+            </a>
+        </div>
+
+        <!-- Modal para visualizar partitura -->
+        <div class="modal fade" id="scoreModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="scoreModalTitle">Partitura</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="modal-score-content" class="w-100 overflow-auto p-3 bg-white"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+            &copy; 2025 ConvertMusic. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="dark_mode.js"></script>
+    <script>
+        // Función para cargar partituras guardadas
+        function loadSavedScores() {
+            try {
+                const savedScores = JSON.parse(localStorage.getItem('savedScores') || '[]');
+                const container = document.getElementById('scores-container');
+                const emptyState = document.getElementById('empty-state');
+                
+                if (savedScores.length === 0) {
+                    emptyState.style.display = 'flex';
+                    container.style.display = 'none';
+                    return;
+                }
+                
+                emptyState.style.display = 'none';
+                container.style.display = 'flex';
+                container.innerHTML = '';
+                
+                savedScores.forEach((score, index) => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-6 col-lg-4 mb-4';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'card score-card h-100';
+                    card.onclick = () => showScoreModal(score);
+                    
+                    // Icono de clave
+                    let clefIcon;
+                    if (score.clef === 'treble') clefIcon = '<i class="fas fa-music clef-icon" title="Clave de Sol"></i>';
+                    else if (score.clef === 'bass') clefIcon = '<i class="fas fa-music clef-icon" style="transform: rotate(180deg);" title="Clave de Fa"></i>';
+                    else clefIcon = '<i class="fas fa-italic clef-icon" title="Clave de Do"></i>';
+                    
+                    card.innerHTML = `
+                        <div class="card-body">
+                            <h5 class="card-title">${score.name || 'Partitura sin nombre'}</h5>
+                            <div class="card-text">
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <span class="badge bg-primary">${clefIcon} ${getClefName(score.clef)}</span>
+                                    <span class="badge bg-secondary">${score.timeSignature}</span>
+                                    <span class="badge bg-info text-dark">${score.keySignature}</span>
+                                    <span class="badge bg-warning text-dark">${score.tempo} BPM</span>
+                                </div>
+                                <small class="text">Creada: ${new Date(score.timestamp).toLocaleString()}</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <button class="btn btn-sm btn-outline-danger delete-score" data-index="${index}">
+                                <i class="fas fa-trash-alt"></i> Eliminar
+                            </button>
+                        </div>
+                    `;
+                    
+                    col.appendChild(card);
+                    container.appendChild(col);
+                });
+                
+                // Event listeners para botones de eliminar
+                document.querySelectorAll('.delete-score').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const index = parseInt(this.getAttribute('data-index'));
+                        deleteScore(index);
+                    });
+                });
+                
+            } catch (error) {
+                console.error('Error al cargar partituras:', error);
+                document.getElementById('empty-state').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error al cargar partituras: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Función auxiliar para obtener nombre de clave
+        function getClefName(clef) {
+            switch(clef) {
+                case 'treble': return 'Clave de Sol';
+                case 'bass': return 'Clave de Fa';
+                case 'alto': return 'Clave de Do';
+                default: return clef;
+            }
+        }
+
+        // Función para eliminar partitura
+        function deleteScore(index) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta partitura?')) return;
+            
+            const savedScores = JSON.parse(localStorage.getItem('savedScores') || '[]');
+            savedScores.splice(index, 1);
+            localStorage.setItem('savedScores', JSON.stringify(savedScores));
+            
+            loadSavedScores();
+            showMessage('Partitura eliminada correctamente', 'success');
+        }
+
+        // Función para mostrar mensajes
+        function showMessage(text, type) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `alert alert-${type} position-fixed top-0 start-50 translate-middle-x mt-3`;
+            messageEl.style.zIndex = '1000';
+            messageEl.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                ${text}
+            `;
+            document.body.appendChild(messageEl);
+            
+            setTimeout(() => {
+                messageEl.remove();
+            }, 3000);
+        }
+
+        // Función para mostrar partitura en modal
+        function showScoreModal(score) {
+            const modal = new bootstrap.Modal(document.getElementById('scoreModal'));
+            document.getElementById('scoreModalTitle').textContent = score.name || 'Partitura';
+            
+            const container = document.getElementById('modal-score-content');
+            container.innerHTML = '<div id="vexflow-render-container" style="width:100%; min-height:300px;"></div>';
+            
+            try {
+                // Verificar si VexFlow está disponible
+                if (typeof VexFlow === 'undefined') {
+                    throw new Error('La biblioteca VexFlow no está cargada');
+                }
+                
+                // Obtener dimensiones del contenedor
+                const width = container.clientWidth - 40;
+                const height = Math.min(600, window.innerHeight * 0.7);
+                
+                // Configurar el renderer
+                const renderer = new Vex.Flow.Renderer(
+                    document.getElementById('vexflow-render-container'),
+                    Vex.Flow.Renderer.Backends.SVG
+                );
+                renderer.resize(width, height);
+                const context = renderer.getContext();
+                context.setFont('Arial', 10);
+                
+                // Configurar el sistema
+                const system = new Vex.Flow.System({
+                    x: 0,
+                    y: 0,
+                    width: width,
+                    spaceBetweenStaves: 10
+                });
+                
+                // Convertir notas al formato VexFlow
+                const vexNotes = score.notes.map(note => {
+                    return new Vex.Flow.StaveNote({
+                        keys: note.keys,
+                        duration: note.duration,
+                        clef: note.clef || score.clef,
+                        auto_stem: true
+                    });
+                });
+                
+                // Crear pentagrama
+                const stave = system.addStave({
+                    voices: [
+                        new Vex.Flow.Voice({
+                            num_beats: score.timeSignature.split('/')[0],
+                            beat_value: score.timeSignature.split('/')[1],
+                            resolution: Vex.Flow.RESOLUTION
+                        }).addTickables(vexNotes)
+                    ]
+                });
+                
+                // Añadir elementos al pentagrama
+                stave.addClef(score.clef)
+                     .addTimeSignature(score.timeSignature)
+                     .addKeySignature(score.keySignature);
+                
+                // Formatear y dibujar
+                system.format();
+                system.draw(context);
+                
+            } catch (error) {
+                console.error('Error al renderizar partitura:', error);
+                container.innerHTML = `
+                    <div class="alert alert-danger d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <div>
+                            <h5>Error al cargar la partitura</h5>
+                            <p class="mb-0">${error.message}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            modal.show();
+        }
+
+        // Cargar partituras al iniciar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedScores();
+            
+            // Configurar modo oscuro si está disponible
+            if (typeof setupDarkMode === 'function') {
+                setupDarkMode();
+            }
+        });
+    </script>
+
+    <script>
+        // Función para verificar que VexFlow esté cargado
+        function isVexFlowLoaded() {
+            if (typeof VexFlow === 'undefined') {
+                console.error('VexFlow no está disponible');
+                document.getElementById('empty-state').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error: La biblioteca de partituras no se cargó correctamente.
+                        Por favor recarga la página.
+                    </div>
+                `;
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>

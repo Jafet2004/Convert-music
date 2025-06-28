@@ -1,0 +1,219 @@
+/* Estilos para la sección de acordes */
+    .chords-container {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .accordion-button {
+        font-weight: 600;
+        color: #166088;
+        background-color: rgba(22, 96, 136, 0.1);
+    }
+
+    .accordion-button:not(.collapsed) {
+        color: white;
+        background-color: #166088;
+    }
+
+    .accordion-button:not(.collapsed)::after {
+        filter: brightness(0) invert(1);
+    }
+
+    .chords-filters {
+        background-color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .chords-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .chord-card {
+        background-color: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .chord-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .chord-diagram {
+        padding: 1rem;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+        position: relative;
+    }
+
+    .chord-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        color: #166088;
+    }
+
+    .chord-info {
+        padding: 1rem;
+    }
+
+    .chord-type {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+
+    .chord-notes {
+        font-size: 0.85rem;
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+
+    .play-chord {
+        width: 100%;
+    }
+
+    /* Estilos para el diagrama de guitarra */
+    .guitar-neck {
+        width: 160px;
+        height: 180px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .nut {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background-color: #333;
+        z-index: 2;
+    }
+
+    .frets {
+        position: absolute;
+        top: 5px;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 5px);
+    }
+
+    .fret {
+        position: relative;
+        height: 25%;
+        border-bottom: 2px solid #ccc;
+        display: flex;
+    }
+
+    .first-fret {
+        height: 30%;
+    }
+
+    .fret-position {
+        position: absolute;
+        left: -20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 10px;
+        color: #666;
+    }
+
+    .strings {
+        display: flex;
+        width: 100%;
+        height: 100%;
+    }
+
+    .string {
+        flex: 1;
+        position: relative;
+    }
+
+    .string::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 2px;
+        height: 100%;
+        background-color: #666;
+        transform: translateX(-50%);
+    }
+
+    .open-strings {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        display: flex;
+    }
+
+    .open-string {
+        flex: 1;
+        position: relative;
+    }
+
+    .finger-positions {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    .finger-dot {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #4a6fa5;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: bold;
+        transform: translate(-50%, -50%);
+        z-index: 3;
+    }
+
+    .muted-string {
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #ff4d4d;
+        font-size: 16px;
+        z-index: 3;
+    }
+
+    .barre {
+        position: absolute;
+        height: 20px;
+        background-color: rgba(74, 111, 165, 0.7);
+        border-radius: 10px;
+        z-index: 2;
+    }
+
+    @media (max-width: 768px) {
+        .chords-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        }
+        
+        .guitar-neck {
+            width: 140px;
+            height: 160px;
+        }
+    }
