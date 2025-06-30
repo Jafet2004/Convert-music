@@ -367,15 +367,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showFullscreenPreview() {
-        if (notes.length === 0) {
-            showMessage('Debes agregar al menos una nota o silencio', 'danger');
-            return;
-        }
-        document.getElementById('fullscreenModalTitle').textContent = scoreName;
-        if (drawScore(fullscreenScore, true)) {
-            fullscreenModal.show();
-        }
+    if (notes.length === 0) {
+        showMessage('Debes agregar al menos una nota o silencio', 'danger');
+        return;
     }
+
+    // Limpiar el contenido previo
+    fullscreenScore.innerHTML = '';
+
+    // Clonar el contenido de la partitura normal
+    const scoreClone = scoreContent.cloneNode(true);
+    fullscreenScore.appendChild(scoreClone);
+
+    // Configurar el modal para pantalla completa
+    const modalDialog = document.querySelector('#fullscreenModal .modal-dialog');
+    modalDialog.classList.add('modal-xl');
+    modalDialog.style.maxWidth = '95vw';
+
+    // Mostrar el modal
+    fullscreenModal.show();
+
+    // Ajustar el tamaño después de mostrar el modal
+    document.getElementById('fullscreenModal').addEventListener('shown.bs.modal', function() {
+        // Ajustar el SVG para que ocupe todo el espacio disponible
+        const svg = fullscreenScore.querySelector('svg');
+        if (svg) {
+            svg.style.width = '100%';
+            svg.style.height = 'auto';
+            svg.style.maxHeight = 'calc(100vh - 200px)';
+        }
+    });
+}
 
     async function downloadScore(container) {
         if (!container.hasChildNodes() || container.querySelector('svg') === null) {
