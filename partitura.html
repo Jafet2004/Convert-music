@@ -11,7 +11,9 @@
     <link rel="stylesheet" href="style_dark.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+    <style>
+        
+    </style>
 
 <body>
     <header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
@@ -87,21 +89,21 @@
                         <div class="col-md-6 mb-3">
                             <label for="keySignature" class="form-label">Armadura:</label>
                             <select id="keySignature" class="form-select">
-                                <option value="C">Do Mayor / La menor</option>
-                                <option value="G">Sol Mayor / Mi menor</option>
-                                <option value="D">Re Mayor / Si menor</option>
-                                <option value="A">La Mayor / Fa# menor</option>
-                                <option value="E">Mi Mayor / Do# menor</option>
-                                <option value="B">Si Mayor / Sol# menor</option>
-                                <option value="F#">Fa# Mayor / Re# menor</option>
-                                <option value="C#">Do# Mayor / La# menor</option>
-                                <option value="F">Fa Mayor / Re menor</option>
-                                <option value="Bb">Sib Mayor / Sol menor</option>
-                                <option value="Eb">Mib Mayor / Do menor</option>
-                                <option value="Ab">Lab Mayor / Fa menor</option>
-                                <option value="Db">Reb Mayor / Sib menor</option>
-                                <option value="Gb">Solb Mayor / Mib menor</option>
-                                <option value="Cb">Dob Mayor / Lab menor</option>
+                                <option value="C">C / Am</option>
+                                <option value="G">G / Em</option>
+                                <option value="D">D / Bm</option>
+                                <option value="A">A / F#m</option>
+                                <option value="E">E / C#m</option>
+                                <option value="B">B / G#m</option>
+                                <option value="F#">F# / D#m</option>
+                                <option value="C#">C# / A#m</option>
+                                <option value="F">F / Dm</option>
+                                <option value="Bb">Bb / G m</option>
+                                <option value="Eb">Eb / Cm</option>
+                                <option value="Ab">Ab / Fm</option>
+                                <option value="Db">Db / Bbm</option>
+                                <option value="Gb">Gb / Ebm</option>
+                                <option value="Cb">Cb / Abm</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -167,9 +169,10 @@
                             <button id="drawScore" class="btn btn-success flex-grow-1">
                                 <i class="fas fa-eye me-1"></i> <span class="d-none d-sm-inline">Ver Partitura</span>
                             </button>
-                            <button id="previewScore" class="btn btn-primary flex-grow-1">
-                                <i class="fas fa-expand me-1"></i> <span class="d-none d-sm-inline">Pantalla
-                                    Completa</span>
+                            <button id="previewScore" class="btn btn-primary flex-grow-1"
+                                title="Ver en pantalla completa">
+                                <i class="fas fa-expand me-1"></i>
+                                <span class="d-none d-sm-inline">Pantalla Completa</span>
                             </button>
                             <button id="downloadPdf" class="btn btn-secondary flex-grow-1" disabled>
                                 <i class="fas fa-download me-1"></i> <span class="d-none d-sm-inline">Descargar</span>
