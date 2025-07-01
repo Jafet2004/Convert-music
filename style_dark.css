@@ -328,3 +328,166 @@ body.dark-mode .scale {
 body.dark-mode .scale-marker::after {
     color: #b0b0b0;
 }
+
+.dark-mode {
+    --primary-color: #4361ee;
+    --secondary-color: #4cc9f0;
+    --accent-color: #4cc9f0;
+    --danger-color: #f72585;
+    --success-color: #4ad66d;
+    --warning-color: #f8961e;
+    --text-color: #e0e0e0;
+    --text-light: #b0b0b0;
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --border-color: #333;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+/* Contenedores en modo oscuro */
+.dark-mode .search-box,
+.dark-mode .lyrics-container,
+.dark-mode .artist-results, 
+.dark-mode .song-results,
+.dark-mode .artist-tracks {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+/* Formularios en modo oscuro */
+.dark-mode .input-group input {
+    background-color: #2d2d2d;
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.dark-mode .input-group input:focus {
+    background-color: #333;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.25);
+}
+
+.dark-mode ::placeholder {
+    color: #a0a0a0 !important;
+    opacity: 1 !important;
+}
+
+/* Texto en modo oscuro */
+.dark-mode .search-hero h1 {
+    color: var(--accent-color);
+}
+
+.dark-mode .subtitle {
+    color: #f1ebeb !important;
+}
+
+.dark-mode .song-title {
+    color: var(--accent-color) !important;
+}
+
+.dark-mode .artist-name {
+    color: #e7e4e4 !important;
+}
+
+.dark-mode .lyrics {
+    color: var(--text-color);
+}
+
+/* Listas en modo oscuro */
+.dark-mode .track-list li {
+    border-bottom-color: #444;
+}
+
+.dark-mode .track-list li:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--accent-color);
+}
+
+.dark-mode .song-item {
+    border-bottom-color: #444;
+}
+
+.dark-mode .song-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .song-item-title {
+    color: var(--accent-color) !important;
+}
+
+.dark-mode .song-item-artist {
+    color: #b0b0b0 !important;
+}
+
+/* Botones en modo oscuro */
+.dark-mode .search-button {
+    background: var(--secondary-color);
+}
+
+.dark-mode .search-button:hover {
+    background: #2a0a8a;
+}
+
+.dark-mode .download-btn {
+    background: var(--success-color);
+}
+
+.dark-mode .download-btn:hover {
+    background: #3cb35b;
+}
+
+/* Video en modo oscuro */
+.dark-mode .video-container {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Dropdown en modo oscuro */
+.dark-mode .dropdown-menu {
+    background-color: #2d2d2d;
+    border-color: #444;
+}
+
+.dark-mode .dropdown-menu a {
+    color: var(--text-color);
+}
+
+.dark-mode .dropdown-menu a:hover {
+    background-color: #333;
+    color: var(--accent-color);
+}
+
+/* Estados en modo oscuro */
+.dark-mode .loading {
+    color: #b0b0b0;
+}
+
+.dark-mode .error-message {
+    background: rgba(247, 37, 133, 0.15);
+    border-left-color: var(--danger-color);
+    color: #ff6b9a;
+}
+
+/* Botón de reintentar en modo oscuro */
+.dark-mode .retry-btn {
+    background-color: #4a76a8;
+    color: white;
+}
+
+.dark-mode .retry-btn:hover {
+    background-color: #3a5f8a;
+}
+
+/* Modo oscuro */
+.dark-mode .clear-input {
+    color: #b0b0b0;
+}
+
+.dark-mode .clear-input:hover {
+    color: #e0e0e0;
+}

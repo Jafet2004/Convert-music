@@ -334,4 +334,49 @@ function onPlayerReady(event) {
         titleInput.value = title;
         searchLyrics();
     };
+
+    function showError(message) {
+    let errorMessage = message;
+    
+    // Verificar si el error es de conexión
+    if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
+        errorMessage = 'Servidor no disponible. Por favor, verifica tu conexión a internet o intenta nuevamente más tarde.';
+    }
+
+    resultsDiv.innerHTML = `
+        <div class="error-message">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <p>${errorMessage}</p>
+            <button onclick="window.location.reload()" class="retry-btn">
+                <i class="fas fa-sync-alt"></i> Intentar nuevamente
+            </button>
+        </div>
+    `;
+}
+
+// Agregar al final del archivo, antes del cierre del event listener DOMContentLoaded
+
+// Función para limpiar inputs
+document.querySelectorAll('.clear-input').forEach(button => {
+    button.addEventListener('click', function() {
+        const targetId = this.getAttribute('data-target');
+        document.getElementById(targetId).value = '';
+        this.style.opacity = '0';
+        document.getElementById(targetId).focus();
+    });
 });
+
+// Mostrar/ocultar botones de limpiar según contenido
+['artist', 'title'].forEach(id => {
+    const input = document.getElementById(id);
+    const clearBtn = document.querySelector(`.clear-input[data-target="${id}"]`);
+    
+    input.addEventListener('input', function() {
+        clearBtn.style.opacity = this.value ? '1' : '0';
+    });
+});
+});
+
+

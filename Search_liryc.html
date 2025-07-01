@@ -62,11 +62,21 @@
                     <div class="search-inputs">
                         <div class="input-group">
                             <label for="artist"><i class="fas fa-user"></i> Artista</label>
-                            <input type="text" id="artist" placeholder="Ej: New Wine">
+                            <div class="input-with-clear">
+                                <input type="text" id="artist" placeholder="Ej: New Wine">
+                                <button class="clear-input" data-target="artist">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="input-group">
                             <label for="title"><i class="fas fa-music"></i> Canción</label>
-                            <input type="text" id="title" placeholder="Ej: Aceite fresco">
+                            <div class="input-with-clear">
+                                <input type="text" id="title" placeholder="Ej: Aceite fresco">
+                                <button class="clear-input" data-target="title">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <button id="searchBtn" class="search-button">
