@@ -378,5 +378,3 @@ document.querySelectorAll('.clear-input').forEach(button => {
     });
 });
 });
-
-
