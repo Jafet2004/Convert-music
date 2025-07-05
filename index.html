@@ -315,6 +315,33 @@
     <script src="script_ind.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // script_ind.js
+
+// Función para asegurar que siempre exista el admin
+function ensureAdminExists() {
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const adminExists = users.some(u => u.username === 'TH3B4R4K');
+    
+    if (!adminExists) {
+        const adminUser = {
+            firstName: 'Jafet',
+            lastName: 'Aguilar',
+            username: 'TH3B4R4K',
+            email: 'jafetalexander58@gmail.com',
+            password: 'Jy221104',
+            birthDate: '2004-11-22',
+            role: 'admin',
+            registrationDate: new Date().toISOString().split('T')[0]
+        };
+        users.push(adminUser);
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+}
+
+// Llamada inicial cuando se carga el DOM
+document.addEventListener('DOMContentLoaded', ensureAdminExists);
+
+// ... (el resto de tu código existente)
             // 1. Simulación de afinador con soporte táctil
             const tunerCards = document.querySelectorAll('.tuner-card');
             tunerCards.forEach(card => {
