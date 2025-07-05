@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    
 </head>
 
 <body>
@@ -64,7 +63,6 @@
                                                 class="fas fa-sliders-h me-1"></i> Afinador Musical</a></li>
                                 </ul>
                             </li>
-                            <!-- En la sección del header, reemplaza el botón de usuario con este código: -->
                             <li class="nav-item">
                                 <a id="userBtn" class="btn btn-outline-light ms-lg-3" href="#">
                                     <i class="fas fa-user me-1"></i>
@@ -317,204 +315,227 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script_ind.js"></script>
-  <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. Simulación de afinador
-    const tunerCards = document.querySelectorAll('.tuner-card');
-    tunerCards.forEach(card => {
-        const noteDisplay = card.querySelector('.tuner-note-preview');
-        const needle = card.querySelector('.tuner-needle-preview');
-        const accuracyMarker = card.querySelector('.tuner-accuracy-marker');
-        const statusDisplay = card.querySelector('.tuner-status-preview');
-        const strings = card.querySelectorAll('.tuner-string-preview');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Simulación de afinador
+            const tunerCards = document.querySelectorAll('.tuner-card');
+            tunerCards.forEach(card => {
+                const noteDisplay = card.querySelector('.tuner-note-preview');
+                const needle = card.querySelector('.tuner-needle-preview');
+                const accuracyMarker = card.querySelector('.tuner-accuracy-marker');
+                const statusDisplay = card.querySelector('.tuner-status-preview');
+                const strings = card.querySelectorAll('.tuner-string-preview');
 
-        strings.forEach(string => {
-            string.addEventListener('mouseenter', function() {
-                const note = this.querySelector('.tuner-string-note').textContent;
-                noteDisplay.textContent = note;
-                noteDisplay.classList.remove('tuner-in-tune');
+                strings.forEach(string => {
+                    string.addEventListener('mouseenter', function() {
+                        const note = this.querySelector('.tuner-string-note').textContent;
+                        noteDisplay.textContent = note;
+                        noteDisplay.classList.remove('tuner-in-tune');
 
-                const randomOffset = (Math.random() * 100 - 50);
-                const needlePosition = 50 + (randomOffset / 50 * 25);
-                needle.style.transform = `translateX(-50%) translateX(${Math.min(Math.max(needlePosition - 50, -40), 40)}px)`;
+                        const randomOffset = (Math.random() * 100 - 50);
+                        const needlePosition = 50 + (randomOffset / 50 * 25);
+                        needle.style.transform = `translateX(-50%) translateX(${Math.min(Math.max(needlePosition - 50, -40), 40)}px)`;
 
-                const accuracyPosition = 50 + (randomOffset / 50 * 25);
-                accuracyMarker.style.left = `${Math.min(Math.max(accuracyPosition, 5), 95)}%`;
+                        const accuracyPosition = 50 + (randomOffset / 50 * 25);
+                        accuracyMarker.style.left = `${Math.min(Math.max(accuracyPosition, 5), 95)}%`;
 
-                if (Math.abs(randomOffset) < 5) {
-                    accuracyMarker.style.backgroundColor = 'var(--correct-color)';
-                    statusDisplay.textContent = 'Perfectamente afinado!';
-                    noteDisplay.classList.add('tuner-in-tune');
-                } else if (Math.abs(randomOffset) < 20) {
-                    accuracyMarker.style.backgroundColor = 'var(--close-color)';
-                    statusDisplay.textContent = randomOffset > 0 ? 'Un poco alto, baja la tensión' : 'Un poco bajo, sube la tensión';
+                        if (Math.abs(randomOffset) < 5) {
+                            accuracyMarker.style.backgroundColor = 'var(--correct-color)';
+                            statusDisplay.textContent = 'Perfectamente afinado!';
+                            noteDisplay.classList.add('tuner-in-tune');
+                        } else if (Math.abs(randomOffset) < 20) {
+                            accuracyMarker.style.backgroundColor = 'var(--close-color)';
+                            statusDisplay.textContent = randomOffset > 0 ? 'Un poco alto, baja la tensión' : 'Un poco bajo, sube la tensión';
+                        } else {
+                            accuracyMarker.style.backgroundColor = 'var(--far-color)';
+                            statusDisplay.textContent = randomOffset > 0 ? 'Muy alto, baja la tensión' : 'Muy bajo, sube la tensión';
+                        }
+                    });
+
+                    // Añadir soporte táctil para móviles
+                    string.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        const note = this.querySelector('.tuner-string-note').textContent;
+                        noteDisplay.textContent = note;
+                        noteDisplay.classList.remove('tuner-in-tune');
+
+                        const randomOffset = (Math.random() * 100 - 50);
+                        const needlePosition = 50 + (randomOffset / 50 * 25);
+                        needle.style.transform = `translateX(-50%) translateX(${Math.min(Math.max(needlePosition - 50, -40), 40)}px)`;
+
+                        const accuracyPosition = 50 + (randomOffset / 50 * 25);
+                        accuracyMarker.style.left = `${Math.min(Math.max(accuracyPosition, 5), 95)}%`;
+
+                        if (Math.abs(randomOffset) < 5) {
+                            accuracyMarker.style.backgroundColor = 'var(--correct-color)';
+                            statusDisplay.textContent = 'Perfectamente afinado!';
+                            noteDisplay.classList.add('tuner-in-tune');
+                        } else if (Math.abs(randomOffset) < 20) {
+                            accuracyMarker.style.backgroundColor = 'var(--close-color)';
+                            statusDisplay.textContent = randomOffset > 0 ? 'Un poco alto, baja la tensión' : 'Un poco bajo, sube la tensión';
+                        } else {
+                            accuracyMarker.style.backgroundColor = 'var(--far-color)';
+                            statusDisplay.textContent = randomOffset > 0 ? 'Muy alto, baja la tensión' : 'Muy bajo, sube la tensión';
+                        }
+                    });
+                });
+            });
+
+            // 2. Sistema de autenticación mejorado
+            const userBtn = document.getElementById('userBtn');
+            const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const showRegisterForm = document.getElementById('showRegisterForm');
+            const showLoginForm = document.getElementById('showLoginForm');
+            const welcomeMessage = document.getElementById('welcome-message');
+            const welcomeText = document.getElementById('welcome-text');
+
+            // Alternar entre formularios
+            showRegisterForm.addEventListener('click', function(e) {
+                e.preventDefault();
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            });
+
+            showLoginForm.addEventListener('click', function(e) {
+                e.preventDefault();
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'block';
+            });
+
+            // Manejar registro
+            registerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const userData = {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    username: document.getElementById('username').value,
+                    email: document.getElementById('email').value,
+                    birthDate: document.getElementById('birthDate').value,
+                    password: document.getElementById('password').value,
+                    role: 'user',
+                    registrationDate: new Date().toISOString()
+                };
+
+                let users = JSON.parse(localStorage.getItem('users')) || [];
+                
+                if (users.some(user => user.username === userData.username)) {
+                    alert('Este nombre de usuario ya está registrado.');
+                    return;
+                }
+
+                users.push(userData);
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+
+                showWelcomeMessage(`Bienvenido, ${userData.firstName}!`);
+                loginModal.hide();
+                updateUserButton(userData);
+                resetForms();
+                
+                setTimeout(() => window.location.href = 'perfil.html', 1000);
+            });
+
+            // Manejar login - Versión mejorada para móviles
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const username = document.getElementById('loginUsername').value;
+                const password = document.getElementById('loginPassword').value;
+                const users = JSON.parse(localStorage.getItem('users')) || [];
+                const user = users.find(u => u.username === username && u.password === password);
+
+                if (!user) {
+                    alert('Credenciales incorrectas. Inténtalo de nuevo.');
+                    return;
+                }
+
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                showWelcomeMessage(`Bienvenido de nuevo, ${user.firstName}!`);
+                loginModal.hide();
+                updateUserButton(user);
+                resetForms();
+                
+                // Redirección basada en rol
+                if (user.role === 'admin') {
+                    window.location.href = 'gestionAd.html';
                 } else {
-                    accuracyMarker.style.backgroundColor = 'var(--far-color)';
-                    statusDisplay.textContent = randomOffset > 0 ? 'Muy alto, baja la tensión' : 'Muy bajo, sube la tensión';
+                    window.location.href = 'perfil.html';
                 }
             });
+
+            // Funciones auxiliares
+            function showWelcomeMessage(message) {
+                if (!welcomeText || !welcomeMessage) return;
+                welcomeText.textContent = message;
+                welcomeMessage.style.display = 'block';
+                setTimeout(() => {
+                    if (welcomeMessage) welcomeMessage.style.display = 'none';
+                }, 3000);
+            }
+
+            function updateUserButton(userData) {
+                if (!userBtn) return;
+                
+                if (userData) {
+                    userBtn.innerHTML = `<i class="fas fa-user-check me-1"></i><span class="d-none d-lg-inline">${userData.firstName}</span>`;
+                    userBtn.onclick = function(e) {
+                        e.preventDefault();
+                        window.location.href = userData.role === 'admin' ? 'gestionAd.html' : 'perfil.html';
+                    };
+                } else {
+                    userBtn.innerHTML = `<i class="fas fa-user me-1"></i><span class="d-none d-lg-inline">Iniciar Sesión</span>`;
+                    userBtn.onclick = function(e) {
+                        e.preventDefault();
+                        loginModal.show();
+                    };
+                }
+            }
+
+            function resetForms() {
+                loginForm.reset();
+                registerForm.reset();
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            }
+
+            // Verificar sesión al cargar
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                updateUserButton(currentUser);
+            } else {
+                updateUserButton(null);
+            }
+
+            // Inicializar admin si no existe
+            initializeAdminUser();
         });
-    });
 
-    // 2. Sistema de autenticación
-    const userBtn = document.getElementById('userBtn');
-    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const showRegisterForm = document.getElementById('showRegisterForm');
-    const showLoginForm = document.getElementById('showLoginForm');
-    const welcomeMessage = document.getElementById('welcome-message');
-    const welcomeText = document.getElementById('welcome-text');
-
-    // Alternar entre formularios
-    showRegisterForm.addEventListener('click', function(e) {
-        e.preventDefault();
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-    });
-
-    showLoginForm.addEventListener('click', function(e) {
-        e.preventDefault();
-        registerForm.style.display = 'none';
-        loginForm.style.display = 'block';
-    });
-
-    // Manejar registro
-    registerForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const userData = {
-            firstName: document.getElementById('firstName').value,
-            lastName: document.getElementById('lastName').value,
-            username: document.getElementById('username').value,
-            email: document.getElementById('email').value,
-            birthDate: document.getElementById('birthDate').value,
-            password: document.getElementById('password').value,
-            role: 'user',
-            registrationDate: new Date().toISOString()
-        };
-
-        let users = JSON.parse(localStorage.getItem('users')) || [];
-        
-        if (users.some(user => user.username === userData.username)) {
-            alert('Este nombre de usuario ya está registrado.');
-            return;
+        function initializeAdminUser() {
+            try {
+                let users = JSON.parse(localStorage.getItem('users')) || [];
+                const adminExists = users.some(u => u.username === 'TH3B4R4K');
+                
+                if (!adminExists) {
+                    const adminUser = {
+                        firstName: 'Jafet',
+                        lastName: 'Aguilar',
+                        username: 'TH3B4R4K',
+                        email: 'jafet@example.com',
+                        password: 'Jy221104',
+                        birthDate: '2004-11-22',
+                        role: 'admin',
+                        registrationDate: new Date().toISOString()
+                    };
+                    users.push(adminUser);
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+            } catch (e) {
+                console.error('Error al inicializar admin:', e);
+            }
         }
-
-        if (userData.username === 'TH3B4R4K') {
-            alert('Este nombre de usuario no está disponible para registro.');
-            return;
-        }
-
-        users.push(userData);
-        localStorage.setItem('users', JSON.stringify(users));
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-
-        showWelcomeMessage(`Bienvenido, ${userData.firstName}!`);
-        loginModal.hide();
-        updateUserButton(userData);
-        resetForms();
-        
-        setTimeout(() => window.location.href = 'perfil.html', 1000);
-    });
-
-    // Manejar login
-    loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const username = document.getElementById('loginUsername').value;
-        const password = document.getElementById('loginPassword').value;
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const user = users.find(u => u.username === username && u.password === password);
-
-        if (!user) {
-            alert('Credenciales incorrectas. Inténtalo de nuevo.');
-            return;
-        }
-
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        showWelcomeMessage(`Bienvenido de nuevo, ${user.firstName}!`);
-        loginModal.hide();
-        updateUserButton(user);
-        resetForms();
-        
-        // Redirección inmediata para admin
-        if (username === 'TH3B4R4K' && password === 'Jy221104') {
-            window.location.href = 'gestionAd.html';
-        } else {
-            window.location.href = 'perfil.html';
-        }
-    });
-
-    // Funciones auxiliares
-    function showWelcomeMessage(message) {
-        if (!welcomeText || !welcomeMessage) return;
-        welcomeText.textContent = message;
-        welcomeMessage.style.display = 'block';
-        setTimeout(() => {
-            if (welcomeMessage) welcomeMessage.style.display = 'none';
-        }, 3000);
-    }
-
-    function updateUserButton(userData) {
-        if (!userBtn) return;
-        
-        if (userData) {
-            userBtn.innerHTML = `<i class="fas fa-user-check me-1"></i><span class="d-none d-lg-inline">${userData.firstName}</span>`;
-            userBtn.onclick = function(e) {
-                e.preventDefault();
-                window.location.href = userData.username === 'TH3B4R4K' ? 'gestionAd.html' : 'perfil.html';
-            };
-        } else {
-            userBtn.innerHTML = `<i class="fas fa-user me-1"></i><span class="d-none d-lg-inline">Iniciar Sesión</span>`;
-            userBtn.onclick = function(e) {
-                e.preventDefault();
-                if (loginModal) loginModal.show();
-            };
-        }
-    }
-
-    function resetForms() {
-        if (loginForm) loginForm.reset();
-        if (registerForm) registerForm.reset();
-        if (loginForm) loginForm.style.display = 'block';
-        if (registerForm) registerForm.style.display = 'none';
-    }
-
-    // Verificar sesión al cargar
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (currentUser && currentUser.username === 'TH3B4R4K') {
-        window.location.href = 'gestionAd.html';
-    } else if (currentUser) {
-        updateUserButton(currentUser);
-    } else {
-        updateUserButton(null);
-    }
-
-    // Inicializar admin si no existe
-    initializeAdminUser();
-});
-
-function initializeAdminUser() {
-    try {
-        let users = JSON.parse(localStorage.getItem('users')) || [];
-        if (!users.some(u => u.username === 'TH3B4R4K')) {
-            users.push({
-                firstName: 'Jafet',
-                lastName: 'Aguilar',
-                username: 'TH3B4R4K',
-                email: 'jafet@example.com',
-                password: 'Jy221104',
-                role: 'admin',
-                registrationDate: new Date().toISOString()
-            });
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-    } catch (e) {
-        console.error('Error al inicializar admin:', e);
-    }
-}
-</script>
+    </script>
 </body>
-
 </html>
