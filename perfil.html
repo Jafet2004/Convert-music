@@ -22,6 +22,37 @@
             transition: all 0.3s ease;
         }
 
+        body.dark-mode {
+            background-color: #121212;
+            color: #f8f9fa;
+        }
+
+        .dark-mode .card {
+            background-color: #1e1e1e;
+            color: #f8f9fa;
+        }
+
+        .dark-mode .detail-item {
+            background-color: rgba(110, 142, 251, 0.1);
+            color: #f8f9fa;
+        }
+
+        .dark-mode .form-control,
+        .dark-mode .form-select {
+            background-color: #2d2d2d;
+            color: #f8f9fa;
+            border-color: #444;
+        }
+
+        .dark-mode .table {
+            color: #f8f9fa;
+        }
+
+        .dark-mode .table-hover tbody tr:hover {
+            color: #f8f9fa;
+            background-color: rgba(110, 142, 251, 0.1);
+        }
+
         .card {
             border: none;
             border-radius: 12px;
@@ -94,8 +125,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-       
-
         @keyframes slideInRight {
             from { transform: translateX(100%); }
             to { transform: translateX(0); }
@@ -123,6 +152,14 @@
 
         .floating-btn:hover {
             transform: scale(1.1) translateY(-5px);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1100;
+            min-width: 300px;
         }
     </style>
 </head>
@@ -177,6 +214,7 @@
                                 <th>Usuario</th>
                                 <th>Email</th>
                                 <th>Fecha Nac.</th>
+                                <th>Registro</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -189,7 +227,14 @@
         </div>
     </div>
 
-    
+    <!-- Toast container -->
+    <div id="toast" class="toast position-fixed bottom-0 end-0 m-3" style="display: none; z-index: 1100;">
+        <div class="toast-header">
+            <strong id="toast-title" class="me-auto">Mensaje</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div id="toast-message" class="toast-body"></div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -209,6 +254,16 @@
                 setTimeout(() => window.location.href = 'index.html', 2000);
                 return;
             }
+
+            // Actualizar último acceso
+            currentUser.lastLogin = new Date().toISOString();
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // Actualizar en la lista de usuarios
+            const updatedUsers = users.map(u => 
+                u.username === currentUser.username ? currentUser : u
+            );
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
 
             // Mostrar perfil
             renderProfile(currentUser);
@@ -234,6 +289,18 @@
                 month: 'long', 
                 day: 'numeric'
             }) : 'No especificada';
+
+            const memberSince = user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('es-ES', {
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric'
+            }) : new Date().toLocaleDateString('es-ES', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString('es-ES') : 'Nunca';
 
             profileContent.innerHTML = `
                 <div class="card-header">
@@ -289,11 +356,11 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <p><strong><i class="fas fa-calendar-alt me-2"></i>Miembro desde:</strong> 
-                                            ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                            ${memberSince}</p>
                                         </div>
                                         <div class="col-md-6">
                                             <p><strong><i class="fas fa-key me-2"></i>Último acceso:</strong> 
-                                            ${new Date().toLocaleString('es-ES')}</p>
+                                            ${lastLogin}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -399,13 +466,25 @@
         }
 
         function savePersonalInfo(oldUser) {
+            const email = document.getElementById('editEmail').value;
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('Por favor ingresa un email válido', 'danger');
+                return;
+            }
+
             const updatedUser = {
                 ...oldUser,
                 firstName: document.getElementById('editFirstName').value,
                 lastName: document.getElementById('editLastName').value,
-                email: document.getElementById('editEmail').value,
+                email: email,
                 birthDate: document.getElementById('editBirthDate').value
             };
+
+            // Validar que el nombre y apellido no estén vacíos
+            if (!updatedUser.firstName.trim() || !updatedUser.lastName.trim()) {
+                showToast('Nombre y apellido son campos obligatorios', 'danger');
+                return;
+            }
 
             // Actualizar en localStorage
             const users = JSON.parse(localStorage.getItem('users'));
@@ -434,6 +513,7 @@
                         <div class="mb-3">
                             <label for="newPassword" class="form-label">Nueva Contraseña</label>
                             <input type="password" class="form-control" id="newPassword" required>
+                            <small class="text-muted">La contraseña debe tener al menos 8 caracteres</small>
                         </div>
                         
                         <div class="mb-3">
@@ -479,6 +559,11 @@
                 return;
             }
 
+            if(newPassword.length < 8) {
+                showToast('La contraseña debe tener al menos 8 caracteres', 'danger');
+                return;
+            }
+
             // Actualizar contraseña
             const updatedUser = { ...user, password: newPassword };
             const users = JSON.parse(localStorage.getItem('users'));
@@ -498,7 +583,7 @@
             tableBody.innerHTML = '';
             
             if(users.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No hay usuarios registrados</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No hay usuarios registrados</td></tr>';
                 return;
             }
             
@@ -510,6 +595,7 @@
                     <td>${user.username}</td>
                     <td>${user.email}</td>
                     <td>${user.birthDate ? new Date(user.birthDate).toLocaleDateString('es-ES') : 'N/A'}</td>
+                    <td>${user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('es-ES') : 'N/A'}</td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary edit-user-btn" data-username="${user.username}">
                             <i class="fas fa-edit"></i>
@@ -611,15 +697,27 @@
 
             // Configurar evento de guardar
             document.getElementById('saveUserChangesBtn').addEventListener('click', function() {
+                const email = document.getElementById('modalEmail').value;
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showToast('Por favor ingresa un email válido', 'danger');
+                    return;
+                }
+
                 const updatedUser = {
                     ...user,
                     firstName: document.getElementById('modalFirstName').value,
                     lastName: document.getElementById('modalLastName').value,
                     username: document.getElementById('modalUsername').value,
-                    email: document.getElementById('modalEmail').value,
+                    email: email,
                     birthDate: document.getElementById('modalBirthDate').value,
                     role: document.getElementById('modalRole').value
                 };
+
+                // Validar campos obligatorios
+                if (!updatedUser.firstName.trim() || !updatedUser.lastName.trim() || !updatedUser.username.trim()) {
+                    showToast('Nombre, apellido y usuario son campos obligatorios', 'danger');
+                    return;
+                }
 
                 // Actualizar en localStorage
                 const updatedUsers = JSON.parse(localStorage.getItem('users')).map(u => 
@@ -692,7 +790,7 @@
         }
 
         function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
+            const toastEl = document.getElementById('toast');
             const toastTitle = document.getElementById('toast-title');
             const toastMessage = document.getElementById('toast-message');
             
@@ -707,11 +805,11 @@
             toastMessage.textContent = message;
             
             // Mostrar toast
-            toast.style.display = 'block';
+            toastEl.style.display = 'block';
             
             // Ocultar después de 3 segundos
             setTimeout(() => {
-                toast.style.display = 'none';
+                toastEl.style.display = 'none';
             }, 3000);
         }
     </script>

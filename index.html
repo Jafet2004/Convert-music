@@ -125,11 +125,12 @@
                         </div>
                         <div class="mb-3">
                             <label for="birthDate" class="form-label">Fecha de Nacimiento</label>
-                            <input type="date" class="form-control" id="birthDate" required>
+                            <input type="date" class="form-control" id="birthDate" required max="${new Date().toISOString().split('T')[0]}">
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="password" required>
+                            <input type="password" class="form-control" id="password" required minlength="8">
+                            <small class="text-muted">Mínimo 8 caracteres</small>
                         </div>
                         <button type="submit" class="btn btn-primary btn-submit">
                             <i class="fas fa-user-plus me-2"></i>Registrarse
@@ -366,6 +367,31 @@
             const welcomeMessage = document.getElementById('welcome-message');
             const welcomeText = document.getElementById('welcome-text');
 
+            // Función para formatear fechas en formato legible
+            function formatDate(dateString) {
+                if (!dateString) return 'No especificada';
+                
+                const options = { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    timeZone: 'UTC' // Asegura que no haya ajustes por zona horaria
+                };
+                
+                try {
+                    // Asegurarse de que la fecha esté en formato ISO (YYYY-MM-DD)
+                    const dateParts = dateString.split('-');
+                    if (dateParts.length === 3) {
+                        const isoDate = `${dateParts[0]}-${dateParts[1].padStart(2, '0')}-${dateParts[2].padStart(2, '0')}`;
+                        return new Date(isoDate).toLocaleDateString('es-ES', options);
+                    }
+                    return new Date(dateString).toLocaleDateString('es-ES', options);
+                } catch (e) {
+                    console.error('Error formateando fecha:', e);
+                    return dateString; // Devuelve el valor original si hay error
+                }
+            }
+
             // Función para verificar si es usuario admin (por correo)
             function isAdmin(email) {
                 return email === 'jafetalexander58@gmail.com';
@@ -379,9 +405,9 @@
                     username: 'TH3B4R4K',
                     email: 'jafetalexander58@gmail.com',
                     password: 'Jy221104',
-                    birthDate: '2004-11-22',
+                    birthDate: '2004-11-22', // Formato ISO (YYYY-MM-DD)
                     role: 'admin',
-                    registrationDate: new Date().toISOString()
+                    registrationDate: new Date().toISOString().split('T')[0] // Solo la fecha sin hora
                 };
             }
 
@@ -389,35 +415,68 @@
             registerForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
+                // Validar fecha de nacimiento
+                const birthDateInput = document.getElementById('birthDate');
+                const birthDateValue = birthDateInput.value;
+                
+                if (!birthDateValue) {
+                    alert('Por favor ingresa tu fecha de nacimiento');
+                    return;
+                }
+
+                // Validar que la fecha no sea futura
+                const today = new Date().toISOString().split('T')[0];
+                if (birthDateValue > today) {
+                    alert('La fecha de nacimiento no puede ser futura');
+                    return;
+                }
+
                 const userData = {
-                    firstName: document.getElementById('firstName').value,
-                    lastName: document.getElementById('lastName').value,
-                    username: document.getElementById('username').value,
-                    email: document.getElementById('email').value,
-                    birthDate: document.getElementById('birthDate').value,
+                    firstName: document.getElementById('firstName').value.trim(),
+                    lastName: document.getElementById('lastName').value.trim(),
+                    username: document.getElementById('username').value.trim(),
+                    email: document.getElementById('email').value.trim().toLowerCase(),
+                    birthDate: birthDateValue, // Guardamos en formato ISO (YYYY-MM-DD)
                     password: document.getElementById('password').value,
                     role: isAdmin(document.getElementById('email').value) ? 'admin' : 'user',
-                    registrationDate: new Date().toISOString()
+                    registrationDate: new Date().toISOString().split('T')[0] // Solo fecha sin hora
                 };
 
-                // Validar que no se registre otro usuario con el correo admin
-                if (isAdmin(userData.email) && userData.username !== 'TH3B4R4K') {
-                    alert('Este correo electrónico no está disponible para registro.');
+                // Validaciones adicionales
+                if (!userData.firstName || !userData.lastName || !userData.username) {
+                    alert('Por favor completa todos los campos obligatorios');
                     return;
+                }
+
+                if (userData.password.length < 8) {
+                    alert('La contraseña debe tener al menos 8 caracteres');
+                    return;
+                }
+
+                // Validar que no se registre otro usuario con el correo admin
+                if (isAdmin(userData.email) {
+                    if (userData.username !== 'TH3B4R4K') {
+                        alert('Este correo electrónico no está disponible para registro');
+                        return;
+                    }
+                    // Si es el admin registrándose, forzar el rol admin
+                    userData.role = 'admin';
                 }
 
                 let users = JSON.parse(localStorage.getItem('users')) || [];
                 
-                if (users.some(user => user.username === userData.username)) {
-                    alert('Este nombre de usuario ya está registrado.');
+                // Verificar si el usuario ya existe
+                if (users.some(user => user.username.toLowerCase() === userData.username.toLowerCase())) {
+                    alert('Este nombre de usuario ya está registrado');
                     return;
                 }
 
-                if (users.some(user => user.email === userData.email)) {
-                    alert('Este correo electrónico ya está registrado.');
+                if (users.some(user => user.email.toLowerCase() === userData.email.toLowerCase())) {
+                    alert('Este correo electrónico ya está registrado');
                     return;
                 }
 
+                // Guardar el nuevo usuario
                 users.push(userData);
                 localStorage.setItem('users', JSON.stringify(users));
                 localStorage.setItem('currentUser', JSON.stringify(userData));
@@ -438,6 +497,12 @@
 
                 const username = document.getElementById('loginUsername').value;
                 const password = document.getElementById('loginPassword').value;
+                
+                if (!username || !password) {
+                    alert('Por favor ingresa tus credenciales');
+                    return;
+                }
+
                 const users = JSON.parse(localStorage.getItem('users')) || [];
                 const user = users.find(u => u.username === username && u.password === password);
 
@@ -446,8 +511,11 @@
                     return;
                 }
 
+                // Guardar sesión
                 localStorage.setItem('currentUser', JSON.stringify(user));
                 sessionStorage.setItem('justLoggedIn', 'true');
+                
+                // Mostrar mensaje de bienvenida
                 showWelcomeMessage(`Bienvenido de nuevo, ${user.firstName}!`);
                 loginModal.hide();
                 updateUserButton(user);
@@ -456,11 +524,8 @@
                 // Pequeño delay para móviles
                 await new Promise(resolve => setTimeout(resolve, 300));
                 
-                if (isAdmin(user.email)) {
-                    window.location.href = 'gestionAd.html';
-                } else {
-                    window.location.href = 'perfil.html';
-                }
+                // Redirigir según rol
+                window.location.href = isAdmin(user.email) ? 'gestionAd.html' : 'perfil.html';
             });
 
             // Funciones auxiliares
@@ -481,11 +546,7 @@
                     userBtn.innerHTML = `<i class="fas fa-user-check me-1"></i><span class="d-none d-lg-inline">${userData.firstName}</span>`;
                     userBtn.onclick = function(e) {
                         e.preventDefault();
-                        if (isAdmin(userData.email)) {
-                            window.location.href = 'gestionAd.html';
-                        } else {
-                            window.location.href = 'perfil.html';
-                        }
+                        window.location.href = isAdmin(userData.email) ? 'gestionAd.html' : 'perfil.html';
                     };
                 } else {
                     userBtn.innerHTML = `<i class="fas fa-user me-1"></i><span class="d-none d-lg-inline">Iniciar Sesión</span>`;
