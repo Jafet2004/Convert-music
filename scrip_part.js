@@ -34,11 +34,23 @@ document.addEventListener('DOMContentLoaded', function() {
         'Db': { key: 'Db' }, 'Gb': { key: 'Gb' }, 'Cb': { key: 'Cb' }
     };
 
+    // Cargar partitura si hay una guardada para editar
+    const scoreToLoad = localStorage.getItem('currentScoreToLoad');
+    if (scoreToLoad) {
+        try {
+            const score = JSON.parse(scoreToLoad);
+            loadScoreData(score);
+            localStorage.removeItem('currentScoreToLoad');
+        } catch (error) {
+            console.error('Error al cargar partitura:', error);
+            showMessage('Error al cargar la partitura', 'danger');
+        }
+    }
+
     // Inicialización
     init();
 
     function init() {
-        // Configurar event listeners
         nameInput.addEventListener('change', updateScoreName);
         clefSelect.addEventListener('change', () => updateNoteOptions(clefSelect.value));
         addNoteBtn.addEventListener('click', addNote);
@@ -49,11 +61,53 @@ document.addEventListener('DOMContentLoaded', function() {
         downloadPdfBtn.addEventListener('click', () => downloadScore(scoreContent));
         downloadFromModalBtn.addEventListener('click', () => downloadScore(fullscreenScore));
 
-        // Configuración inicial
         updateScoreName();
         updateNoteOptions(clefSelect.value);
         updateNoteList();
         showMessage('Selecciona notas/silencios y haz clic en "Ver Partitura"', 'info');
+    }
+
+    function loadScoreData(score) {
+        try {
+            // Validar que la partitura tenga los datos necesarios
+            if (!score || !score.clef || !score.notes || !Array.isArray(score.notes)) {
+                throw new Error('Datos de partitura incompletos');
+            }
+
+            // Cargar los valores básicos
+            document.getElementById('name').value = score.name || '';
+            document.getElementById('clef').value = score.clef;
+            document.getElementById('timeSignature').value = score.timeSignature;
+            document.getElementById('keySignature').value = score.keySignature;
+            document.getElementById('tempo').value = score.tempo || 120;
+            
+            // Actualizar las opciones de notas según la clave
+            updateNoteOptions(score.clef);
+            
+            // Cargar las notas
+            notes = score.notes.map(note => {
+                return {
+                    key: note.keys[0], // Tomamos la primera nota (puede ser un silencio)
+                    duration: note.duration
+                };
+            });
+            
+            // Actualizar la lista de notas
+            updateNoteList();
+            enableButtons();
+            
+            // Mostrar mensaje
+            showMessage(`Partitura "${score.name}" cargada correctamente`, 'success');
+            
+            // Renderizar automáticamente después de un pequeño retraso
+            setTimeout(() => {
+                drawScoreHandler();
+            }, 100);
+            
+        } catch (error) {
+            console.error('Error al cargar datos de partitura:', error);
+            showMessage('Error al cargar los datos de la partitura: ' + error.message, 'danger');
+        }
     }
 
     function updateNoteOptions(clef) {
@@ -213,7 +267,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function createVexFlowNote(noteData) {
         const clef = clefSelect.value;
         let keys;
-        // La posición vertical de los silencios depende de la clave
         if (noteData.duration.endsWith('r')) {
             keys = [clef === 'bass' ? 'd/3' : 'b/4'];
         } else {
@@ -223,7 +276,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getDurationFromTicks(ticks) {
-        // VexFlow RESOLUTION es 960 por negra (quarter note)
         const quarterTicks = VF.RESOLUTION / 4;
         
         if (ticks === quarterTicks) return 'qr';
@@ -232,11 +284,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (ticks === quarterTicks * 2) return 'hr';
         if (ticks === quarterTicks * 4) return 'wr';
         
-        // Para valores no estándar, intentamos aproximar
-        if (ticks > quarterTicks * 2) return 'wr'; // Redondear a redonda
-        if (ticks > quarterTicks) return 'hr';     // Redondear a blanca
-        if (ticks > quarterTicks / 2) return 'qr'; // Redondear a negra
-        return '16r'; // Por defecto usar semicorchea
+        if (ticks > quarterTicks * 2) return 'wr';
+        if (ticks > quarterTicks) return 'hr';
+        if (ticks > quarterTicks / 2) return 'qr';
+        return '16r';
     }
 
     function drawScore(container, isFullscreen = false) {
@@ -250,10 +301,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const [beatsPerMeasure, beatValue] = timeSignature.split('/').map(Number);
             const ticksPerMeasure = (4 / beatValue) * beatsPerMeasure * VF.RESOLUTION / 4;
 
-            // 1. Convertir nuestras notas a notas de VexFlow
             const vexNotes = notes.map(createVexFlowNote);
 
-            // 2. Dividir las notas en compases
             const measures = [];
             let currentMeasure = [];
             let currentTicks = 0;
@@ -261,12 +310,9 @@ document.addEventListener('DOMContentLoaded', function() {
             vexNotes.forEach(note => {
                 const noteTicks = note.getTicks().value();
                 
-                // Si agregar esta nota excede el compás
                 if (currentTicks + noteTicks > ticksPerMeasure) {
-                    // Calcular cuánto falta para completar el compás
                     const remainingTicks = ticksPerMeasure - currentTicks;
                     
-                    // Si hay espacio restante, agregar un silencio
                     if (remainingTicks > 0) {
                         try {
                             const restDuration = getDurationFromTicks(remainingTicks);
@@ -277,7 +323,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                     
-                    // Guardar el compás completo y comenzar uno nuevo
                     measures.push(currentMeasure);
                     currentMeasure = [note];
                     currentTicks = noteTicks;
@@ -287,11 +332,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Añadir el último compás aunque esté incompleto
             if (currentMeasure.length > 0) {
                 const remainingTicks = ticksPerMeasure - currentTicks;
                 
-                // Si el compás está incompleto, agregar silencio final
                 if (remainingTicks > 0) {
                     try {
                         const restDuration = getDurationFromTicks(remainingTicks);
@@ -304,10 +347,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 measures.push(currentMeasure);
             }
 
-            // 3. Configurar renderizado y dimensiones
             const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
             const containerWidth = container.clientWidth;
-            renderer.resize(containerWidth, 500); // Altura inicial, se ajustará
+            renderer.resize(containerWidth, 500);
             const context = renderer.getContext();
 
             const staveWidth = isFullscreen ? (containerWidth / 4) : (containerWidth / 3);
@@ -319,17 +361,16 @@ document.addEventListener('DOMContentLoaded', function() {
             let stavesDrawnOnLine = 0;
             let totalHeight = 0;
 
-            // 4. Dibujar pentagramas y notas, línea por línea
             for (let i = 0; i < measures.length; i++) {
                 const isFirstMeasureOfLine = stavesDrawnOnLine === 0;
                 let stave;
 
                 if (isFirstMeasureOfLine) {
                     currentX = 0;
-                    if (i > 0) currentY += 120; // Bajar para la nueva línea
+                    if (i > 0) currentY += 120;
                     stave = new VF.Stave(currentX, currentY, headerWidth);
                     stave.addClef(clef);
-                    if (i === 0) { // Solo en el primer compás de toda la pieza
+                    if (i === 0) {
                         stave.addKeySignature(key);
                         stave.addTimeSignature(timeSignature);
                         stave.setTempo({ duration: 'q', bpm: tempo }, -10);
@@ -341,7 +382,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 stave = new VF.Stave(currentX, currentY, noteStaveWidth);
                 stave.setContext(context).draw();
 
-                // Formatear y dibujar las notas para este compás
                 const measureNotes = measures[i];
                 VF.Beam.generateBeams(measureNotes.filter(n => !(n instanceof VF.GhostNote)));
                 VF.Formatter.FormatAndDraw(context, stave, measureNotes);
@@ -367,37 +407,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showFullscreenPreview() {
-    if (notes.length === 0) {
-        showMessage('Debes agregar al menos una nota o silencio', 'danger');
-        return;
-    }
-
-    // Limpiar el contenido previo
-    fullscreenScore.innerHTML = '';
-
-    // Clonar el contenido de la partitura normal
-    const scoreClone = scoreContent.cloneNode(true);
-    fullscreenScore.appendChild(scoreClone);
-
-    // Configurar el modal para pantalla completa
-    const modalDialog = document.querySelector('#fullscreenModal .modal-dialog');
-    modalDialog.classList.add('modal-xl');
-    modalDialog.style.maxWidth = '95vw';
-
-    // Mostrar el modal
-    fullscreenModal.show();
-
-    // Ajustar el tamaño después de mostrar el modal
-    document.getElementById('fullscreenModal').addEventListener('shown.bs.modal', function() {
-        // Ajustar el SVG para que ocupe todo el espacio disponible
-        const svg = fullscreenScore.querySelector('svg');
-        if (svg) {
-            svg.style.width = '100%';
-            svg.style.height = 'auto';
-            svg.style.maxHeight = 'calc(100vh - 200px)';
+        if (notes.length === 0) {
+            showMessage('Debes agregar al menos una nota o silencio', 'danger');
+            return;
         }
-    });
-}
+
+        fullscreenScore.innerHTML = '';
+        const scoreClone = scoreContent.cloneNode(true);
+        fullscreenScore.appendChild(scoreClone);
+
+        const modalDialog = document.querySelector('#fullscreenModal .modal-dialog');
+        modalDialog.classList.add('modal-xl');
+        modalDialog.style.maxWidth = '95vw';
+
+        fullscreenModal.show();
+
+        document.getElementById('fullscreenModal').addEventListener('shown.bs.modal', function() {
+            const svg = fullscreenScore.querySelector('svg');
+            if (svg) {
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxHeight = 'calc(100vh - 200px)';
+            }
+        });
+    }
 
     async function downloadScore(container) {
         if (!container.hasChildNodes() || container.querySelector('svg') === null) {
@@ -430,89 +463,80 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Función para guardar la partitura actual
-function saveCurrentScore() {
-    if (!notes || notes.length === 0) {
-        showMessage('No hay notas para guardar', 'warning');
-        return false;
-    }
-    
-    try {
-        const scoreName = document.getElementById('name').value || 'Partitura sin nombre';
-        const clef = document.getElementById('clef').value;
-        const timeSignature = document.getElementById('timeSignature').value;
-        const keySignature = document.getElementById('keySignature').value;
-        const tempo = document.getElementById('tempo').value || 120;
-        
-        // Serializar las notas correctamente para VexFlow
-        const serializedNotes = notes.map(note => {
-            // Para silencios, usar posición según la clave
-            const keys = note.duration.endsWith('r') ? 
-                [clef === 'bass' ? 'd/3' : 'b/4'] : 
-                [note.key];
-            
-            return {
-                keys: keys,
-                duration: note.duration,
-                stem_direction: clef === 'bass' ? -1 : 1, // Dirección del tallo
-                clef: clef
-            };
-        });
-        
-        const scoreData = {
-            name: scoreName,
-            clef: clef,
-            timeSignature: timeSignature,
-            keySignature: keySignature,
-            tempo: tempo,
-            notes: serializedNotes,
-            timestamp: new Date().toISOString()
-        };
-        
-        // Obtener partituras existentes
-        let savedScores = JSON.parse(localStorage.getItem('savedScores') || '[]');
-        
-        // Evitar duplicados exactos
-        const isDuplicate = savedScores.some(existing => 
-            JSON.stringify(existing.notes) === JSON.stringify(scoreData.notes) &&
-            existing.clef === scoreData.clef &&
-            existing.timeSignature === scoreData.timeSignature
-        );
-        
-        if (isDuplicate) {
-            showMessage('Esta partitura ya está guardada', 'warning');
+    function saveCurrentScore() {
+        if (!notes || notes.length === 0) {
+            showMessage('No hay notas para guardar', 'warning');
             return false;
         }
         
-        savedScores.push(scoreData);
-        localStorage.setItem('savedScores', JSON.stringify(savedScores));
+        try {
+            const scoreName = document.getElementById('name').value || 'Partitura sin nombre';
+            const clef = document.getElementById('clef').value;
+            const timeSignature = document.getElementById('timeSignature').value;
+            const keySignature = document.getElementById('keySignature').value;
+            const tempo = document.getElementById('tempo').value || 120;
+            
+            const serializedNotes = notes.map(note => {
+                const keys = note.duration.endsWith('r') ? 
+                    [clef === 'bass' ? 'd/3' : 'b/4'] : 
+                    [note.key];
+                
+                return {
+                    keys: keys,
+                    duration: note.duration,
+                    stem_direction: clef === 'bass' ? -1 : 1,
+                    clef: clef
+                };
+            });
+            
+            const scoreData = {
+                name: scoreName,
+                clef: clef,
+                timeSignature: timeSignature,
+                keySignature: keySignature,
+                tempo: tempo,
+                notes: serializedNotes,
+                timestamp: new Date().toISOString()
+            };
+            
+            let savedScores = JSON.parse(localStorage.getItem('savedScores') || '[]');
+            
+            const isDuplicate = savedScores.some(existing => 
+                JSON.stringify(existing.notes) === JSON.stringify(scoreData.notes) &&
+                existing.clef === scoreData.clef &&
+                existing.timeSignature === scoreData.timeSignature
+            );
+            
+            if (isDuplicate) {
+                showMessage('Esta partitura ya está guardada', 'warning');
+                return false;
+            }
+            
+            savedScores.push(scoreData);
+            localStorage.setItem('savedScores', JSON.stringify(savedScores));
+            
+            showMessage(`"${scoreName}" guardada correctamente`, 'success');
+            return true;
+        } catch (error) {
+            console.error('Error al guardar partitura:', error);
+            showMessage('Error al guardar la partitura: ' + error.message, 'danger');
+            return false;
+        }
+    }
+
+    document.getElementById('saveScore')?.addEventListener('click', function() {
+        if (notes.length === 0) {
+            showMessage('No hay notas para guardar', 'warning');
+            return;
+        }
         
-        showMessage(`"${scoreName}" guardada correctamente`, 'success');
-        return true;
-    } catch (error) {
-        console.error('Error al guardar partitura:', error);
-        showMessage('Error al guardar la partitura: ' + error.message, 'danger');
-        return false;
-    }
-}
+        const success = drawScore(scoreContent);
+        if (success) {
+            saveCurrentScore();
+        }
+    });
 
-// Event listener para el botón de guardar
-document.getElementById('saveScore')?.addEventListener('click', function() {
-    // Validar que hay notas antes de guardar
-    if (notes.length === 0) {
-        showMessage('No hay notas para guardar', 'warning');
-        return;
-    }
-    
-    // Renderizar primero para validar
-    const success = drawScore(scoreContent);
-    if (success) {
-        saveCurrentScore();
-    }
-});
-
-// Event listener para el botón de ver partituras
-document.getElementById('viewScores')?.addEventListener('click', function() {
-    window.location.href = 'mis_partituras.html';
-});
+    document.getElementById('viewScores')?.addEventListener('click', function() {
+        window.location.href = 'mis_partituras.html';
+    });
 });

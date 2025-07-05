@@ -8,242 +8,645 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary: #6e8efb;
-            --primary-light: #a777e3;
-            --danger: #ff4d4d;
-            --success: #28a745;
-        }
+  --primary: #6e8efb;
+  --primary-light: #a777e3;
+  --dark: #2c3e50;
+  --light: #f8f9fa;
+  --danger: #e74c3c;
+  --success: #2ecc71;
+  --warning: #f39c12;
+}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-        }
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f5f7fa;
+  color: #333;
+  min-height: 100vh;
+}
 
-        /* Header responsivo */
-        .navbar-brand span {
-            font-weight: 600;
-            font-size: clamp(1.2rem, 4vw, 1.5rem);
-        }
+/* Header moderno */
+.admin-header {
+  background: linear-gradient(135deg, var(--dark), #34495e);
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  padding: 0.75rem 1rem;
+}
 
-        /* Contenedor principal */
-        .admin-container {
-            max-width: 1200px;
-            margin: 1rem auto;
-            padding: 0 15px;
-        }
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+}
 
-        /* Tarjeta principal */
-        .card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
+.navbar-brand span {
+  color: var(--primary);
+}
 
-        .card-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            padding: 1rem;
-        }
+.nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  transition: all 0.3s;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
 
-        .card-header h3 {
-            font-size: clamp(1rem, 4vw, 1.5rem);
-            margin-bottom: 0;
-        }
+.nav-link:hover, .nav-link.active {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
 
-        /* Tabla responsiva */
-        .table-responsive {
-            border-radius: 10px;
-            overflow-x: auto;
-        }
+.nav-link i {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
 
-        .table {
-            min-width: 600px;
-        }
+/* Contenedor principal */
+.admin-container {
+  max-width: 1400px;
+  margin: 1.5rem auto;
+  padding: 0 1.25rem;
+  width: 100%;
+}
 
-        .table thead th {
-            background-color: #f1f3fa;
-            border-bottom-width: 1px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
+/* Tarjeta principal */
+.main-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  background-color: white;
+  margin-bottom: 2rem;
+}
 
-        .table-hover tbody tr:hover {
-            background-color: rgba(110, 142, 251, 0.05);
-        }
+.card-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  padding: 1.25rem;
+  border-bottom: none;
+}
 
-        /* Badges */
-        .badge-admin {
-            background-color: var(--primary);
-        }
+.card-header h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
 
-        .badge-user {
-            background-color: #6c757d;
-        }
+.card-header h2 i {
+  margin-right: 0.75rem;
+  font-size: 1.2rem;
+}
 
-        /* Botones de acción */
-        .btn-action {
-            width: 32px;
-            height: 32px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-        }
+/* Barra de herramientas */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
 
-        /* Barra de búsqueda */
-        .search-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            align-items: center;
-        }
+.search-box {
+  position: relative;
+  flex-grow: 1;
+  min-width: 200px;
+}
 
-        .search-box {
-            position: relative;
-            min-width: 150px;
-            flex-grow: 1;
-        }
+.search-box i {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #95a5a6;
+  font-size: 0.95rem;
+}
 
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-        }
+.search-box input {
+  padding-left: 2.5rem;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  height: 42px;
+  width: 100%;
+  font-size: 0.9rem;
+}
 
-        .search-box input {
-            padding-left: 40px;
-            width: 100%;
-        }
+.btn-refresh {
+  background-color: white;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  border-radius: 8px;
+  transition: all 0.3s;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
 
-        /* Paginación */
-        .pagination {
-            flex-wrap: wrap;
-        }
+.btn-refresh:hover {
+  background-color: var(--primary);
+  color: white;
+}
 
-        .pagination .page-item.active .page-link {
-            background-color: var(--primary);
-            border-color: var(--primary);
-        }
+.btn-refresh i {
+  margin-right: 0.5rem;
+}
 
-        .pagination .page-link {
-            color: var(--primary);
-        }
+/* Tabla de usuarios */
+.table-responsive {
+  border-radius: 10px;
+  overflow: hidden;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
 
-        /* Toast notification */
-        .toast-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1100;
-            max-width: 90%;
-            width: 350px;
-            animation: slideInRight 0.5s, fadeOut 0.5s 2.5s forwards;
-        }
+.table {
+  margin-bottom: 0;
+  width: 100%;
+}
 
-        @keyframes slideInRight {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
+.table thead th {
+  background-color: #f1f5f9;
+  color: #4a5568;
+  font-weight: 600;
+  padding: 0.875rem;
+  border-bottom: 2px solid #e2e8f0;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
 
-        @keyframes fadeOut {
-            to { opacity: 0; }
-        }
+.table tbody tr {
+  transition: all 0.2s;
+}
 
-        /* Modal responsivo */
-        @media (max-width: 768px) {
-            .modal-dialog {
-                margin: 0.5rem auto;
-            }
-            
-            .modal-content {
-                border-radius: 0;
-            }
-        }
+.table tbody tr:hover {
+  background-color: #f8fafc;
+}
 
-        /* Estilos para móviles */
-        @media (max-width: 576px) {
-            .admin-container {
-                padding: 0 10px;
-            }
-            
-            .card-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-            
-            .search-container {
-                width: 100%;
-            }
-            
-            .table td, .table th {
-                padding: 0.5rem;
-            }
-            
-            .btn-action {
-                width: 28px;
-                height: 28px;
-                font-size: 0.8rem;
-            }
-        }
+.table td {
+  padding: 0.875rem;
+  vertical-align: middle;
+  border-top: 1px solid #edf2f7;
+  font-size: 0.875rem;
+}
+
+/* Badges */
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.badge-admin {
+  background-color: var(--primary);
+}
+
+.badge-user {
+  background-color: #718096;
+}
+
+/* Botones de acción */
+.btn-action {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.btn-edit {
+  background-color: rgba(110, 142, 251, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(110, 142, 251, 0.3);
+}
+
+.btn-edit:hover {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-delete {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.btn-delete:hover {
+  background-color: var(--danger);
+  color: white;
+}
+
+/* Paginación */
+.pagination {
+  margin-top: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.page-item .page-link {
+  border-radius: 6px;
+  margin: 0 2px;
+  border: none;
+  color: #4a5568;
+  min-width: 34px;
+  text-align: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.page-item.active .page-link {
+  background-color: var(--primary);
+  color: white;
+}
+
+.page-item.disabled .page-link {
+  color: #a0aec0;
+}
+
+/* Mensaje cuando no hay usuarios */
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: #718096;
+}
+
+.empty-state i {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #cbd5e0;
+}
+
+.empty-state h4 {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.empty-state p {
+  font-size: 0.95rem;
+  color: #a0aec0;
+}
+
+/* Modal de edición */
+.modal-content {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  border-bottom: none;
+  padding: 1.25rem;
+}
+
+.modal-title {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.modal-body {
+  padding: 1.25rem;
+}
+
+.modal-footer {
+  border-top: none;
+  padding: 1rem;
+  background-color: #f8fafc;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-control, .form-select {
+  border-radius: 8px;
+  padding: 0.6rem 0.875rem;
+  border: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.25rem rgba(110, 142, 251, 0.25);
+}
+
+/* Notificaciones toast */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1100;
+  max-width: 100%;
+  width: 350px;
+}
+
+.toast {
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 0.9rem;
+}
+
+.toast-header {
+  color: white;
+  font-weight: 500;
+  border-bottom: none;
+  padding: 0.75rem 1rem;
+}
+
+.toast-success .toast-header {
+  background-color: var(--success);
+}
+
+.toast-error .toast-header {
+  background-color: var(--danger);
+}
+
+.toast-warning .toast-header {
+  background-color: var(--warning);
+}
+
+.toast-info .toast-header {
+  background-color: var(--primary);
+}
+
+.toast-body {
+  padding: 1rem;
+}
+
+.btn-close-white {
+  filter: invert(1);
+  opacity: 0.85;
+}
+
+/* ==================== RESPONSIVE ADJUSTMENTS ==================== */
+
+/* Pantallas medianas (tablets) */
+@media (max-width: 992px) {
+  .toolbar {
+    gap: 0.5rem;
+  }
+  
+  .search-box {
+    min-width: 100%;
+    order: 1;
+  }
+  
+  .btn-refresh {
+    order: 2;
+    flex-grow: 1;
+  }
+  
+  .table thead th, .table td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .modal-dialog {
+    max-width: 95%;
+    margin: 0.5rem auto;
+  }
+}
+
+/* Pantallas pequeñas (móviles grandes) */
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 0 1rem;
+    margin: 1rem auto;
+  }
+  
+  .table-responsive {
+    border-radius: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table {
+    min-width: 600px;
+  }
+  
+  .card-header {
+    padding: 1rem;
+  }
+  
+  .card-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .empty-state i {
+    font-size: 2rem;
+  }
+  
+  .empty-state h4 {
+    font-size: 1.1rem;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .modal-title {
+    font-size: 1.1rem;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .toast-container {
+    width: 300px;
+    right: 0.5rem;
+    left: 0.5rem;
+    margin: 0 auto;
+  }
+}
+
+/* Pantallas muy pequeñas (móviles) */
+@media (max-width: 576px) {
+  .admin-container {
+    padding: 0 0.75rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+  
+  .nav-link {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .nav-link i {
+    margin-right: 0.3rem;
+    font-size: 0.9rem;
+  }
+  
+  .table td, .table th {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .btn-action {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+  
+  .badge {
+    font-size: 0.65rem;
+    padding: 0.3em 0.5em;
+  }
+  
+  .page-item .page-link {
+    min-width: 30px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    margin: 0 1px;
+  }
+  
+  .form-control, .form-select {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .empty-state {
+    padding: 1.5rem 0.75rem;
+  }
+  
+  .empty-state i {
+    font-size: 1.75rem;
+  }
+  
+  .empty-state h4 {
+    font-size: 1rem;
+  }
+  
+  .empty-state p {
+    font-size: 0.85rem;
+  }
+  
+  .toast-container {
+    width: calc(100% - 1rem);
+  }
+  
+  .toast {
+    font-size: 0.85rem;
+  }
+}
+
+/* Ajustes para pantallas muy estrechas */
+@media (max-width: 400px) {
+  .admin-header {
+    padding: 0.5rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1rem;
+  }
+  
+  .card-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .card-header h2 i {
+    margin-right: 0.5rem;
+    font-size: 1rem;
+  }
+  
+  .btn-refresh {
+    font-size: 0.8rem;
+    padding: 0 0.75rem;
+  }
+  
+  .btn-refresh i {
+    margin-right: 0.3rem;
+  }
+  
+  .modal-content {
+    border-radius: 8px;
+  }
+}
     </style>
 </head>
 <body>
-    <header class="main-header">
-        <div class="container-fluid">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-                <div class="container-fluid">
-                    <a class="navbar-brand" href="index.html">
-                        <span>Convert<span style="color: var(--primary);">Music</span></span>
-                    </a>
-                    <div class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                        <span class="navbar-toggler-icon"></span>
-                    </div>
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav me-auto">
-                            <li class="nav-item">
-                                <a class="nav-link" href="index.html"><i class="fas fa-home me-1"></i> Inicio</a>
-                            </li>
-                        </ul>
-                        <div class="d-flex align-items-center">
-                            <!-- Botón de usuario solo con icono -->
-                            <a href="perfil.html" class="btn btn-outline-primary btn-circle me-2" title="Perfil">
-                                <i class="fas fa-user"></i>
-                            </a>
-                        </div>
-                    </div>
+    <!-- Header -->
+    <header class="admin-header">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="index.html">
+                    Convert<span>Music</span>
+                </a>
+                <div class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
                 </div>
-            </nav>
-        </div>
-    </header>
-
-    <div class="admin-container">
-        <div class="card animate__animated animate__fadeIn">
-            <div class="card-header">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                    <h3 class="mb-2 mb-md-0"><i class="fas fa-users-cog me-2"></i>Panel de Administración</h3>
-                    <div class="search-container">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" class="form-control" id="searchUsers" placeholder="Buscar usuarios...">
-                        </div>
-                        <button class="btn btn-light" id="refreshUsers">
-                            <i class="fas fa-sync-alt"></i>
-                            <span class="d-none d-sm-inline"> Actualizar</span>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html"><i class="fas fa-home"></i> Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#"><i class="fas fa-users-cog"></i> Administración</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center">
+                        <a href="perfil.html" class="btn btn-outline-light me-2" title="Perfil">
+                            <i class="fas fa-user"></i>
+                            <span class="d-none d-md-inline"> Perfil</span>
+                        </a>
+                        <button id="logoutBtn" class="btn btn-outline-light">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="d-none d-md-inline"> Salir</span>
                         </button>
                     </div>
                 </div>
             </div>
+        </nav>
+    </header>
+
+    <!-- Contenido principal -->
+    <div class="admin-container">
+        <div class="main-card">
+            <div class="card-header">
+                <h2><i class="fas fa-users-cog"></i> Gestión de Usuarios</h2>
+            </div>
             <div class="card-body">
+                <div class="toolbar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-control" id="searchUsers" placeholder="Buscar usuarios...">
+                    </div>
+                    <button class="btn btn-refresh" id="refreshUsers">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Actualizar</span>
+                    </button>
+                </div>
+                
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Nombre</th>
@@ -259,8 +662,15 @@
                         </tbody>
                     </table>
                 </div>
-                <nav aria-label="Page navigation" class="mt-3">
-                    <ul class="pagination justify-content-center" id="pagination">
+                
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-user-slash"></i>
+                    <h4>No se encontraron usuarios</h4>
+                    <p>Intenta ajustar tu búsqueda o crear un nuevo usuario</p>
+                </div>
+                
+                <nav aria-label="Page navigation">
+                    <ul class="pagination" id="pagination">
                         <!-- Paginación se generará aquí -->
                     </ul>
                 </nav>
@@ -272,7 +682,7 @@
     <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header">
                     <h5 class="modal-title" id="editUserModalTitle">Editar Usuario</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -322,6 +732,9 @@
         </div>
     </div>
 
+    <!-- Contenedor para notificaciones -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Variables globales
@@ -343,15 +756,12 @@
             
             // Configurar eventos
             setupEventListeners();
-            
-            // Configurar modo oscuro
-            setupDarkMode();
         });
 
         function checkAdminPermissions() {
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
             if (!currentUser || currentUser.role !== 'admin') {
-                showToast('Acceso denegado. Requiere permisos de administrador', 'danger');
+                showToast('Acceso denegado. Requiere permisos de administrador', 'error');
                 setTimeout(() => window.location.href = 'index.html', 2000);
             }
         }
@@ -369,23 +779,20 @@
             const paginatedUsers = usersToDisplay.slice(startIndex, endIndex);
             
             const tableBody = document.getElementById('usersTable');
+            const emptyState = document.getElementById('emptyState');
             tableBody.innerHTML = '';
             
             if (paginatedUsers.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center py-4">
-                            <i class="fas fa-user-slash fa-2x mb-2 text-muted"></i>
-                            <p class="mb-0">No se encontraron usuarios</p>
-                        </td>
-                    </tr>
-                `;
+                tableBody.style.display = 'none';
+                emptyState.style.display = 'block';
                 return;
             }
             
+            tableBody.style.display = 'table-row-group';
+            emptyState.style.display = 'none';
+            
             paginatedUsers.forEach(user => {
                 const tr = document.createElement('tr');
-                tr.className = 'animate__animated animate__fadeIn';
                 tr.innerHTML = `
                     <td>${user.firstName} ${user.lastName}</td>
                     <td>@${user.username}</td>
@@ -397,10 +804,10 @@
                     </td>
                     <td>${new Date(user.registrationDate || new Date()).toLocaleDateString('es-ES')}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary btn-action me-1 edit-user" data-username="${user.username}">
+                        <button class="btn btn-sm btn-action btn-edit me-2 edit-user" data-username="${user.username}">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger btn-action delete-user" data-username="${user.username}">
+                        <button class="btn btn-sm btn-action btn-delete delete-user" data-username="${user.username}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
@@ -429,7 +836,11 @@
             // Botón Anterior
             const prevLi = document.createElement('li');
             prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-            prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>`;
+            prevLi.innerHTML = `
+                <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            `;
             prevLi.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (currentPage > 1) {
@@ -441,7 +852,35 @@
             pagination.appendChild(prevLi);
             
             // Números de página
-            for (let i = 1; i <= totalPages; i++) {
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            if (startPage > 1) {
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                li.innerHTML = `<a class="page-link" href="#">1</a>`;
+                li.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentPage = 1;
+                    renderUsersTable(filteredUsers);
+                    renderPagination(filteredUsers);
+                });
+                pagination.appendChild(li);
+                
+                if (startPage > 2) {
+                    const dotsLi = document.createElement('li');
+                    dotsLi.className = 'page-item disabled';
+                    dotsLi.innerHTML = `<span class="page-link">...</span>`;
+                    pagination.appendChild(dotsLi);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
                 const li = document.createElement('li');
                 li.className = `page-item ${i === currentPage ? 'active' : ''}`;
                 li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
@@ -454,10 +893,34 @@
                 pagination.appendChild(li);
             }
             
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dotsLi = document.createElement('li');
+                    dotsLi.className = 'page-item disabled';
+                    dotsLi.innerHTML = `<span class="page-link">...</span>`;
+                    pagination.appendChild(dotsLi);
+                }
+                
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                li.innerHTML = `<a class="page-link" href="#">${totalPages}</a>`;
+                li.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentPage = totalPages;
+                    renderUsersTable(filteredUsers);
+                    renderPagination(filteredUsers);
+                });
+                pagination.appendChild(li);
+            }
+            
             // Botón Siguiente
             const nextLi = document.createElement('li');
             nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-            nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>`;
+            nextLi.innerHTML = `
+                <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            `;
             nextLi.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (currentPage < totalPages) {
@@ -472,7 +935,7 @@
         function openEditModal(username) {
             const user = allUsers.find(u => u.username === username);
             if (!user) {
-                showToast('Usuario no encontrado', 'danger');
+                showToast('Usuario no encontrado', 'error');
                 return;
             }
             
@@ -501,21 +964,21 @@
             
             // Validaciones básicas
             if (!firstName || !lastName || !username || !email) {
-                showToast('Todos los campos son requeridos', 'danger');
+                showToast('Todos los campos son requeridos', 'error');
                 return;
             }
             
             // Verificar si el nombre de usuario ya existe (excepto para el usuario actual)
             const usernameExists = allUsers.some(u => u.username === username && u.username !== currentEditingUser.username);
             if (usernameExists) {
-                showToast('El nombre de usuario ya está en uso', 'danger');
+                showToast('El nombre de usuario ya está en uso', 'error');
                 return;
             }
             
             // Verificar si el email ya existe (excepto para el usuario actual)
             const emailExists = allUsers.some(u => u.email === email && u.email !== currentEditingUser.email);
             if (emailExists) {
-                showToast('El email ya está en uso', 'danger');
+                showToast('El email ya está en uso', 'error');
                 return;
             }
             
@@ -553,7 +1016,7 @@
 
         function confirmDeleteUser(username) {
             if (username === JSON.parse(localStorage.getItem('currentUser'))?.username) {
-                showToast('No puedes eliminar tu propio usuario desde aquí', 'danger');
+                showToast('No puedes eliminar tu propio usuario desde aquí', 'error');
                 return;
             }
             
@@ -621,6 +1084,12 @@
                 showToast('Lista de usuarios actualizada', 'info');
             });
             
+            // Botón de logout
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            });
+            
             // Actualizar cada 30 segundos para detectar cambios
             setInterval(() => {
                 const currentUsers = JSON.parse(localStorage.getItem('users')) || [];
@@ -630,52 +1099,46 @@
             }, 30000);
         }
 
-        function setupDarkMode() {
-            const darkModeToggle = document.getElementById('darkModeToggle');
-            const body = document.body;
-
-            // Verificar preferencia guardada
-            if (localStorage.getItem('darkMode') === 'enabled') {
-                body.classList.add('dark-mode');
-                darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-            }
-
-            // Alternar modo oscuro
-            darkModeToggle.addEventListener('click', () => {
-                body.classList.toggle('dark-mode');
-                
-                if (body.classList.contains('dark-mode')) {
-                    localStorage.setItem('darkMode', 'enabled');
-                    darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-                } else {
-                    localStorage.setItem('darkMode', 'disabled');
-                    darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-                }
-            });
-        }
-
         function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            const toastTitle = document.getElementById('toast-title');
-            const toastMessage = document.getElementById('toast-message');
+            const toastContainer = document.getElementById('toastContainer');
             
-            // Configurar colores según el tipo
-            let bgColor = 'bg-primary';
-            if (type === 'success') bgColor = 'bg-success';
-            if (type === 'danger') bgColor = 'bg-danger';
-            if (type === 'warning') bgColor = 'bg-warning';
+            const toast = document.createElement('div');
+            toast.className = `toast show toast-${type}`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
             
-            toastTitle.parentElement.className = `toast-header ${bgColor} text-white`;
-            toastTitle.textContent = type.charAt(0).toUpperCase() + type.slice(1);
-            toastMessage.textContent = message;
+            const types = {
+                success: { icon: 'check-circle', title: 'Éxito' },
+                error: { icon: 'exclamation-circle', title: 'Error' },
+                warning: { icon: 'exclamation-triangle', title: 'Advertencia' },
+                info: { icon: 'info-circle', title: 'Información' }
+            };
             
-            // Mostrar toast
-            toast.style.display = 'block';
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <i class="fas fa-${types[type]?.icon || 'info-circle'} me-2"></i>
+                    <strong class="me-auto">${types[type]?.title || 'Mensaje'}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
             
-            // Ocultar después de 3 segundos
+            toastContainer.appendChild(toast);
+            
+            // Eliminar el toast después de 5 segundos
             setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+            
+            // Cerrar manualmente
+            toast.querySelector('.btn-close').addEventListener('click', () => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            });
         }
     </script>
 </body>

@@ -19,6 +19,13 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
+        .score-card .card-footer {
+            transition: opacity 0.2s;
+            opacity: 0;
+        }
+        .score-card:hover .card-footer {
+            opacity: 1;
+        }
         .empty-state {
             min-height: 300px;
             display: flex;
@@ -35,6 +42,36 @@
             cursor: pointer;
             margin-right: 15px;
             font-size: 1.2rem;
+        }
+        
+        /* Nuevos estilos para animación de descarga */
+        .download-success-animation {
+            opacity: 0;
+            transform: translate(-50%, -20px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            border-radius: 50px;
+        }
+        
+        .btn .fa-spinner {
+            margin-right: 5px;
+        }
+        
+        .score-card .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-8px);}
+            60% {transform: translateY(-4px);}
+        }
+        
+        .download-success {
+            animation: bounce 0.8s;
         }
     </style>
 </head>
