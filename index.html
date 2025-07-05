@@ -271,37 +271,7 @@
             </div>
         </div>
     </section>
-    <button onclick="resetAdmin()" style="
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: red;
-  color: white;
-  padding: 10px;
-  z-index: 9999;
-">RESET ADMIN</button>
-
-<script>
-function resetAdmin() {
-  const users = JSON.parse(localStorage.getItem('users')) || [];
-  const newUsers = users.filter(u => u.username !== 'TH3B4R4K');
-  
-  newUsers.push({
-    firstName: 'Jafet',
-    lastName: 'Aguilar',
-    username: 'TH3B4R4K',
-    email: 'jafetalexander58@gmail.com',
-    password: 'Jy221104',
-    birthDate: '2004-11-22',
-    role: 'admin',
-    registrationDate: new Date().toISOString().split('T')[0]
-  });
-  
-  localStorage.setItem('users', JSON.stringify(newUsers));
-  localStorage.setItem('currentUser', JSON.stringify(newUsers.find(u => u.username === 'TH3B4R4K')));
-  alert('Admin restablecido. Intenta iniciar sesión nuevamente.');
-}
-</script>
+    
 
     <!-- Footer -->
     <footer>
