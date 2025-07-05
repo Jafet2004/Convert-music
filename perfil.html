@@ -7,228 +7,713 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
-.avatar-container {
-    width: 120px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-    position: relative;
-}
+        :root {
+            --primary: #6e8efb;
+            --primary-light: #a777e3;
+            --danger: #ff4d4d;
+            --success: #28a745;
+        }
 
-#changeAvatarBtn {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
 
-.detail-item {
-    background-color: rgba(67, 97, 238, 0.05);
-    border-radius: 8px;
-    padding: 15px;
-    border-left: 3px solid var(--primary);
-}
+        .card {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-.bg-gradient-primary {
-    background: linear-gradient(135deg, var(--primary), var(--primary-light));
-}
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+        }
 
-.toast {
-    max-width: 350px;
-}
-</style>
+        .card-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .avatar-container {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .avatar-container:hover {
+            transform: scale(1.05);
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .detail-item {
+            background-color: rgba(110, 142, 251, 0.05);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .detail-item:hover {
+            background-color: rgba(110, 142, 251, 0.1);
+            transform: translateX(5px);
+        }
+
+        .btn-edit {
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .form-edit {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+       
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1) translateY(-5px);
+        }
+    </style>
 </head>
 <body>
     <header class="main-header">
         <div class="container">
-            <nav class="navbar navbar-expand-lg">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
                 <div class="container-fluid">
-                    <a class="navbar-brand logo" href="index.html">
-                        <span class="logo-text">Convert<span class="logo-highlight">Music</span></span>
+                    <a class="navbar-brand" href="index.html">
+                        <span style="font-weight: 600; font-size: 1.5rem;">Convert<span style="color: var(--primary);">Music</span></span>
                     </a>
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav ms-auto">
-                            <li class="nav-item">
-                                <a class="nav-link" href="index.html">
-                                    <i class="fas fa-home me-2"></i>Inicio
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="profileBtn" class="btn btn-outline-light ms-lg-3" href="#">
-                                    <i class="fas fa-user me-1"></i>
-                                    <span class="d-none d-lg-inline">Perfil</span>
-                                </a>
-                            </li>
-                        </ul>
+                    <div class="d-flex">
+                        <a href="index.html" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-home"></i>
+                        </a>
+                        <div id="darkModeToggle" class="btn btn-outline-secondary">
+                            <i class="fas fa-moon"></i>
+                        </div>
                     </div>
                 </div>
             </nav>
         </div>
     </header>
 
-<section class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-8">
-            <div id="profile-content" class="card shadow-lg">
-                <!-- Contenido dinámico del perfil -->
+    <section class="container my-5 animate__animated animate__fadeIn">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div id="profile-content" class="card">
+                    <!-- Contenido dinámico del perfil -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Botón flotante para administración -->
+    <a href="#admin-panel" id="adminBtn" class="floating-btn btn btn-primary d-none">
+        <i class="fas fa-users-cog"></i>
+    </a>
+
+    <!-- Panel de administración (oculto inicialmente) -->
+    <div id="admin-panel" class="container my-5 d-none animate__animated animate__fadeIn">
+        <div class="card shadow-lg">
+            <div class="card-header bg-dark text-white">
+                <h3 class="mb-0"><i class="fas fa-users-cog me-2"></i>Panel de Administración</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Fecha Nac.</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <!-- Usuarios se cargarán aquí -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-</section>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    const profileContent = document.getElementById('profile-content');
     
-    // Redirigir si no hay sesión con mensaje
-    if (!currentUser) {
-        localStorage.setItem('loginRedirectMessage', 'Por favor inicia sesión para acceder a tu perfil');
-        window.location.href = 'index.html';
-        return;
-    }
 
-    // Formatear fecha de nacimiento
-    const birthDate = currentUser.birthDate ? new Date(currentUser.birthDate).toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    }) : 'No especificada';
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obtener usuario actual
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            
+            // Mostrar panel de admin si es administrador
+            if(currentUser && currentUser.role === 'admin') {
+                document.getElementById('adminBtn').classList.remove('d-none');
+            }
 
-    // Mostrar perfil mejorado
-    profileContent.innerHTML = `
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0"><i class="fas fa-user-circle me-2"></i>Mi Perfil</h3>
-                <span class="badge bg-light text-primary">${currentUser.role || 'Usuario'}</span>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="row align-items-center mb-4">
-                <div class="col-md-4 text-center">
-                    <div class="position-relative mb-3">
-                        <div class="avatar-container bg-light rounded-circle p-2 shadow-sm">
-                            <i class="fas fa-user-circle fa-5x text-primary"></i>
-                            <button id="changeAvatarBtn" class="btn btn-sm btn-secondary position-absolute bottom-0 end-0 rounded-circle">
-                                <i class="fas fa-camera"></i>
+            // Redirigir si no hay sesión
+            if (!currentUser) {
+                showToast('Por favor inicia sesión para acceder a tu perfil', 'warning');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+                return;
+            }
+
+            // Mostrar perfil
+            renderProfile(currentUser);
+            
+            // Configurar modo oscuro
+            setupDarkMode();
+
+            // Configurar botón de administración
+            document.getElementById('adminBtn').addEventListener('click', function() {
+                const adminPanel = document.getElementById('admin-panel');
+                adminPanel.classList.toggle('d-none');
+                
+                if(!adminPanel.classList.contains('d-none')) {
+                    renderUsersTable();
+                }
+            });
+        });
+
+        function renderProfile(user) {
+            const profileContent = document.getElementById('profile-content');
+            const birthDate = user.birthDate ? new Date(user.birthDate).toLocaleDateString('es-ES', {
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric'
+            }) : 'No especificada';
+
+            profileContent.innerHTML = `
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0"><i class="fas fa-user-circle me-2"></i>Mi Perfil</h3>
+                        <span class="badge bg-light text-primary">${user.role || 'Usuario'}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-4 text-center">
+                            <div class="avatar-container mb-3">
+                                <img src="https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=random" 
+                                     class="avatar-img" alt="Avatar" id="userAvatar">
+                                <button id="changeAvatarBtn" class="btn btn-sm btn-secondary position-absolute bottom-0 end-0 rounded-circle">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                            <h4 class="mb-1">${user.firstName} ${user.lastName}</h4>
+                            <small class="text-muted">@${user.username}</small>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="user-details">
+                                <div class="detail-item">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5><i class="fas fa-id-card me-2 text-primary"></i>Información Personal</h5>
+                                        <button class="btn btn-sm btn-outline-primary btn-edit" id="editPersonalInfoBtn">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </button>
+                                    </div>
+                                    <hr class="mt-1 mb-3">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong><i class="fas fa-envelope me-2"></i>Email:</strong> 
+                                            <span id="userEmail">${user.email}</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong><i class="fas fa-birthday-cake me-2"></i>Fecha Nacimiento:</strong> 
+                                            <span id="userBirthDate">${birthDate}</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5><i class="fas fa-user-shield me-2 text-primary"></i>Datos de Cuenta</h5>
+                                        <button class="btn btn-sm btn-outline-primary btn-edit" id="editAccountInfoBtn">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </button>
+                                    </div>
+                                    <hr class="mt-1 mb-3">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong><i class="fas fa-calendar-alt me-2"></i>Miembro desde:</strong> 
+                                            ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong><i class="fas fa-key me-2"></i>Último acceso:</strong> 
+                                            ${new Date().toLocaleString('es-ES')}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between flex-wrap">
+                            <button id="changePasswordBtn" class="btn btn-outline-primary mb-2">
+                                <i class="fas fa-lock me-2"></i>Cambiar Contraseña
+                            </button>
+                            <button id="logoutBtn" class="btn btn-outline-danger mb-2">
+                                <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
                             </button>
                         </div>
                     </div>
-                    <h4 class="mb-1">${currentUser.firstName} ${currentUser.lastName}</h4>
-                    <small class="text-muted">@${currentUser.username}</small>
                 </div>
-                
-                <div class="col-md-8">
-                    <div class="user-details">
-                        <div class="detail-item mb-3">
-                            <h5><i class="fas fa-id-card me-2 text-primary"></i>Información Personal</h5>
-                            <hr class="mt-1 mb-2">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong><i class="fas fa-envelope me-2"></i>Email:</strong> 
-                                    <span id="userEmail">${currentUser.email}</span></p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong><i class="fas fa-birthday-cake me-2"></i>Fecha Nacimiento:</strong> 
-                                    ${birthDate}</p>
-                                </div>
+            `;
+
+            // Configurar eventos
+            setupProfileEvents(user);
+        }
+
+        function setupProfileEvents(user) {
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if(confirm('¿Estás seguro que deseas cerrar sesión?')) {
+                    localStorage.removeItem('currentUser');
+                    showToast('Sesión cerrada correctamente', 'success');
+                    setTimeout(() => window.location.href = 'index.html', 1500);
+                }
+            });
+
+            // Editar información personal
+            document.getElementById('editPersonalInfoBtn').addEventListener('click', function() {
+                editPersonalInfo(user);
+            });
+
+            // Cambiar avatar (simulado)
+            document.getElementById('changeAvatarBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                showToast('Funcionalidad de cambio de avatar en desarrollo', 'info');
+            });
+
+            // Cambiar contraseña
+            document.getElementById('changePasswordBtn').addEventListener('click', function() {
+                changePassword(user);
+            });
+        }
+
+        function editPersonalInfo(user) {
+            const profileContent = document.getElementById('profile-content');
+            
+            profileContent.querySelector('.user-details').innerHTML = `
+                <div class="form-edit animate__animated animate__fadeIn">
+                    <h5 class="mb-4"><i class="fas fa-edit me-2 text-primary"></i>Editar Información Personal</h5>
+                    
+                    <form id="personalInfoForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editFirstName" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="editFirstName" value="${user.firstName}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editLastName" class="form-label">Apellido</label>
+                                <input type="text" class="form-control" id="editLastName" value="${user.lastName}" required>
                             </div>
                         </div>
                         
-                        <div class="detail-item mb-3">
-                            <h5><i class="fas fa-user-shield me-2 text-primary"></i>Datos de Cuenta</h5>
-                            <hr class="mt-1 mb-2">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong><i class="fas fa-calendar-alt me-2"></i>Miembro desde:</strong> 
-                                    ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong><i class="fas fa-key me-2"></i>Último acceso:</strong> 
-                                    ${new Date().toLocaleString('es-ES')}</p>
-                                </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editEmail" value="${user.email}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editBirthDate" class="form-label">Fecha de Nacimiento</label>
+                                <input type="date" class="form-control" id="editBirthDate" value="${user.birthDate || ''}">
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary me-2" id="cancelEditPersonalBtn">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            // Configurar eventos del formulario
+            document.getElementById('personalInfoForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                savePersonalInfo(user);
+            });
+
+            document.getElementById('cancelEditPersonalBtn').addEventListener('click', function() {
+                renderProfile(user);
+            });
+        }
+
+        function savePersonalInfo(oldUser) {
+            const updatedUser = {
+                ...oldUser,
+                firstName: document.getElementById('editFirstName').value,
+                lastName: document.getElementById('editLastName').value,
+                email: document.getElementById('editEmail').value,
+                birthDate: document.getElementById('editBirthDate').value
+            };
+
+            // Actualizar en localStorage
+            const users = JSON.parse(localStorage.getItem('users'));
+            const updatedUsers = users.map(u => u.username === oldUser.username ? updatedUser : u);
+            
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            
+            showToast('Información personal actualizada', 'success');
+            renderProfile(updatedUser);
+        }
+
+        function changePassword(user) {
+            const profileContent = document.getElementById('profile-content');
+            
+            profileContent.querySelector('.user-details').innerHTML = `
+                <div class="form-edit animate__animated animate__fadeIn">
+                    <h5 class="mb-4"><i class="fas fa-lock me-2 text-primary"></i>Cambiar Contraseña</h5>
+                    
+                    <form id="passwordForm">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Contraseña Actual</label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirmar Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary me-2" id="cancelPasswordBtn">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                Cambiar Contraseña
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            // Configurar eventos del formulario
+            document.getElementById('passwordForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                updatePassword(user);
+            });
+
+            document.getElementById('cancelPasswordBtn').addEventListener('click', function() {
+                renderProfile(user);
+            });
+        }
+
+        function updatePassword(user) {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if(currentPassword !== user.password) {
+                showToast('La contraseña actual es incorrecta', 'danger');
+                return;
+            }
+
+            if(newPassword !== confirmPassword) {
+                showToast('Las contraseñas no coinciden', 'danger');
+                return;
+            }
+
+            // Actualizar contraseña
+            const updatedUser = { ...user, password: newPassword };
+            const users = JSON.parse(localStorage.getItem('users'));
+            const updatedUsers = users.map(u => u.username === user.username ? updatedUser : u);
+            
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            
+            showToast('Contraseña actualizada correctamente', 'success');
+            renderProfile(updatedUser);
+        }
+
+        function renderUsersTable() {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const tableBody = document.getElementById('usersTable');
+            
+            tableBody.innerHTML = '';
+            
+            if(users.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No hay usuarios registrados</td></tr>';
+                return;
+            }
+            
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'animate__animated animate__fadeIn';
+                row.innerHTML = `
+                    <td>${user.firstName} ${user.lastName}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.birthDate ? new Date(user.birthDate).toLocaleDateString('es-ES') : 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary edit-user-btn" data-username="${user.username}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-user-btn" data-username="${user.username}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Configurar eventos de los botones
+            document.querySelectorAll('.edit-user-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const username = this.getAttribute('data-username');
+                    editUser(username);
+                });
+            });
+
+            document.querySelectorAll('.delete-user-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const username = this.getAttribute('data-username');
+                    deleteUser(username);
+                });
+            });
+        }
+
+        function editUser(username) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users.find(u => u.username === username);
+            
+            if(!user) {
+                showToast('Usuario no encontrado', 'danger');
+                return;
+            }
+
+            // Crear modal de edición
+            const modalHtml = `
+                <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">Editar Usuario: ${user.username}</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editUserForm">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="modalFirstName" class="form-label">Nombre</label>
+                                            <input type="text" class="form-control" id="modalFirstName" value="${user.firstName}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="modalLastName" class="form-label">Apellido</label>
+                                            <input type="text" class="form-control" id="modalLastName" value="${user.lastName}" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="modalUsername" class="form-label">Usuario</label>
+                                            <input type="text" class="form-control" id="modalUsername" value="${user.username}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="modalEmail" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="modalEmail" value="${user.email}" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="modalBirthDate" class="form-label">Fecha de Nacimiento</label>
+                                            <input type="date" class="form-control" id="modalBirthDate" value="${user.birthDate || ''}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="modalRole" class="form-label">Rol</label>
+                                            <select class="form-select" id="modalRole">
+                                                <option value="user" ${user.role === 'user' ? 'selected' : ''}>Usuario</option>
+                                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrador</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-primary" id="saveUserChangesBtn">Guardar Cambios</button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="border-top pt-3">
-                <div class="d-flex justify-content-between flex-wrap">
-                    <button id="editProfileBtn" class="btn btn-outline-primary mb-2">
-                        <i class="fas fa-edit me-2"></i>Editar Perfil
-                    </button>
-                    <button id="changePasswordBtn" class="btn btn-outline-secondary mb-2">
-                        <i class="fas fa-lock me-2"></i>Cambiar Contraseña
-                    </button>
-                    <button id="logoutBtn" class="btn btn-outline-danger mb-2">
-                        <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
+            `;
 
-    // Manejar logout
-    document.getElementById('logoutBtn').addEventListener('click', function() {
-        if(confirm('¿Estás seguro que deseas cerrar sesión?')) {
-            localStorage.removeItem('currentUser');
-            window.location.href = 'index.html';
+            // Agregar modal al DOM
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+            modal.show();
+
+            // Configurar evento de guardar
+            document.getElementById('saveUserChangesBtn').addEventListener('click', function() {
+                const updatedUser = {
+                    ...user,
+                    firstName: document.getElementById('modalFirstName').value,
+                    lastName: document.getElementById('modalLastName').value,
+                    username: document.getElementById('modalUsername').value,
+                    email: document.getElementById('modalEmail').value,
+                    birthDate: document.getElementById('modalBirthDate').value,
+                    role: document.getElementById('modalRole').value
+                };
+
+                // Actualizar en localStorage
+                const updatedUsers = JSON.parse(localStorage.getItem('users')).map(u => 
+                    u.username === user.username ? updatedUser : u
+                );
+                
+                localStorage.setItem('users', JSON.stringify(updatedUsers));
+                
+                // Si es el usuario actual, actualizar también currentUser
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if(currentUser && currentUser.username === user.username) {
+                    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                }
+                
+                showToast('Usuario actualizado correctamente', 'success');
+                modal.hide();
+                renderUsersTable();
+                
+                // Eliminar el modal del DOM después de cerrar
+                document.getElementById('editUserModal').addEventListener('hidden.bs.modal', function() {
+                    this.remove();
+                });
+            });
         }
-    });
 
-    // Botón para editar perfil (simulado)
-    document.getElementById('editProfileBtn').addEventListener('click', function() {
-        alert('Funcionalidad de edición de perfil en desarrollo');
-    });
+        function deleteUser(username) {
+            if(!confirm(`¿Estás seguro que deseas eliminar al usuario ${username}?`)) {
+                return;
+            }
 
-    // Botón para cambiar contraseña (simulado)
-    document.getElementById('changePasswordBtn').addEventListener('click', function() {
-        alert('Funcionalidad de cambio de contraseña en desarrollo');
-    });
+            const users = JSON.parse(localStorage.getItem('users'));
+            const updatedUsers = users.filter(u => u.username !== username);
+            
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
+            
+            // Si es el usuario actual, cerrar sesión
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if(currentUser && currentUser.username === username) {
+                localStorage.removeItem('currentUser');
+                showToast('Tu cuenta ha sido eliminada', 'warning');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+            } else {
+                showToast('Usuario eliminado correctamente', 'success');
+                renderUsersTable();
+            }
+        }
 
-    // Botón para cambiar avatar (simulado)
-    document.getElementById('changeAvatarBtn').addEventListener('click', function(e) {
-        e.preventDefault();
-        alert('Funcionalidad de cambio de avatar en desarrollo');
-    });
+        function setupDarkMode() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const body = document.body;
 
-    // Mostrar mensaje de redirección si existe
-    const redirectMessage = localStorage.getItem('loginRedirectMessage');
-    if (redirectMessage) {
-        showToast(redirectMessage);
-        localStorage.removeItem('loginRedirectMessage');
-    }
-});
+            // Verificar preferencia guardada
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                body.classList.add('dark-mode');
+                darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
 
-function showToast(message) {
-    const toast = document.createElement('div');
-    toast.className = 'position-fixed bottom-0 end-0 p-3';
-    toast.style.zIndex = '1100';
-    toast.innerHTML = `
-        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header bg-primary text-white">
-                <strong class="me-auto">Notificación</strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">${message}</div>
-        </div>
-    `;
-    document.body.appendChild(toast);
-    
-    // Eliminar después de 5 segundos
-    setTimeout(() => {
-        toast.remove();
-    }, 5000);
-}
-</script>
+            // Alternar modo oscuro
+            darkModeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+                
+                if (body.classList.contains('dark-mode')) {
+                    localStorage.setItem('darkMode', 'enabled');
+                    darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                } else {
+                    localStorage.setItem('darkMode', 'disabled');
+                    darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                }
+            });
+        }
 
-
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastTitle = document.getElementById('toast-title');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // Configurar colores según el tipo
+            let bgColor = 'bg-primary';
+            if(type === 'success') bgColor = 'bg-success';
+            if(type === 'danger') bgColor = 'bg-danger';
+            if(type === 'warning') bgColor = 'bg-warning';
+            
+            toastTitle.parentElement.className = `toast-header ${bgColor} text-white`;
+            toastTitle.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+            toastMessage.textContent = message;
+            
+            // Mostrar toast
+            toast.style.display = 'block';
+            
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
 </body>
 </html>

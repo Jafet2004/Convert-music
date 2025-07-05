@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Convert Music</title>
+    <link rel="icon" href="CM.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6e8efb;
+            --primary-light: #a777e3;
+            --danger: #ff4d4d;
+            --success: #28a745;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Header responsivo */
+        .navbar-brand span {
+            font-weight: 600;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+        }
+
+        /* Contenedor principal */
+        .admin-container {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 0 15px;
+        }
+
+        /* Tarjeta principal */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 1rem;
+        }
+
+        .card-header h3 {
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            margin-bottom: 0;
+        }
+
+        /* Tabla responsiva */
+        .table-responsive {
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+
+        .table {
+            min-width: 600px;
+        }
+
+        .table thead th {
+            background-color: #f1f3fa;
+            border-bottom-width: 1px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(110, 142, 251, 0.05);
+        }
+
+        /* Badges */
+        .badge-admin {
+            background-color: var(--primary);
+        }
+
+        .badge-user {
+            background-color: #6c757d;
+        }
+
+        /* Botones de acción */
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        /* Barra de búsqueda */
+        .search-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+            min-width: 150px;
+            flex-grow: 1;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .search-box input {
+            padding-left: 40px;
+            width: 100%;
+        }
+
+        /* Paginación */
+        .pagination {
+            flex-wrap: wrap;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .pagination .page-link {
+            color: var(--primary);
+        }
+
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+            max-width: 90%;
+            width: 350px;
+            animation: slideInRight 0.5s, fadeOut 0.5s 2.5s forwards;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+
+        /* Modal responsivo */
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 0.5rem auto;
+            }
+            
+            .modal-content {
+                border-radius: 0;
+            }
+        }
+
+        /* Estilos para móviles */
+        @media (max-width: 576px) {
+            .admin-container {
+                padding: 0 10px;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .search-container {
+                width: 100%;
+            }
+            
+            .table td, .table th {
+                padding: 0.5rem;
+            }
+            
+            .btn-action {
+                width: 28px;
+                height: 28px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container-fluid">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="index.html">
+                        <span>Convert<span style="color: var(--primary);">Music</span></span>
+                    </a>
+                    <div class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </div>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <div class="ms-auto d-flex">
+                            <a href="perfil.html" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-user"></i>
+                                <span class="d-none d-sm-inline"> Perfil</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <div class="card animate__animated animate__fadeIn">
+            <div class="card-header">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                    <h3 class="mb-2 mb-md-0"><i class="fas fa-users-cog me-2"></i>Panel de Administración</h3>
+                    <div class="search-container">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" class="form-control" id="searchUsers" placeholder="Buscar usuarios...">
+                        </div>
+                        <button class="btn btn-light" id="refreshUsers">
+                            <i class="fas fa-sync-alt"></i>
+                            <span class="d-none d-sm-inline"> Actualizar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Registro</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <!-- Los usuarios se cargarán aquí -->
+                        </tbody>
+                    </table>
+                </div>
+                <nav aria-label="Page navigation" class="mt-3">
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <!-- Paginación se generará aquí -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar usuario -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="editUserModalTitle">Editar Usuario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="editFirstName" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="editFirstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editLastName" class="form-label">Apellido</label>
+                                <input type="text" class="form-control" id="editLastName" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="editUsername" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" id="editUsername" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editEmail" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="editBirthDate" class="form-label">Fecha de Nacimiento</label>
+                                <input type="date" class="form-control" id="editBirthDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editRole" class="form-label">Rol</label>
+                                <select class="form-select" id="editRole">
+                                    <option value="user">Usuario</option>
+                                    <option value="admin">Administrador</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="deleteUserBtn">Eliminar</button>
+                    <button type="button" class="btn btn-primary" id="saveUserBtn">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables globales
+        let allUsers = [];
+        let currentPage = 1;
+        const usersPerPage = 10;
+        let editModal = null;
+        let currentEditingUser = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar modal
+            editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+            
+            // Verificar permisos de administrador
+            checkAdminPermissions();
+            
+            // Cargar usuarios
+            loadUsers();
+            
+            // Configurar eventos
+            setupEventListeners();
+        });
+
+        function checkAdminPermissions() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser || currentUser.role !== 'admin') {
+                showToast('Acceso denegado. Requiere permisos de administrador', 'danger');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+            }
+        }
+
+        function loadUsers() {
+            allUsers = JSON.parse(localStorage.getItem('users')) || [];
+            renderUsersTable();
+            renderPagination();
+        }
+
+        function renderUsersTable(filteredUsers = null) {
+            const usersToDisplay = filteredUsers || allUsers;
+            const startIndex = (currentPage - 1) * usersPerPage;
+            const endIndex = startIndex + usersPerPage;
+            const paginatedUsers = usersToDisplay.slice(startIndex, endIndex);
+            
+            const tableBody = document.getElementById('usersTable');
+            tableBody.innerHTML = '';
+            
+            if (paginatedUsers.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="fas fa-user-slash fa-2x mb-2 text-muted"></i>
+                            <p class="mb-0">No se encontraron usuarios</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            paginatedUsers.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.className = 'animate__animated animate__fadeIn';
+                tr.innerHTML = `
+                    <td>${user.firstName} ${user.lastName}</td>
+                    <td>@${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>
+                        <span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'} rounded-pill">
+                            ${user.role === 'admin' ? 'Administrador' : 'Usuario'}
+                        </span>
+                    </td>
+                    <td>${new Date(user.registrationDate || new Date()).toLocaleDateString('es-ES')}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary btn-action me-1 edit-user" data-username="${user.username}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger btn-action delete-user" data-username="${user.username}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
+            // Agregar eventos a los botones
+            document.querySelectorAll('.edit-user').forEach(btn => {
+                btn.addEventListener('click', () => openEditModal(btn.dataset.username));
+            });
+            
+            document.querySelectorAll('.delete-user').forEach(btn => {
+                btn.addEventListener('click', () => confirmDeleteUser(btn.dataset.username));
+            });
+        }
+
+        // ... (resto del código JavaScript se mantiene igual)
+        // [Las funciones renderPagination, openEditModal, saveUserChanges, confirmDeleteUser, 
+        // deleteUser, searchUsers, setupEventListeners y showToast permanecen iguales]
+        
+    </script>
+</body>
+</html>

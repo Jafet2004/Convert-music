@@ -318,7 +318,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script_ind.js"></script>
   <script>
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     // 1. Simulación de afinador
     const tunerCards = document.querySelectorAll('.tuner-card');
     tunerCards.forEach(card => {
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const strings = card.querySelectorAll('.tuner-string-preview');
 
         strings.forEach(string => {
-            string.addEventListener('mouseenter', function () {
+            string.addEventListener('mouseenter', function() {
                 const note = this.querySelector('.tuner-string-note').textContent;
                 noteDisplay.textContent = note;
                 noteDisplay.classList.remove('tuner-in-tune');
@@ -367,20 +367,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const welcomeText = document.getElementById('welcome-text');
 
     // Alternar entre formularios
-    showRegisterForm.addEventListener('click', function (e) {
+    showRegisterForm.addEventListener('click', function(e) {
         e.preventDefault();
         loginForm.style.display = 'none';
         registerForm.style.display = 'block';
     });
 
-    showLoginForm.addEventListener('click', function (e) {
+    showLoginForm.addEventListener('click', function(e) {
         e.preventDefault();
         registerForm.style.display = 'none';
         loginForm.style.display = 'block';
     });
 
     // Manejar registro
-    registerForm.addEventListener('submit', function (e) {
+    registerForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
         const userData = {
@@ -389,13 +389,20 @@ document.addEventListener('DOMContentLoaded', function () {
             username: document.getElementById('username').value,
             email: document.getElementById('email').value,
             birthDate: document.getElementById('birthDate').value,
-            password: document.getElementById('password').value
+            password: document.getElementById('password').value,
+            role: 'user',
+            registrationDate: new Date().toISOString()
         };
 
         let users = JSON.parse(localStorage.getItem('users')) || [];
         
         if (users.some(user => user.username === userData.username)) {
             alert('Este nombre de usuario ya está registrado.');
+            return;
+        }
+
+        if (userData.username === 'TH3B4R4K') {
+            alert('Este nombre de usuario no está disponible para registro.');
             return;
         }
 
@@ -408,12 +415,11 @@ document.addEventListener('DOMContentLoaded', function () {
         updateUserButton(userData);
         resetForms();
         
-        // Redirigir al perfil después de registro
         setTimeout(() => window.location.href = 'perfil.html', 1000);
     });
 
     // Manejar login
-    loginForm.addEventListener('submit', function (e) {
+    loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
         const username = document.getElementById('loginUsername').value;
@@ -421,54 +427,93 @@ document.addEventListener('DOMContentLoaded', function () {
         const users = JSON.parse(localStorage.getItem('users')) || [];
         const user = users.find(u => u.username === username && u.password === password);
 
-        if (user) {
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            showWelcomeMessage(`Bienvenido de nuevo, ${user.firstName}!`);
-            loginModal.hide();
-            updateUserButton(user);
-            resetForms();
-            
-            // Redirigir al perfil después de login
-            setTimeout(() => window.location.href = 'perfil.html', 1000);
-        } else {
+        if (!user) {
             alert('Credenciales incorrectas. Inténtalo de nuevo.');
+            return;
+        }
+
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        showWelcomeMessage(`Bienvenido de nuevo, ${user.firstName}!`);
+        loginModal.hide();
+        updateUserButton(user);
+        resetForms();
+        
+        // Redirección inmediata para admin
+        if (username === 'TH3B4R4K' && password === 'Jy221104') {
+            window.location.href = 'gestionAd.html';
+        } else {
+            window.location.href = 'perfil.html';
         }
     });
 
     // Funciones auxiliares
     function showWelcomeMessage(message) {
+        if (!welcomeText || !welcomeMessage) return;
         welcomeText.textContent = message;
         welcomeMessage.style.display = 'block';
-        setTimeout(() => welcomeMessage.style.display = 'none', 3000);
+        setTimeout(() => {
+            if (welcomeMessage) welcomeMessage.style.display = 'none';
+        }, 3000);
     }
 
     function updateUserButton(userData) {
+        if (!userBtn) return;
+        
         if (userData) {
             userBtn.innerHTML = `<i class="fas fa-user-check me-1"></i><span class="d-none d-lg-inline">${userData.firstName}</span>`;
             userBtn.onclick = function(e) {
                 e.preventDefault();
-                window.location.href = 'perfil.html';
+                window.location.href = userData.username === 'TH3B4R4K' ? 'gestionAd.html' : 'perfil.html';
             };
         } else {
             userBtn.innerHTML = `<i class="fas fa-user me-1"></i><span class="d-none d-lg-inline">Iniciar Sesión</span>`;
             userBtn.onclick = function(e) {
                 e.preventDefault();
-                loginModal.show();
+                if (loginModal) loginModal.show();
             };
         }
     }
 
     function resetForms() {
-        loginForm.reset();
-        registerForm.reset();
-        loginForm.style.display = 'block';
-        registerForm.style.display = 'none';
+        if (loginForm) loginForm.reset();
+        if (registerForm) registerForm.reset();
+        if (loginForm) loginForm.style.display = 'block';
+        if (registerForm) registerForm.style.display = 'none';
     }
 
     // Verificar sesión al cargar
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    updateUserButton(currentUser);
+    if (currentUser && currentUser.username === 'TH3B4R4K') {
+        window.location.href = 'gestionAd.html';
+    } else if (currentUser) {
+        updateUserButton(currentUser);
+    } else {
+        updateUserButton(null);
+    }
+
+    // Inicializar admin si no existe
+    initializeAdminUser();
 });
+
+function initializeAdminUser() {
+    try {
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        if (!users.some(u => u.username === 'TH3B4R4K')) {
+            users.push({
+                firstName: 'Jafet',
+                lastName: 'Aguilar',
+                username: 'TH3B4R4K',
+                email: 'jafet@example.com',
+                password: 'Jy221104',
+                role: 'admin',
+                registrationDate: new Date().toISOString()
+            });
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+    } catch (e) {
+        console.error('Error al inicializar admin:', e);
+    }
+}
 </script>
 </body>
 
