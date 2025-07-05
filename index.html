@@ -315,9 +315,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script_ind.js"></script>
+</script>
+    <script src="script_ind.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Simulación de afinador
+            // 1. Simulación de afinador con soporte táctil
             const tunerCards = document.querySelectorAll('.tuner-card');
             tunerCards.forEach(card => {
                 const noteDisplay = card.querySelector('.tuner-note-preview');
@@ -326,62 +328,39 @@
                 const statusDisplay = card.querySelector('.tuner-status-preview');
                 const strings = card.querySelectorAll('.tuner-string-preview');
 
+                const handleTunerInteraction = (event) => {
+                    event.preventDefault();
+                    const note = event.currentTarget.querySelector('.tuner-string-note').textContent;
+                    noteDisplay.textContent = note;
+                    noteDisplay.classList.remove('tuner-in-tune');
+
+                    const randomOffset = (Math.random() * 100 - 50);
+                    const needlePosition = 50 + (randomOffset / 50 * 25);
+                    needle.style.transform = `translateX(-50%) translateX(${Math.min(Math.max(needlePosition - 50, -40), 40)}px)`;
+
+                    const accuracyPosition = 50 + (randomOffset / 50 * 25);
+                    accuracyMarker.style.left = `${Math.min(Math.max(accuracyPosition, 5), 95)}%`;
+
+                    if (Math.abs(randomOffset) < 5) {
+                        accuracyMarker.style.backgroundColor = 'var(--correct-color)';
+                        statusDisplay.textContent = 'Perfectamente afinado!';
+                        noteDisplay.classList.add('tuner-in-tune');
+                    } else if (Math.abs(randomOffset) < 20) {
+                        accuracyMarker.style.backgroundColor = 'var(--close-color)';
+                        statusDisplay.textContent = randomOffset > 0 ? 'Un poco alto, baja la tensión' : 'Un poco bajo, sube la tensión';
+                    } else {
+                        accuracyMarker.style.backgroundColor = 'var(--far-color)';
+                        statusDisplay.textContent = randomOffset > 0 ? 'Muy alto, baja la tensión' : 'Muy bajo, sube la tensión';
+                    }
+                };
+
                 strings.forEach(string => {
-                    string.addEventListener('mouseenter', function() {
-                        const note = this.querySelector('.tuner-string-note').textContent;
-                        noteDisplay.textContent = note;
-                        noteDisplay.classList.remove('tuner-in-tune');
-
-                        const randomOffset = (Math.random() * 100 - 50);
-                        const needlePosition = 50 + (randomOffset / 50 * 25);
-                        needle.style.transform = `translateX(-50%) translateX(${Math.min(Math.max(needlePosition - 50, -40), 40)}px)`;
-
-                        const accuracyPosition = 50 + (randomOffset / 50 * 25);
-                        accuracyMarker.style.left = `${Math.min(Math.max(accuracyPosition, 5), 95)}%`;
-
-                        if (Math.abs(randomOffset) < 5) {
-                            accuracyMarker.style.backgroundColor = 'var(--correct-color)';
-                            statusDisplay.textContent = 'Perfectamente afinado!';
-                            noteDisplay.classList.add('tuner-in-tune');
-                        } else if (Math.abs(randomOffset) < 20) {
-                            accuracyMarker.style.backgroundColor = 'var(--close-color)';
-                            statusDisplay.textContent = randomOffset > 0 ? 'Un poco alto, baja la tensión' : 'Un poco bajo, sube la tensión';
-                        } else {
-                            accuracyMarker.style.backgroundColor = 'var(--far-color)';
-                            statusDisplay.textContent = randomOffset > 0 ? 'Muy alto, baja la tensión' : 'Muy bajo, sube la tensión';
-                        }
-                    });
-
-                    // Añadir soporte táctil para móviles
-                    string.addEventListener('touchstart', function(e) {
-                        e.preventDefault();
-                        const note = this.querySelector('.tuner-string-note').textContent;
-                        noteDisplay.textContent = note;
-                        noteDisplay.classList.remove('tuner-in-tune');
-
-                        const randomOffset = (Math.random() * 100 - 50);
-                        const needlePosition = 50 + (randomOffset / 50 * 25);
-                        needle.style.transform = `translateX(-50%) translateX(${Math.min(Math.max(needlePosition - 50, -40), 40)}px)`;
-
-                        const accuracyPosition = 50 + (randomOffset / 50 * 25);
-                        accuracyMarker.style.left = `${Math.min(Math.max(accuracyPosition, 5), 95)}%`;
-
-                        if (Math.abs(randomOffset) < 5) {
-                            accuracyMarker.style.backgroundColor = 'var(--correct-color)';
-                            statusDisplay.textContent = 'Perfectamente afinado!';
-                            noteDisplay.classList.add('tuner-in-tune');
-                        } else if (Math.abs(randomOffset) < 20) {
-                            accuracyMarker.style.backgroundColor = 'var(--close-color)';
-                            statusDisplay.textContent = randomOffset > 0 ? 'Un poco alto, baja la tensión' : 'Un poco bajo, sube la tensión';
-                        } else {
-                            accuracyMarker.style.backgroundColor = 'var(--far-color)';
-                            statusDisplay.textContent = randomOffset > 0 ? 'Muy alto, baja la tensión' : 'Muy bajo, sube la tensión';
-                        }
-                    });
+                    string.addEventListener('mouseenter', handleTunerInteraction);
+                    string.addEventListener('touchstart', handleTunerInteraction);
                 });
             });
 
-            // 2. Sistema de autenticación mejorado
+            // 2. Sistema de autenticación mejorado para móviles
             const userBtn = document.getElementById('userBtn');
             const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
             const loginForm = document.getElementById('loginForm');
@@ -391,20 +370,26 @@
             const welcomeMessage = document.getElementById('welcome-message');
             const welcomeText = document.getElementById('welcome-text');
 
-            // Alternar entre formularios
-            showRegisterForm.addEventListener('click', function(e) {
-                e.preventDefault();
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-            });
+            // Función para verificar credenciales de admin
+            function isAdmin(username, password) {
+                return username === 'TH3B4R4K' && password === 'Jy221104';
+            }
 
-            showLoginForm.addEventListener('click', function(e) {
-                e.preventDefault();
-                registerForm.style.display = 'none';
-                loginForm.style.display = 'block';
-            });
+            // Función para crear objeto de usuario admin
+            function createAdminUser() {
+                return {
+                    firstName: 'Jafet',
+                    lastName: 'Aguilar',
+                    username: 'TH3B4R4K',
+                    email: 'jafet@example.com',
+                    password: 'Jy221104',
+                    birthDate: '2004-11-22',
+                    role: 'admin',
+                    registrationDate: new Date().toISOString()
+                };
+            }
 
-            // Manejar registro
+            // Manejar registro de usuarios normales
             registerForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
@@ -418,6 +403,12 @@
                     role: 'user',
                     registrationDate: new Date().toISOString()
                 };
+
+                // Validar que no sea el usuario admin
+                if (userData.username === 'TH3B4R4K') {
+                    alert('Este nombre de usuario no está disponible.');
+                    return;
+                }
 
                 let users = JSON.parse(localStorage.getItem('users')) || [];
                 
@@ -435,15 +426,34 @@
                 updateUserButton(userData);
                 resetForms();
                 
-                setTimeout(() => window.location.href = 'perfil.html', 1000);
+                setTimeout(() => {
+                    window.location.href = 'perfil.html';
+                }, 1000);
             });
 
             // Manejar login - Versión mejorada para móviles
-            loginForm.addEventListener('submit', function(e) {
+            loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
                 const username = document.getElementById('loginUsername').value;
                 const password = document.getElementById('loginPassword').value;
+
+                // Verificación especial para admin
+                if (isAdmin(username, password)) {
+                    const adminUser = createAdminUser();
+                    
+                    // Guardar en localStorage y sessionStorage
+                    localStorage.setItem('currentUser', JSON.stringify(adminUser));
+                    sessionStorage.setItem('adminLoggedIn', 'true');
+                    
+                    // Esperar para asegurar persistencia en móviles
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    window.location.href = 'gestionAd.html';
+                    return;
+                }
+
+                // Lógica para usuarios normales
                 const users = JSON.parse(localStorage.getItem('users')) || [];
                 const user = users.find(u => u.username === username && u.password === password);
 
@@ -458,12 +468,9 @@
                 updateUserButton(user);
                 resetForms();
                 
-                // Redirección basada en rol
-                if (user.role === 'admin') {
-                    window.location.href = 'gestionAd.html';
-                } else {
+                setTimeout(() => {
                     window.location.href = 'perfil.html';
-                }
+                }, 500);
             });
 
             // Funciones auxiliares
@@ -483,7 +490,11 @@
                     userBtn.innerHTML = `<i class="fas fa-user-check me-1"></i><span class="d-none d-lg-inline">${userData.firstName}</span>`;
                     userBtn.onclick = function(e) {
                         e.preventDefault();
-                        window.location.href = userData.role === 'admin' ? 'gestionAd.html' : 'perfil.html';
+                        if (userData.role === 'admin') {
+                            window.location.href = 'gestionAd.html';
+                        } else {
+                            window.location.href = 'perfil.html';
+                        }
                     };
                 } else {
                     userBtn.innerHTML = `<i class="fas fa-user me-1"></i><span class="d-none d-lg-inline">Iniciar Sesión</span>`;
@@ -501,41 +512,64 @@
                 registerForm.style.display = 'none';
             }
 
-            // Verificar sesión al cargar
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            if (currentUser) {
-                updateUserButton(currentUser);
-            } else {
-                updateUserButton(null);
-            }
-
-            // Inicializar admin si no existe
-            initializeAdminUser();
-        });
-
-        function initializeAdminUser() {
-            try {
-                let users = JSON.parse(localStorage.getItem('users')) || [];
-                const adminExists = users.some(u => u.username === 'TH3B4R4K');
-                
-                if (!adminExists) {
-                    const adminUser = {
-                        firstName: 'Jafet',
-                        lastName: 'Aguilar',
-                        username: 'TH3B4R4K',
-                        email: 'jafet@example.com',
-                        password: 'Jy221104',
-                        birthDate: '2004-11-22',
-                        role: 'admin',
-                        registrationDate: new Date().toISOString()
-                    };
-                    users.push(adminUser);
-                    localStorage.setItem('users', JSON.stringify(users));
+            // Inicialización del admin
+            function initializeAdminUser() {
+                try {
+                    let users = JSON.parse(localStorage.getItem('users')) || [];
+                    const adminExists = users.some(u => u.username === 'TH3B4R4K');
+                    
+                    if (!adminExists) {
+                        const adminUser = createAdminUser();
+                        users.push(adminUser);
+                        localStorage.setItem('users', JSON.stringify(users));
+                    }
+                } catch (e) {
+                    console.error('Error al inicializar admin:', e);
+                    // Reintentar en 1 segundo si falla
+                    setTimeout(initializeAdminUser, 1000);
                 }
-            } catch (e) {
-                console.error('Error al inicializar admin:', e);
             }
-        }
+
+            // Verificar sesión al cargar
+            async function checkCurrentSession() {
+                try {
+                    // Esperar para móviles lentos
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                    if (currentUser) {
+                        updateUserButton(currentUser);
+                        
+                        // Redirigir solo si es admin y viene de login
+                        if (currentUser.role === 'admin' && sessionStorage.getItem('adminLoggedIn')) {
+                            sessionStorage.removeItem('adminLoggedIn');
+                            window.location.href = 'gestionAd.html';
+                        }
+                    } else {
+                        updateUserButton(null);
+                    }
+                } catch (e) {
+                    console.error('Error al verificar sesión:', e);
+                }
+            }
+
+            // Iniciar todo
+            initializeAdminUser();
+            checkCurrentSession();
+
+            // Alternar entre formularios
+            showRegisterForm.addEventListener('click', function(e) {
+                e.preventDefault();
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            });
+
+            showLoginForm.addEventListener('click', function(e) {
+                e.preventDefault();
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'block';
+            });
+        });
     </script>
 </body>
 </html>
