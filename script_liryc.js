@@ -8,6 +8,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultsDiv = document.getElementById('results');
     let player = null;
 
+    // Configuración de APIs
+    const API_CONFIG = {
+        GENIUS: {
+            BASE_URL: 'https://api.genius.com',
+            TOKEN: 'lmDCtevEVtl5KcsrV_8gxADMM9yNgrmINDnb6jczKSyEoGJEIHNC_NBgqsto26V-',
+            HEADERS: {
+                'Authorization': 'Bearer lmDCtevEVtl5KcsrV_8gxADMM9yNgrmINDnb6jczKSyEoGJEIHNC_NBgqsto26V-'
+            }
+        },
+        LYRICS_OVH_ALT: {
+            BASE_URL: 'https://some-random-api.ml/lyrics',
+            FALLBACK_URL: 'https://lyrics-api.vercel.app/api/lyrics'
+        },
+        YOUTUBE: {
+            KEY: 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac'
+        }
+    };
+
     // Event listeners para búsqueda
     searchBtn.addEventListener('click', searchLyrics);
     artistInput.addEventListener('keypress', (e) => e.key === 'Enter' && searchLyrics());
@@ -27,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resetPlayer();
 
         if (artist && title) {
-            searchLyricsApi(artist, title);
+            searchLyricsFromMultipleSources(artist, title);
         } else if (artist) {
             searchArtistTracks(artist, true);
         } else {
@@ -35,49 +53,165 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Función para buscar letras
-    function searchLyricsApi(artist, title) {
-        const proxyUrl = 'https://api.allorigins.win/get?url=';
-        const apiUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
+    // Función para buscar letras de múltiples fuentes
+    async function searchLyricsFromMultipleSources(artist, title) {
+        try {
+            // Intentar primero con Genius (la fuente más confiable)
+            let lyrics = await searchGeniusLyrics(artist, title);
+            
+            // Si Genius no devuelve letras, intentar con fuentes alternativas
+            if (!lyrics) {
+                lyrics = await searchLyricsOvhAlternative(artist, title);
+            }
 
-        fetch(proxyUrl + encodeURIComponent(apiUrl))
-            .then(response => {
-                if (!response.ok) throw new Error('No se pudo obtener la letra');
-                return response.json();
-            })
-            .then(data => {
-                const content = JSON.parse(data.contents);
-                if (content.error) throw new Error(content.error || 'Letra no encontrada');
-                searchYoutubeVideo(artist, title, content.lyrics);
-            })
-            .catch(error => {
-                showError(error.message || 'Ocurrió un error al buscar la letra');
-                console.error('Error:', error);
+            if (lyrics) {
+                await searchYoutubeVideo(artist, title, lyrics);
+            } else {
+                showError('No se pudo encontrar la letra. Intenta con una búsqueda más específica.');
+            }
+        } catch (error) {
+            console.error('Error en búsqueda:', error);
+            showError('Ocurrió un error al buscar la letra. Intenta nuevamente.');
+        }
+    }
+
+    // Función para buscar letras en Genius
+    async function searchGeniusLyrics(artist, title) {
+        try {
+            // Paso 1: Buscar la canción en Genius
+            const searchUrl = `${API_CONFIG.GENIUS.BASE_URL}/search?q=${encodeURIComponent(title + ' ' + artist)}`;
+            
+            const searchResponse = await fetch(searchUrl, {
+                headers: API_CONFIG.GENIUS.HEADERS
             });
+            
+            if (!searchResponse.ok) {
+                console.log('Genius search failed:', searchResponse.status);
+                return null;
+            }
+            
+            const searchData = await searchResponse.json();
+            const song = searchData.response?.hits?.[0]?.result;
+            
+            if (!song) {
+                console.log('Canción no encontrada en Genius');
+                return null;
+            }
+            
+            // Paso 2: Obtener la URL de la letra
+            const lyricsUrl = song.url;
+            
+            // Paso 3: Usar un proxy para evitar CORS y obtener el HTML de la letra
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(lyricsUrl)}`;
+            const proxyResponse = await fetch(proxyUrl);
+            
+            if (!proxyResponse.ok) {
+                console.log('Proxy request failed:', proxyResponse.status);
+                return null;
+            }
+            
+            const proxyData = await proxyResponse.json();
+            
+            // Paso 4: Extraer la letra del HTML
+            return extractLyricsFromGeniusHTML(proxyData.contents);
+        } catch (error) {
+            console.error('Error en Genius API:', error);
+            return null;
+        }
+    }
+
+    // Función para extraer letras de HTML de Genius
+    function extractLyricsFromGeniusHTML(html) {
+        try {
+            // Crear un documento temporal para parsear el HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Buscar el contenedor principal de letras
+            const lyricsContainer = doc.querySelector('[data-lyrics-container="true"]');
+            
+            if (!lyricsContainer) {
+                console.log('No se encontró el contenedor de letras');
+                return null;
+            }
+            
+            // Limpiar el texto
+            let lyrics = lyricsContainer.innerHTML
+                .replace(/<br>/g, '\n') // Reemplazar saltos de línea
+                .replace(/<[^>]*>/g, '') // Eliminar todas las etiquetas HTML
+                .replace(/^\s+|\s+$/g, ''); // Trim whitespace
+                
+            // Eliminar coros duplicados (común en Genius)
+            lyrics = lyrics.replace(/(\[Coro:.*?\].*?\n.*?)(\[Coro:.*?\])/gs, '$1');
+            
+            return lyrics || null;
+        } catch (error) {
+            console.error('Error extrayendo letras:', error);
+            return null;
+        }
+    }
+
+    // Función para buscar letras en alternativas de lyrics.ovh
+    async function searchLyricsOvhAlternative(artist, title) {
+        const sources = [
+            `${API_CONFIG.LYRICS_OVH_ALT.BASE_URL}?title=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`,
+            `${API_CONFIG.LYRICS_OVH_ALT.FALLBACK_URL}?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`
+        ];
+        
+        for (const url of sources) {
+            try {
+                const response = await fetch(url);
+                
+                if (!response.ok) continue;
+                
+                const data = await response.json();
+                const lyrics = data.lyrics || data.text || data.result?.lyrics;
+                
+                if (lyrics) {
+                    return formatLyrics(lyrics);
+                }
+            } catch (error) {
+                console.error(`Error con fuente ${url}:`, error);
+                continue;
+            }
+        }
+        
+        return null;
+    }
+
+    // Formatear letras para consistencia
+    function formatLyrics(lyrics) {
+        if (!lyrics) return null;
+        
+        // Normalizar saltos de línea
+        return lyrics.replace(/\r\n/g, '\n')
+                    .replace(/\n+/g, '\n')
+                    .trim();
     }
 
     // Función para buscar video en YouTube
-    function searchYoutubeVideo(artist, title, lyrics) {
-        const apiKey = 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac';
-        const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(artist + ' ' + title)}&key=${apiKey}&maxResults=1`;
-
-        fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) throw new Error('No se pudo obtener el video de YouTube');
-                return response.json();
-            })
-            .then(data => {
-                const videoId = data.items?.[0]?.id?.videoId || '';
-                displayResults(artist, title, lyrics, videoId);
-            })
-            .catch(error => {
-                console.error('Error al buscar el video:', error);
-                displayResults(artist, title, lyrics);
-            });
+    async function searchYoutubeVideo(artist, title, lyrics) {
+        try {
+            const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(artist + ' ' + title)}&key=${API_CONFIG.YOUTUBE.KEY}&maxResults=1`;
+            
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                throw new Error('No se pudo obtener el video de YouTube');
+            }
+            
+            const data = await response.json();
+            const videoId = data.items?.[0]?.id?.videoId || '';
+            
+            displayResults(artist, title, lyrics, videoId);
+        } catch (error) {
+            console.error('Error al buscar el video:', error);
+            displayResults(artist, title, lyrics);
+        }
     }
 
     // Función para mostrar resultados
-    function displayResults(artist, title, lyrics, videoId) {
+    function displayResults(artist, title, lyrics, videoId = '') {
         const videoEmbed = videoId ? `
             <div class="video-section">
                 <div class="video-container">
@@ -101,17 +235,37 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button id="downloadBtn" class="download-btn">
                             <i class="fas fa-file-pdf"></i> Descargar PDF
                         </button>
+                        <button id="copyBtn" class="copy-btn" title="Copiar letra">
+                            <i class="fas fa-copy"></i>
+                        </button>
                     </div>
                 </div>
                 ${videoEmbed}
-                <div class="lyrics">${lyrics}</div>
+                <pre class="lyrics">${lyrics}</pre>
             </div>
         `;
 
+        // Configurar botón de descarga PDF
         document.getElementById('downloadBtn')?.addEventListener('click', () => {
             downloadLyricsAsPDF(artist, title, lyrics);
         });
 
+        // Configurar botón de copiar letra
+        document.getElementById('copyBtn')?.addEventListener('click', () => {
+            navigator.clipboard.writeText(lyrics)
+                .then(() => {
+                    const copyBtn = document.getElementById('copyBtn');
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Error al copiar:', err);
+                });
+        });
+
+        // Inicializar reproductor si hay video
         if (videoId) {
             initializePlayer(videoId);
         }
@@ -152,23 +306,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Cuando el reproductor está listo
-function onPlayerReady(event) {
-    const playBtn = document.getElementById('playBtn');
-    if (playBtn) {
-        playBtn.addEventListener('click', function() {
-            // Verificar el estado actual del reproductor
-            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-                event.target.pauseVideo();
-                this.classList.remove('playing');
-                this.innerHTML = '<i class="fas fa-play"></i> Reproducir <span class="pulse-animation"></span>';
-            } else {
-                event.target.playVideo();
-                this.classList.add('playing');
-                this.innerHTML = '<i class="fas fa-pause"></i> Pausar';
-            }
-        });
+    function onPlayerReady(event) {
+        const playBtn = document.getElementById('playBtn');
+        if (playBtn) {
+            playBtn.addEventListener('click', function() {
+                if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    event.target.pauseVideo();
+                    this.classList.remove('playing');
+                    this.innerHTML = '<i class="fas fa-play"></i> Reproducir <span class="pulse-animation"></span>';
+                } else {
+                    event.target.playVideo();
+                    this.classList.add('playing');
+                    this.innerHTML = '<i class="fas fa-pause"></i> Pausar';
+                }
+            });
+        }
     }
-}
 
     // Resetear el reproductor
     function resetPlayer() {
@@ -178,35 +331,69 @@ function onPlayerReady(event) {
         }
     }
 
-    // Resto de funciones se mantienen igual...
-    function searchArtistTracks(artist, isPrimarySearch = false) {
-        const proxyUrl = 'https://api.allorigins.win/get?url=';
-        const apiUrl = `https://api.lyrics.ovh/suggest/${encodeURIComponent(artist)}`;
-
-        fetch(proxyUrl + encodeURIComponent(apiUrl))
-            .then(response => {
-                if (!response.ok) throw new Error('No se pudieron obtener las canciones del artista');
-                return response.json();
-            })
-            .then(data => {
-                try {
-                    const content = JSON.parse(data.contents);
-                    if (content.data && content.data.length > 0) {
-                        if (isPrimarySearch) displayArtistResults(artist, content.data);
-                    } else if (isPrimarySearch) {
-                        showError(`No se encontraron canciones para ${artist}`);
-                    }
-                } catch (e) {
-                    console.error('Error al procesar canciones del artista:', e);
-                    if (isPrimarySearch) showError('Error al procesar los resultados');
-                }
-            })
-            .catch(error => {
-                console.error('Error al buscar canciones del artista:', error);
-                if (isPrimarySearch) showError('Error al buscar canciones del artista');
-            });
+    // Función para buscar canciones de un artista
+    async function searchArtistTracks(artist, isPrimarySearch = false) {
+        try {
+            // Intentar primero con Genius
+            const songs = await searchGeniusArtistSongs(artist);
+            
+            if (songs && songs.length > 0) {
+                displayArtistResults(artist, songs);
+                return;
+            }
+            
+            // Si Genius falla, intentar con la API alternativa
+            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const apiUrl = `https://api.lyrics.ovh/suggest/${encodeURIComponent(artist)}`;
+            
+            const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
+            
+            if (!response.ok) {
+                throw new Error('No se pudieron obtener las canciones del artista');
+            }
+            
+            const data = await response.json();
+            const content = JSON.parse(data.contents);
+            
+            if (content.data && content.data.length > 0) {
+                displayArtistResults(artist, content.data);
+            } else if (isPrimarySearch) {
+                showError(`No se encontraron canciones para ${artist}`);
+            }
+        } catch (error) {
+            console.error('Error al buscar canciones del artista:', error);
+            if (isPrimarySearch) {
+                showError('Error al buscar canciones del artista');
+            }
+        }
     }
 
+    // Buscar canciones de artista en Genius
+    async function searchGeniusArtistSongs(artist) {
+        try {
+            const apiUrl = `${API_CONFIG.GENIUS.BASE_URL}/search?q=${encodeURIComponent(artist)}&per_page=10`;
+            
+            const response = await fetch(apiUrl, {
+                headers: API_CONFIG.GENIUS.HEADERS
+            });
+            
+            if (!response.ok) return null;
+            
+            const data = await response.json();
+            const hits = data.response?.hits || [];
+            
+            return hits.map(hit => ({
+                title: hit.result.title,
+                artist: { name: hit.result.primary_artist.name },
+                album: hit.result.album
+            }));
+        } catch (error) {
+            console.error('Error al buscar artista en Genius:', error);
+            return null;
+        }
+    }
+
+    // Mostrar resultados de artista
     function displayArtistResults(artist, tracks) {
         const limitedTracks = tracks.slice(0, 15);
         let tracksHTML = `
@@ -217,9 +404,12 @@ function onPlayerReady(event) {
         `;
 
         limitedTracks.forEach(track => {
+            const safeArtist = track.artist.name.replace(/'/g, "\\'");
+            const safeTitle = track.title.replace(/'/g, "\\'");
             tracksHTML += `
-                <li onclick="searchTrack('${track.artist.name.replace("'", "\\'")}', '${track.title.replace("'", "\\'")}')">
+                <li onclick="searchTrack('${safeArtist}', '${safeTitle}')">
                     <i class="fas fa-music"></i> ${track.title}
+                    ${track.album ? `<span class="album-name">(${track.album.name})</span>` : ''}
                 </li>
             `;
         });
@@ -228,34 +418,67 @@ function onPlayerReady(event) {
         resultsDiv.innerHTML = tracksHTML;
     }
 
-    function searchSongsByTitle(title) {
-        const proxyUrl = 'https://api.allorigins.win/get?url=';
-        const apiUrl = `https://api.lyrics.ovh/suggest/${encodeURIComponent(title)}`;
-
-        fetch(proxyUrl + encodeURIComponent(apiUrl))
-            .then(response => {
-                if (!response.ok) throw new Error('No se pudieron encontrar canciones con ese título');
-                return response.json();
-            })
-            .then(data => {
-                try {
-                    const content = JSON.parse(data.contents);
-                    if (content.data && content.data.length > 0) {
-                        displaySongResults(title, content.data);
-                    } else {
-                        showError(`No se encontraron canciones con el título "${title}"`);
-                    }
-                } catch (e) {
-                    console.error('Error al procesar canciones:', e);
-                    showError('Error al procesar los resultados');
-                }
-            })
-            .catch(error => {
-                console.error('Error al buscar canciones:', error);
-                showError('Error al buscar canciones');
-            });
+    // Función para buscar canciones por título
+    async function searchSongsByTitle(title) {
+        try {
+            // Intentar primero con Genius
+            const songs = await searchGeniusSongsByTitle(title);
+            
+            if (songs && songs.length > 0) {
+                displaySongResults(title, songs);
+                return;
+            }
+            
+            // Si Genius falla, intentar con la API alternativa
+            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const apiUrl = `https://api.lyrics.ovh/suggest/${encodeURIComponent(title)}`;
+            
+            const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
+            
+            if (!response.ok) {
+                throw new Error('No se pudieron encontrar canciones con ese título');
+            }
+            
+            const data = await response.json();
+            const content = JSON.parse(data.contents);
+            
+            if (content.data && content.data.length > 0) {
+                displaySongResults(title, content.data);
+            } else {
+                showError(`No se encontraron canciones con el título "${title}"`);
+            }
+        } catch (error) {
+            console.error('Error al buscar canciones:', error);
+            showError('Error al buscar canciones');
+        }
     }
 
+    // Buscar canciones por título en Genius
+    async function searchGeniusSongsByTitle(title) {
+        try {
+            const apiUrl = `${API_CONFIG.GENIUS.BASE_URL}/search?q=${encodeURIComponent(title)}&per_page=10`;
+            
+            const response = await fetch(apiUrl, {
+                headers: API_CONFIG.GENIUS.HEADERS
+            });
+            
+            if (!response.ok) return null;
+            
+            const data = await response.json();
+            const hits = data.response?.hits || [];
+            
+            return hits.map(hit => ({
+                title: hit.result.title,
+                artist: { name: hit.result.primary_artist.name },
+                album: hit.result.album
+            }));
+        } catch (error) {
+            console.error('Error al buscar canciones en Genius:', error);
+            return null;
+        }
+    }
+
+    // Mostrar resultados de canciones
     function displaySongResults(title, songs) {
         const limitedSongs = songs.slice(0, 15);
         let songsHTML = `
@@ -266,8 +489,10 @@ function onPlayerReady(event) {
         `;
 
         limitedSongs.forEach(song => {
+            const safeArtist = song.artist.name.replace(/'/g, "\\'");
+            const safeTitle = song.title.replace(/'/g, "\\'");
             songsHTML += `
-                <div class="song-item" onclick="searchTrack('${song.artist.name.replace("'", "\\'")}', '${song.title.replace("'", "\\'")}')">
+                <div class="song-item" onclick="searchTrack('${safeArtist}', '${safeTitle}')">
                     <div class="song-item-info">
                         <div class="song-item-title"><i class="fas fa-play-circle"></i> ${song.title}</div>
                         <div class="song-item-artist">${song.artist.name}</div>
@@ -281,12 +506,13 @@ function onPlayerReady(event) {
         resultsDiv.innerHTML = songsHTML;
     }
 
+    // Descargar letras como PDF
     function downloadLyricsAsPDF(artist, title, lyrics) {
         const doc = new jsPDF();
         doc.setProperties({
             title: `${title} - ${artist}`,
             subject: 'Letra de canción',
-            author: 'ConvertMusic'
+            author: 'Lyrics Finder'
         });
 
         doc.setFont('helvetica');
@@ -306,6 +532,7 @@ function onPlayerReady(event) {
         doc.save(`${artist} - ${title}.pdf`);
     }
 
+    // Mostrar estado de carga
     function showLoading() {
         resultsDiv.innerHTML = `
             <div class="loading">
@@ -317,13 +544,23 @@ function onPlayerReady(event) {
         `;
     }
 
+    // Mostrar mensaje de error
     function showError(message) {
+        let errorMessage = message;
+        
+        if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
+            errorMessage = 'Problema de conexión. Verifica tu internet e intenta nuevamente.';
+        }
+
         resultsDiv.innerHTML = `
             <div class="error-message">
                 <div class="error-icon">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <p>${message}</p>
+                <p>${errorMessage}</p>
+                <button onclick="window.location.reload()" class="retry-btn">
+                    <i class="fas fa-sync-alt"></i> Intentar nuevamente
+                </button>
             </div>
         `;
     }
@@ -335,46 +572,23 @@ function onPlayerReady(event) {
         searchLyrics();
     };
 
-    function showError(message) {
-    let errorMessage = message;
-    
-    // Verificar si el error es de conexión
-    if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
-        errorMessage = 'Servidor no disponible. Por favor, verifica tu conexión a internet o intenta nuevamente más tarde.';
-    }
-
-    resultsDiv.innerHTML = `
-        <div class="error-message">
-            <div class="error-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <p>${errorMessage}</p>
-            <button onclick="window.location.reload()" class="retry-btn">
-                <i class="fas fa-sync-alt"></i> Intentar nuevamente
-            </button>
-        </div>
-    `;
-}
-
-// Agregar al final del archivo, antes del cierre del event listener DOMContentLoaded
-
-// Función para limpiar inputs
-document.querySelectorAll('.clear-input').forEach(button => {
-    button.addEventListener('click', function() {
-        const targetId = this.getAttribute('data-target');
-        document.getElementById(targetId).value = '';
-        this.style.opacity = '0';
-        document.getElementById(targetId).focus();
+    // Mostrar/ocultar botones de limpiar inputs
+    ['artist', 'title'].forEach(id => {
+        const input = document.getElementById(id);
+        const clearBtn = document.querySelector(`.clear-input[data-target="${id}"]`);
+        
+        input.addEventListener('input', function() {
+            clearBtn.style.opacity = this.value ? '1' : '0';
+        });
     });
-});
 
-// Mostrar/ocultar botones de limpiar según contenido
-['artist', 'title'].forEach(id => {
-    const input = document.getElementById(id);
-    const clearBtn = document.querySelector(`.clear-input[data-target="${id}"]`);
-    
-    input.addEventListener('input', function() {
-        clearBtn.style.opacity = this.value ? '1' : '0';
+    // Limpiar inputs
+    document.querySelectorAll('.clear-input').forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            document.getElementById(targetId).value = '';
+            this.style.opacity = '0';
+            document.getElementById(targetId).focus();
+        });
     });
-});
 });
