@@ -46,18 +46,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                const content = JSON.parse(data.contents);
-                if (content.error) throw new Error(content.error || 'Letra no encontrada');
-                searchYoutubeVideo(artist, title, content.lyrics);
+                try {
+                    const content = JSON.parse(data.contents);
+                    if (content.error) {
+                        // Si no se encuentra la letra, buscar sugerencias y mostrar el video
+                        showVideoAndSuggestions(artist, title);
+                    } else {
+                        searchYoutubeVideo(artist, title, content.lyrics);
+                    }
+                } catch (e) {
+                    console.error('Error parsing lyrics:', e);
+                    showVideoAndSuggestions(artist, title);
+                }
             })
             .catch(error => {
-                showError(error.message || 'Ocurrió un error al buscar la letra');
                 console.error('Error:', error);
+                showVideoAndSuggestions(artist, title);
             });
     }
 
+    // Función para mostrar video y sugerencias cuando no se encuentra la letra
+    function showVideoAndSuggestions(artist, title) {
+        // Primero buscar el video de YouTube
+        searchYoutubeVideo(artist, title, null, () => {
+            // Luego buscar sugerencias de canciones
+            if (artist) {
+                searchArtistTracks(artist, false);
+            } else {
+                searchSongsByTitle(title);
+            }
+        });
+    }
+
     // Función para buscar video en YouTube
-    function searchYoutubeVideo(artist, title, lyrics) {
+    function searchYoutubeVideo(artist, title, lyrics, callback) {
         const apiKey = 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac';
         const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(artist + ' ' + title)}&key=${apiKey}&maxResults=1`;
 
@@ -68,12 +90,56 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 const videoId = data.items?.[0]?.id?.videoId || '';
-                displayResults(artist, title, lyrics, videoId);
+                if (lyrics) {
+                    displayResults(artist, title, lyrics, videoId);
+                } else {
+                    displayVideoOnly(artist, title, videoId);
+                    if (callback) callback();
+                }
             })
             .catch(error => {
                 console.error('Error al buscar el video:', error);
-                displayResults(artist, title, lyrics);
+                if (lyrics) {
+                    displayResults(artist, title, lyrics);
+                } else {
+                    displayVideoOnly(artist, title);
+                    if (callback) callback();
+                }
             });
+    }
+
+    // Función para mostrar solo el video (cuando no hay letra)
+    function displayVideoOnly(artist, title, videoId) {
+        const videoEmbed = videoId ? `
+            <div class="video-section">
+                <div class="video-container">
+                    <div id="player"></div>
+                </div>
+                <button id="playBtn" class="play-btn">
+                    <i class="fas fa-play"></i> Reproducir
+                    <span class="pulse-animation"></span>
+                </button>
+            </div>
+        ` : '<p class="error-message">No se encontró el video de esta canción</p>';
+
+        resultsDiv.innerHTML = `
+            <div class="lyrics-container">
+                <div class="song-info">
+                    <div>
+                        <h2 class="song-title">${title}</h2>
+                        <h3 class="artist-name">${artist}</h3>
+                    </div>
+                </div>
+                ${videoEmbed}
+                <div class="lyrics">
+                    <p class="error-message">No se encontró la letra para esta canción.</p>
+                </div>
+            </div>
+        `;
+
+        if (videoId) {
+            initializePlayer(videoId);
+        }
     }
 
     // Función para mostrar resultados
@@ -152,23 +218,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Cuando el reproductor está listo
-function onPlayerReady(event) {
-    const playBtn = document.getElementById('playBtn');
-    if (playBtn) {
-        playBtn.addEventListener('click', function() {
-            // Verificar el estado actual del reproductor
-            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-                event.target.pauseVideo();
-                this.classList.remove('playing');
-                this.innerHTML = '<i class="fas fa-play"></i> Reproducir <span class="pulse-animation"></span>';
-            } else {
-                event.target.playVideo();
-                this.classList.add('playing');
-                this.innerHTML = '<i class="fas fa-pause"></i> Pausar';
-            }
-        });
+    function onPlayerReady(event) {
+        const playBtn = document.getElementById('playBtn');
+        if (playBtn) {
+            playBtn.addEventListener('click', function() {
+                // Verificar el estado actual del reproductor
+                if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    event.target.pauseVideo();
+                    this.classList.remove('playing');
+                    this.innerHTML = '<i class="fas fa-play"></i> Reproducir <span class="pulse-animation"></span>';
+                } else {
+                    event.target.playVideo();
+                    this.classList.add('playing');
+                    this.innerHTML = '<i class="fas fa-pause"></i> Pausar';
+                }
+            });
+        }
     }
-}
 
     // Resetear el reproductor
     function resetPlayer() {
@@ -178,7 +244,6 @@ function onPlayerReady(event) {
         }
     }
 
-    // Resto de funciones se mantienen igual...
     function searchArtistTracks(artist, isPrimarySearch = false) {
         const proxyUrl = 'https://api.allorigins.win/get?url=';
         const apiUrl = `https://api.lyrics.ovh/suggest/${encodeURIComponent(artist)}`;
@@ -192,7 +257,11 @@ function onPlayerReady(event) {
                 try {
                     const content = JSON.parse(data.contents);
                     if (content.data && content.data.length > 0) {
-                        if (isPrimarySearch) displayArtistResults(artist, content.data);
+                        if (isPrimarySearch) {
+                            displayArtistResults(artist, content.data);
+                        } else {
+                            displaySuggestions(artist, content.data);
+                        }
                     } else if (isPrimarySearch) {
                         showError(`No se encontraron canciones para ${artist}`);
                     }
@@ -219,13 +288,38 @@ function onPlayerReady(event) {
         limitedTracks.forEach(track => {
             tracksHTML += `
                 <li onclick="searchTrack('${track.artist.name.replace("'", "\\'")}', '${track.title.replace("'", "\\'")}')">
-                    <i class="fas fa-music"></i> ${track.title}
+                    <i class="fas fa-play-circle"></i> ${track.title}
                 </li>
             `;
         });
 
         tracksHTML += `</ul></div>`;
         resultsDiv.innerHTML = tracksHTML;
+    }
+
+    function displaySuggestions(artist, tracks) {
+        const limitedTracks = tracks.slice(0, 6);
+        let suggestionsHTML = `
+            <div class="suggestions">
+                <h3>Otras canciones de ${artist}</h3>
+                <div class="suggestion-list">
+        `;
+
+        limitedTracks.forEach(track => {
+            suggestionsHTML += `
+                <div class="suggestion-item" onclick="searchTrack('${track.artist.name.replace("'", "\\'")}', '${track.title.replace("'", "\\'")}')">
+                    <div class="suggestion-title">${track.title}</div>
+                    <div class="suggestion-artist">${track.artist.name}</div>
+                </div>
+            `;
+        });
+
+        suggestionsHTML += `</div></div>`;
+        
+        // Agregar las sugerencias al final del contenido existente
+        const suggestionsContainer = document.createElement('div');
+        suggestionsContainer.innerHTML = suggestionsHTML;
+        resultsDiv.appendChild(suggestionsContainer);
     }
 
     function searchSongsByTitle(title) {
@@ -318,12 +412,22 @@ function onPlayerReady(event) {
     }
 
     function showError(message) {
+        let errorMessage = message;
+        
+        // Verificar si el error es de conexión
+        if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
+            errorMessage = 'Servidor no disponible. Por favor, verifica tu conexión a internet o intenta nuevamente más tarde.';
+        }
+
         resultsDiv.innerHTML = `
             <div class="error-message">
                 <div class="error-icon">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <p>${message}</p>
+                <p>${errorMessage}</p>
+                <button onclick="window.location.reload()" class="retry-btn">
+                    <i class="fas fa-sync-alt"></i> Intentar nuevamente
+                </button>
             </div>
         `;
     }
@@ -335,46 +439,23 @@ function onPlayerReady(event) {
         searchLyrics();
     };
 
-    function showError(message) {
-    let errorMessage = message;
-    
-    // Verificar si el error es de conexión
-    if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
-        errorMessage = 'Servidor no disponible. Por favor, verifica tu conexión a internet o intenta nuevamente más tarde.';
-    }
-
-    resultsDiv.innerHTML = `
-        <div class="error-message">
-            <div class="error-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <p>${errorMessage}</p>
-            <button onclick="window.location.reload()" class="retry-btn">
-                <i class="fas fa-sync-alt"></i> Intentar nuevamente
-            </button>
-        </div>
-    `;
-}
-
-// Agregar al final del archivo, antes del cierre del event listener DOMContentLoaded
-
-// Función para limpiar inputs
-document.querySelectorAll('.clear-input').forEach(button => {
-    button.addEventListener('click', function() {
-        const targetId = this.getAttribute('data-target');
-        document.getElementById(targetId).value = '';
-        this.style.opacity = '0';
-        document.getElementById(targetId).focus();
+    // Función para limpiar inputs
+    document.querySelectorAll('.clear-input').forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            document.getElementById(targetId).value = '';
+            this.style.opacity = '0';
+            document.getElementById(targetId).focus();
+        });
     });
-});
 
-// Mostrar/ocultar botones de limpiar según contenido
-['artist', 'title'].forEach(id => {
-    const input = document.getElementById(id);
-    const clearBtn = document.querySelector(`.clear-input[data-target="${id}"]`);
-    
-    input.addEventListener('input', function() {
-        clearBtn.style.opacity = this.value ? '1' : '0';
+    // Mostrar/ocultar botones de limpiar según contenido
+    ['artist', 'title'].forEach(id => {
+        const input = document.getElementById(id);
+        const clearBtn = document.querySelector(`.clear-input[data-target="${id}"]`);
+        
+        input.addEventListener('input', function() {
+            clearBtn.style.opacity = this.value ? '1' : '0';
+        });
     });
-});
 });
