@@ -375,6 +375,26 @@ document.addEventListener('DOMContentLoaded', function() {
         resultsDiv.innerHTML = songsHTML;
     }
 
+    // Función para mostrar notificación de descarga
+    function showDownloadNotification(artist, title) {
+        const notification = document.createElement('div');
+        notification.className = 'download-notification';
+        notification.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            <div class="notification-content">
+                <div class="notification-title">¡Descarga completada!</div>
+                <div class="notification-message">"${title}" de ${artist} se ha descargado correctamente</div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Eliminar la notificación después de 3 segundos
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
     function downloadLyricsAsPDF(artist, title, lyrics) {
         const doc = new jsPDF();
         doc.setProperties({
@@ -398,6 +418,9 @@ document.addEventListener('DOMContentLoaded', function() {
         doc.text(splitLines, 15, 45);
 
         doc.save(`${artist} - ${title}.pdf`);
+        
+        // Mostrar notificación de descarga
+        showDownloadNotification(artist, title);
     }
 
     function showLoading() {
@@ -459,46 +482,51 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Agregar al script_liryc.js
-function setupAutocomplete(inputElement, type) {
-    inputElement.addEventListener('input', function() {
-        const query = this.value.trim();
-        if (query.length < 2) return;
+    // Configurar autocompletado
+    function setupAutocomplete(inputElement, type) {
+        inputElement.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query.length < 2) return;
 
-        const apiUrl = type === 'artist' 
-            ? `https://api.lyrics.ovh/suggest/${encodeURIComponent(query)}` 
-            : `https://api.lyrics.ovh/suggest/${encodeURIComponent(query)}`;
+            const apiUrl = type === 'artist' 
+                ? `https://api.lyrics.ovh/suggest/${encodeURIComponent(query)}` 
+                : `https://api.lyrics.ovh/suggest/${encodeURIComponent(query)}`;
 
-        fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`)
-            .then(response => response.json())
-            .then(data => {
-                const content = JSON.parse(data.contents);
-                if (content.data) {
-                    showAutocompleteSuggestions(inputElement, content.data, type);
-                }
-            })
-            .catch(console.error);
-    });
-}
-
-function showAutocompleteSuggestions(inputElement, items, type) {
-    const dropdown = document.createElement('div');
-    dropdown.className = 'suggestions-dropdown';
-    items.slice(0, 5).forEach(item => {
-        const suggestion = document.createElement('div');
-        suggestion.className = 'suggestion-item';
-        suggestion.textContent = type === 'artist' ? item.artist.name : item.title;
-        suggestion.addEventListener('click', () => {
-            inputElement.value = type === 'artist' ? item.artist.name : item.title;
-            dropdown.remove();
+            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const content = JSON.parse(data.contents);
+                    if (content.data) {
+                        showAutocompleteSuggestions(inputElement, content.data, type);
+                    }
+                })
+                .catch(console.error);
         });
-        dropdown.appendChild(suggestion);
-    });
-    inputElement.parentNode.appendChild(dropdown);
-}
+    }
 
-// Llamar en DOMContentLoaded
-setupAutocomplete(artistInput, 'artist');
-setupAutocomplete(titleInput, 'title');
+    function showAutocompleteSuggestions(inputElement, items, type) {
+        // Eliminar dropdown anterior si existe
+        const existingDropdown = inputElement.parentNode.querySelector('.suggestions-dropdown');
+        if (existingDropdown) existingDropdown.remove();
 
+        const dropdown = document.createElement('div');
+        dropdown.className = 'suggestions-dropdown';
+        items.slice(0, 5).forEach(item => {
+            const suggestion = document.createElement('div');
+            suggestion.className = 'suggestion-item';
+            suggestion.textContent = type === 'artist' ? item.artist.name : item.title;
+            suggestion.addEventListener('click', () => {
+                inputElement.value = type === 'artist' ? item.artist.name : item.title;
+                dropdown.remove();
+            });
+            dropdown.appendChild(suggestion);
+        });
+        
+        // Posicionar el dropdown debajo del input
+        inputElement.parentNode.appendChild(dropdown);
+    }
+
+    // Inicializar autocompletado
+    setupAutocomplete(artistInput, 'artist');
+    setupAutocomplete(titleInput, 'title');
 });

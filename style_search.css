@@ -609,3 +609,60 @@ header {
     }
 }
 
+/* Notificación de descarga */
+@keyframes slideIn {
+    0% { transform: translateY(100px); opacity: 0; }
+    20% { transform: translateY(0); opacity: 1; }
+    80% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(100px); opacity: 0; }
+}
+
+.download-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: #28a745;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    animation: slideIn 3s ease-in-out forwards;
+    pointer-events: none;
+    max-width: 350px;
+    border-left: 5px solid #1e7e34;
+}
+
+.download-notification i {
+    margin-right: 15px;
+    font-size: 1.8rem;
+    color: #d4edda;
+}
+
+.download-notification .notification-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.download-notification .notification-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.download-notification .notification-message {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Efecto para pantallas pequeñas */
+@media (max-width: 768px) {
+    .download-notification {
+        right: 15px;
+        left: 15px;
+        max-width: none;
+        bottom: 15px;
+    }
+}
