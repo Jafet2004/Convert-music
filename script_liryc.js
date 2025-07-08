@@ -458,4 +458,47 @@ document.addEventListener('DOMContentLoaded', function() {
             clearBtn.style.opacity = this.value ? '1' : '0';
         });
     });
+
+    // Agregar al script_liryc.js
+function setupAutocomplete(inputElement, type) {
+    inputElement.addEventListener('input', function() {
+        const query = this.value.trim();
+        if (query.length < 2) return;
+
+        const apiUrl = type === 'artist' 
+            ? `https://api.lyrics.ovh/suggest/${encodeURIComponent(query)}` 
+            : `https://api.lyrics.ovh/suggest/${encodeURIComponent(query)}`;
+
+        fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`)
+            .then(response => response.json())
+            .then(data => {
+                const content = JSON.parse(data.contents);
+                if (content.data) {
+                    showAutocompleteSuggestions(inputElement, content.data, type);
+                }
+            })
+            .catch(console.error);
+    });
+}
+
+function showAutocompleteSuggestions(inputElement, items, type) {
+    const dropdown = document.createElement('div');
+    dropdown.className = 'suggestions-dropdown';
+    items.slice(0, 5).forEach(item => {
+        const suggestion = document.createElement('div');
+        suggestion.className = 'suggestion-item';
+        suggestion.textContent = type === 'artist' ? item.artist.name : item.title;
+        suggestion.addEventListener('click', () => {
+            inputElement.value = type === 'artist' ? item.artist.name : item.title;
+            dropdown.remove();
+        });
+        dropdown.appendChild(suggestion);
+    });
+    inputElement.parentNode.appendChild(dropdown);
+}
+
+// Llamar en DOMContentLoaded
+setupAutocomplete(artistInput, 'artist');
+setupAutocomplete(titleInput, 'title');
+
 });

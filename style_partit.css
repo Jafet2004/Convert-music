@@ -1,90 +1,64 @@
-/* Header */
-
-.dropdown {
-    position: relative;
+/* Animación de descarga */
+@keyframes downloadSuccess {
+    0% { transform: scale(1); opacity: 0; }
+    20% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
 }
 
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: white;
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-    padding: 0.5rem 0;
-    min-width: 200px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: var(--transition);
-    z-index: 100;
+/* Notificación de descarga mejorada */
+@keyframes slideIn {
+    0% { transform: translateY(100px); opacity: 0; }
+    20% { transform: translateY(0); opacity: 1; }
+    80% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(100px); opacity: 0; }
 }
 
-.dropdown:hover .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.dropdown-menu li {
-    padding: 0;
-}
-
-.dropdown-menu a {
-    color: var(--text-color);
-    padding: 0.5rem 1rem;
-    display: block;
-}
-
-.dropdown-menu a:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: var(--primary-color);
-}
-
-.dark-mode-toggle {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
+.download-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: #28a745;
     color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    cursor: pointer;
+    padding: 15px 25px;
+    border-radius: 8px;
+    z-index: 1050;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    transition: var(--transition);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    animation: slideIn 3s ease-in-out forwards;
+    pointer-events: none;
+    max-width: 350px;
+    border-left: 5px solid #1e7e34;
 }
 
-.dark-mode-toggle:hover {
-    background: rgba(255, 255, 255, 0.2);
+.download-notification i {
+    margin-right: 15px;
+    font-size: 1.8rem;
+    color: #d4edda;
 }
-    @media screen and (max-width: 768px) and (orientation: portrait) {
-        #orientation-message {
-            display: flex;
-        }
-        body {
-            overflow: hidden;
-        }
-    }
-    
-    #orientation-message {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0,0,0,0.9);
-        z-index: 9999;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        text-align: center;
-        padding: 20px;
-    }
-    
-    #orientation-message i {
-        font-size: 3rem;
-        margin-bottom: 20px;
-    }
 
+.download-notification .notification-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.download-notification .notification-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.download-notification .notification-message {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Efecto para pantallas pequeñas */
+@media (max-width: 768px) {
+    .download-notification {
+        right: 15px;
+        left: 15px;
+        max-width: none;
+        bottom: 15px;
+    }
+}

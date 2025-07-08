@@ -432,6 +432,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Función para mostrar la notificación de descarga mejorada
+    function showDownloadNotification(scoreName) {
+        const notification = document.createElement('div');
+        notification.className = 'download-notification';
+        notification.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            <div class="notification-content">
+                <div class="notification-title">¡Descarga completada!</div>
+                <div class="notification-message">"${scoreName}" se ha descargado correctamente</div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Eliminar la notificación después de la animación
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
     async function downloadScore(container) {
         if (!container.hasChildNodes() || container.querySelector('svg') === null) {
             showMessage('Primero debes generar la partitura', 'danger');
@@ -456,7 +476,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const fileName = `${(scoreName || 'partitura').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
             pdf.save(fileName);
-            showMessage('PDF descargado correctamente', 'success');
+            
+            // Mostrar notificación mejorada
+            showDownloadNotification(scoreName);
         } catch (error) {
             console.error('Error al generar PDF:', error);
             showMessage('Error al generar el PDF: ' + error.message, 'danger');
