@@ -432,58 +432,121 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Función para mostrar la notificación de descarga mejorada
-    function showDownloadNotification(scoreName) {
-        const notification = document.createElement('div');
-        notification.className = 'download-notification';
-        notification.innerHTML = `
-            <i class="fas fa-check-circle"></i>
-            <div class="notification-content">
-                <div class="notification-title">¡Descarga completada!</div>
-                <div class="notification-message">"${scoreName}" se ha descargado correctamente</div>
-            </div>
-        `;
+async function downloadScore(container) {
+    if (!container.hasChildNodes() || container.querySelector('svg') === null) {
+        showMessage('Primero debes generar la partitura', 'danger');
+        return;
+    }
+    try {
+        showMessage('Generando PDF...', 'info');
         
-        document.body.appendChild(notification);
+        // Crear contenedor temporal para tamaño carta
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '8.5in';
+        tempContainer.style.height = '11in';
+        tempContainer.style.padding = '0.5in';
+        tempContainer.style.backgroundColor = 'white';
+        tempContainer.style.boxSizing = 'border-box';
         
-        // Eliminar la notificación después de la animación
+        // Clonar el contenido y escalarlo para que quepa
+        const clone = container.cloneNode(true);
+        clone.style.transform = 'scale(0.9)';
+        clone.style.transformOrigin = 'top left';
+        tempContainer.appendChild(clone);
+        document.body.appendChild(tempContainer);
+        
+        // Configuración de html2canvas para tamaño carta
+        const canvas = await html2canvas(tempContainer, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            width: 8.5 * 96,
+            height: 11 * 96,
+            logging: false,
+            useCORS: true
+        });
+        
+        document.body.removeChild(tempContainer);
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'in',
+            format: 'letter'
+        });
+
+        // Añadir imagen al PDF ajustada a tamaño carta
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+        
+        // Texto centrado en el PDF
+        pdf.setFontSize(12);
+        pdf.setTextColor(100);
+        pdf.text(`${scoreName}`, pdfWidth / 2, 0.5, { align: 'center' });
+        pdf.text("Generado con @ConvertMusic", pdfWidth / 2, pdfHeight - 0.5, { align: 'center' });
+
+        const fileName = `${(scoreName || 'partitura').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+        pdf.save(fileName);
+        
+        // Mostrar animación de descarga mejorada
+        showDownloadNotification(scoreName);
+        
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        showMessage('Error al generar el PDF: ' + error.message, 'danger');
+    }
+}
+
+// Función para mostrar la notificación de descarga mejorada
+function showDownloadNotification(scoreName) {
+    const notification = document.createElement('div');
+    notification.className = 'download-notification';
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        z-index: 1050;
+    `;
+    
+    notification.innerHTML = `
+        <i class="fas fa-check-circle" style="font-size:24px;margin-right:10px;"></i>
+        <div>
+            <div style="font-weight:bold;">¡Descarga completada!</div>
+            <div style="font-size:0.9em;opacity:0.9;">"${scoreName}" se ha descargado correctamente</div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animación de entrada
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Eliminar después de 3 segundos con animación
+    setTimeout(() => {
+        notification.style.opacity = '0';
         setTimeout(() => {
             notification.remove();
-        }, 3000);
-    }
+        }, 300);
+    }, 3000);
+}
 
-    async function downloadScore(container) {
-        if (!container.hasChildNodes() || container.querySelector('svg') === null) {
-            showMessage('Primero debes generar la partitura', 'danger');
-            return;
-        }
-        try {
-            showMessage('Generando PDF...', 'info');
-            const canvas = await html2canvas(container, { scale: 2, backgroundColor: '#ffffff' });
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const margin = 15;
-            const imgWidth = pdfWidth - (2 * margin);
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            pdf.setFontSize(18);
-            pdf.text(scoreName, pdfWidth / 2, margin, { align: 'center' });
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, margin + 10, imgWidth, imgHeight > (pdfHeight - margin - 20) ? (pdfHeight - margin - 20) : imgHeight);
-            pdf.setFontSize(10);
-            pdf.text("Generado con ConvertMusic", pdfWidth / 2, pdfHeight - 10, { align: 'center' });
-
-            const fileName = `${(scoreName || 'partitura').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
-            pdf.save(fileName);
-            
-            // Mostrar notificación mejorada
-            showDownloadNotification(scoreName);
-        } catch (error) {
-            console.error('Error al generar PDF:', error);
-            showMessage('Error al generar el PDF: ' + error.message, 'danger');
-        }
-    }
 
     function saveCurrentScore() {
         if (!notes || notes.length === 0) {

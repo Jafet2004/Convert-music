@@ -666,3 +666,71 @@ header {
         bottom: 15px;
     }
 }
+
+/* Agrega esto a tu archivo style_search.css */
+
+/* Notificaciones */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 5px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.notification i {
+    margin-right: 10px;
+}
+
+/* Botón de favoritos */
+.favorite-btn {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.favorite-btn:hover {
+    background: #e9ecef;
+}
+
+.favorite-btn.is-favorite {
+    background: #fff0f0;
+    border-color: #ffcccc;
+    color: #dc3545;
+}
+
+/* Badges para artistas */
+.badge {
+    font-size: 0.75rem;
+    margin-left: 8px;
+    font-weight: normal;
+}
+
+/* Mejoras para las letras */
+.lyrics-section {
+    color: #6c757d;
+    font-weight: bold;
+    display: block;
+    margin: 10px 0;
+}
+
+/* Botón de volver */
+#backToSearch {
+    margin-left: 10px;
+}
