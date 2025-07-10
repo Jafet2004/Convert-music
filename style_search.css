@@ -667,7 +667,123 @@ header {
     }
 }
 
-/* Agrega esto a tu archivo style_search.css */
+/* Agrega esto al final de tu archivo CSS */
+
+/* Historial de búsquedas */
+.search-history {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.history-header h3 {
+    font-size: 1.3rem;
+    color: var(--secondary-color);
+    margin: 0;
+}
+
+.clear-history-btn {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.clear-history-btn:hover {
+    background: rgba(247, 37, 133, 0.1);
+}
+
+.history-list, .favorites-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+}
+
+.history-list li, .favorites-list li {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.history-list li:hover, .favorites-list li:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.history-item, .favorite-item {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.history-title, .favorite-title {
+    font-weight: 500;
+    color: var(--secondary-color);
+}
+
+.history-artist, .favorite-artist {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 0.2rem;
+}
+
+.favorite-item i {
+    color: var(--danger-color);
+    margin-right: 0.5rem;
+}
+
+.favorites-section h3 {
+    font-size: 1.3rem;
+    color: var(--secondary-color);
+    margin: 1.5rem 0 1rem 0;
+}
+
+.no-favorites {
+    color: var(--text-light);
+    font-style: italic;
+    text-align: center;
+    padding: 1rem;
+}
+
+/* Botón de favoritos */
+.favorite-btn {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.favorite-btn:hover {
+    background: #e9ecef;
+}
+
+.favorite-btn.is-favorite {
+    background: #fff0f0;
+    border-color: #ffcccc;
+    color: #dc3545;
+}
 
 /* Notificaciones */
 .notification {
@@ -683,6 +799,8 @@ header {
     opacity: 0;
     transition: all 0.3s ease;
     z-index: 1000;
+    display: flex;
+    align-items: center;
 }
 
 .notification.show {
@@ -694,43 +812,78 @@ header {
     margin-right: 10px;
 }
 
-/* Botón de favoritos */
-.favorite-btn {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    color: #495057;
-    padding: 5px 10px;
-    border-radius: 4px;
+/* Estilos para el modal de registro */
+.modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #4a6fa5, #166088);
+    color: white;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-title {
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+/* Estilos para la lista de letras locales */
+.local-lyrics-section {
+    margin-top: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.local-lyrics-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.local-lyrics-list li {
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
-    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
 }
 
-.favorite-btn:hover {
-    background: #e9ecef;
+.local-lyrics-list li:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
-.favorite-btn.is-favorite {
-    background: #fff0f0;
-    border-color: #ffcccc;
-    color: #dc3545;
+.local-lyric-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-/* Badges para artistas */
-.badge {
-    font-size: 0.75rem;
-    margin-left: 8px;
-    font-weight: normal;
+.local-lyric-title {
+    font-weight: 500;
+    margin-right: 8px;
 }
 
-/* Mejoras para las letras */
-.lyrics-section {
-    color: #6c757d;
-    font-weight: bold;
-    display: block;
-    margin: 10px 0;
+.local-lyric-artist {
+    font-size: 0.9em;
+    opacity: 0.8;
 }
 
-/* Botón de volver */
-#backToSearch {
-    margin-left: 10px;
+/* Botón de registrar */
+#registerBtn, #registerBtnMain {
+    transition: all 0.3s;
+}
+
+#registerBtn:hover, #registerBtnMain:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }

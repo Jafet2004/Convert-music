@@ -1,12 +1,21 @@
 // Inicializar jsPDF
 const { jsPDF } = window.jspdf;
 
+// Variables globales
+const searchHistory = JSON.parse(localStorage.getItem('lyricsSearchHistory')) || [];
+let favoriteSongs = JSON.parse(localStorage.getItem('favoriteSongs')) || [];
+let player = null;
+let currentSong = null;
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del DOM
     const searchBtn = document.getElementById('searchBtn');
     const artistInput = document.getElementById('artist');
     const titleInput = document.getElementById('title');
     const resultsDiv = document.getElementById('results');
-    let player = null;
+
+    // Mostrar historial al cargar
+    showSearchHistory();
 
     // Event listeners para búsqueda
     searchBtn.addEventListener('click', searchLyrics);
@@ -25,6 +34,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         showLoading();
         resetPlayer();
+
+        currentSong = { artist, title };
+        addToHistory(artist, title);
 
         if (artist && title) {
             searchLyricsApi(artist, title);
@@ -49,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     const content = JSON.parse(data.contents);
                     if (content.error) {
-                        // Si no se encuentra la letra, buscar sugerencias y mostrar el video
                         showVideoAndSuggestions(artist, title);
                     } else {
                         searchYoutubeVideo(artist, title, content.lyrics);
@@ -65,11 +76,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Función para mostrar video y sugerencias cuando no se encuentra la letra
+    // Función para mostrar video y sugerencias
     function showVideoAndSuggestions(artist, title) {
-        // Primero buscar el video de YouTube
         searchYoutubeVideo(artist, title, null, () => {
-            // Luego buscar sugerencias de canciones
             if (artist) {
                 searchArtistTracks(artist, false);
             } else {
@@ -108,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Función para mostrar solo el video (cuando no hay letra)
+    // Función para mostrar solo el video
     function displayVideoOnly(artist, title, videoId) {
         const videoEmbed = videoId ? `
             <div class="video-section">
@@ -129,6 +138,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <h2 class="song-title">${title}</h2>
                         <h3 class="artist-name">${artist}</h3>
                     </div>
+                    <div class="action-buttons">
+                        <button id="saveFavoriteBtn" class="favorite-btn">
+                            ${isSongFavorite(artist, title) ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>'} Favorito
+                        </button>
+                    </div>
                 </div>
                 ${videoEmbed}
                 <div class="lyrics">
@@ -140,6 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (videoId) {
             initializePlayer(videoId);
         }
+
+        setupFavoriteButton(artist, title);
     }
 
     // Función para mostrar resultados
@@ -164,13 +180,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         <h3 class="artist-name">${artist}</h3>
                     </div>
                     <div class="action-buttons">
+                        <button id="saveFavoriteBtn" class="favorite-btn">
+                            ${isSongFavorite(artist, title) ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>'} Favorito
+                        </button>
                         <button id="downloadBtn" class="download-btn">
-                            <i class="fas fa-file-pdf"></i> Descargar PDF
+                            <i class="fas fa-file-pdf"></i> PDF
                         </button>
                     </div>
                 </div>
                 ${videoEmbed}
-                <div class="lyrics">${lyrics}</div>
+                <div class="lyrics">${formatLyrics(lyrics)}</div>
             </div>
         `;
 
@@ -181,6 +200,189 @@ document.addEventListener('DOMContentLoaded', function() {
         if (videoId) {
             initializePlayer(videoId);
         }
+
+        setupFavoriteButton(artist, title);
+    }
+
+    // Formatear letras
+    function formatLyrics(lyrics) {
+        return lyrics.replace(/\n/g, '<br>')
+            .replace(/\[(.*?)\]/g, '<span class="lyrics-section">$&</span>');
+    }
+
+    // Configurar botón de favoritos
+    function setupFavoriteButton(artist, title) {
+        const favoriteBtn = document.getElementById('saveFavoriteBtn');
+        if (!favoriteBtn) return;
+
+        favoriteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            toggleFavorite(artist, title);
+            
+            // Actualizar el estado visual del botón
+            if (this.classList.contains('is-favorite')) {
+                this.innerHTML = '<i class="far fa-heart"></i> Favorito';
+                this.classList.remove('is-favorite');
+                showNotification('Eliminado de favoritos');
+            } else {
+                this.innerHTML = '<i class="fas fa-heart"></i> Favorito';
+                this.classList.add('is-favorite');
+                showNotification('Agregado a favoritos');
+            }
+            
+            // Actualizar la lista de favoritos en el historial si está visible
+            if (document.querySelector('.favorites-section')) {
+                showSearchHistory();
+            }
+        });
+
+        // Estado inicial del botón
+        if (isSongFavorite(artist, title)) {
+            favoriteBtn.innerHTML = '<i class="fas fa-heart"></i> Favorito';
+            favoriteBtn.classList.add('is-favorite');
+        } else {
+            favoriteBtn.innerHTML = '<i class="far fa-heart"></i> Favorito';
+            favoriteBtn.classList.remove('is-favorite');
+        }
+    }
+
+    // Verificar si una canción está en favoritos
+    function isSongFavorite(artist, title) {
+        return favoriteSongs.some(song => 
+            song.artist.toLowerCase() === artist.toLowerCase() && 
+            song.title.toLowerCase() === title.toLowerCase()
+        );
+    }
+
+    // Alternar favorito
+    function toggleFavorite(artist, title) {
+        const index = favoriteSongs.findIndex(song => 
+            song.artist.toLowerCase() === artist.toLowerCase() && 
+            song.title.toLowerCase() === title.toLowerCase()
+        );
+
+        if (index === -1) {
+            favoriteSongs.push({ artist, title });
+        } else {
+            favoriteSongs.splice(index, 1);
+        }
+
+        localStorage.setItem('favoriteSongs', JSON.stringify(favoriteSongs));
+    }
+
+    // Historial de búsquedas
+    function addToHistory(artist, title) {
+        const entry = { artist, title, date: new Date().toISOString() };
+        
+        // Evitar duplicados
+        const isDuplicate = searchHistory.some(item => 
+            item.artist.toLowerCase() === artist.toLowerCase() && 
+            item.title.toLowerCase() === title.toLowerCase()
+        );
+
+        if (!isDuplicate) {
+            searchHistory.unshift(entry);
+            // Mantener solo las últimas 10 búsquedas
+            if (searchHistory.length > 10) searchHistory.pop();
+            localStorage.setItem('lyricsSearchHistory', JSON.stringify(searchHistory));
+            showSearchHistory();
+        }
+    }
+
+    function showSearchHistory() {
+        if (searchHistory.length === 0 && favoriteSongs.length === 0) {
+            resultsDiv.innerHTML = `
+                <div class="welcome-message">
+                    <div class="welcome-content">
+                        <i class="fas fa-search"></i>
+                        <h3>Busca letras de canciones</h3>
+                        <p>Comienza escribiendo el nombre del artista o canción</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        const historyHTML = `
+            <div class="search-history">
+                ${searchHistory.length > 0 ? `
+                    <div class="history-header">
+                        <h3>Historial de búsquedas</h3>
+                        <button id="clearHistory" class="clear-history-btn">Limpiar historial</button>
+                    </div>
+                    <ul class="history-list">
+                        ${searchHistory.map(item => `
+                            <li onclick="searchTrack('${item.artist.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}')">
+                                <span class="history-item">
+                                    <span class="history-title">${item.title}</span>
+                                    <span class="history-artist">${item.artist}</span>
+                                </span>
+                                <i class="fas fa-chevron-right"></i>
+                            </li>
+                        `).join('')}
+                    </ul>
+                ` : ''}
+                
+                <div class="favorites-section">
+                    <h3>Mis Favoritos</h3>
+                    ${favoriteSongs.length > 0 ? `
+                        <ul class="favorites-list">
+                            ${favoriteSongs.map(item => `
+                                <li onclick="searchTrack('${item.artist.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}')">
+                                    <span class="favorite-item">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="favorite-title">${item.title}</span>
+                                        <span class="favorite-artist">${item.artist}</span>
+                                    </span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    ` : '<p class="no-favorites">No tienes canciones favoritas aún</p>'}
+                </div>
+            </div>
+        `;
+        
+        const historyContainer = document.createElement('div');
+        historyContainer.innerHTML = historyHTML;
+        resultsDiv.innerHTML = '';
+        resultsDiv.appendChild(historyContainer);
+
+        // Agregar evento para limpiar historial
+        document.getElementById('clearHistory')?.addEventListener('click', clearHistory);
+    }
+
+    function clearHistory() {
+        searchHistory.length = 0;
+        localStorage.removeItem('lyricsSearchHistory');
+        showSearchHistory();
+        showNotification('Historial limpiado');
+    }
+
+    // Función para mostrar notificación
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-check-circle"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }, 10);
     }
 
     // Inicializar el reproductor de YouTube
@@ -212,7 +414,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 'enablejsapi': 1
             },
             events: {
-                'onReady': onPlayerReady
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
             }
         });
     }
@@ -222,17 +425,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const playBtn = document.getElementById('playBtn');
         if (playBtn) {
             playBtn.addEventListener('click', function() {
-                // Verificar el estado actual del reproductor
-                if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-                    event.target.pauseVideo();
-                    this.classList.remove('playing');
-                    this.innerHTML = '<i class="fas fa-play"></i> Reproducir <span class="pulse-animation"></span>';
-                } else {
-                    event.target.playVideo();
-                    this.classList.add('playing');
-                    this.innerHTML = '<i class="fas fa-pause"></i> Pausar';
-                }
+                togglePlayPause(event);
             });
+        }
+    }
+
+    // Cambiar estado del reproductor
+    function onPlayerStateChange(event) {
+        const playBtn = document.getElementById('playBtn');
+        if (!playBtn) return;
+
+        if (event.data === YT.PlayerState.PLAYING) {
+            playBtn.classList.add('playing');
+            playBtn.innerHTML = '<i class="fas fa-pause"></i> Pausar';
+        } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+            playBtn.classList.remove('playing');
+            playBtn.innerHTML = '<i class="fas fa-play"></i> Reproducir <span class="pulse-animation"></span>';
+        }
+    }
+
+    // Alternar play/pause
+    function togglePlayPause(event) {
+        const playBtn = document.getElementById('playBtn');
+        if (!playBtn) return;
+
+        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+            event.target.pauseVideo();
+        } else {
+            event.target.playVideo();
         }
     }
 
@@ -280,21 +500,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const limitedTracks = tracks.slice(0, 15);
         let tracksHTML = `
             <div class="artist-results">
-                <h2>Canciones de ${artist}</h2>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2>Canciones de ${artist}</h2>
+                    <button id="backToSearch" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </button>
+                </div>
                 <p>Selecciona una canción para ver su letra:</p>
                 <ul class="track-list">
         `;
 
         limitedTracks.forEach(track => {
             tracksHTML += `
-                <li onclick="searchTrack('${track.artist.name.replace("'", "\\'")}', '${track.title.replace("'", "\\'")}')">
+                <li onclick="searchTrack('${track.artist.name.replace(/'/g, "\\'")}', '${track.title.replace(/'/g, "\\'")}')">
                     <i class="fas fa-play-circle"></i> ${track.title}
+                    <span class="badge bg-secondary">${track.artist.name}</span>
                 </li>
             `;
         });
 
         tracksHTML += `</ul></div>`;
         resultsDiv.innerHTML = tracksHTML;
+
+        document.getElementById('backToSearch')?.addEventListener('click', () => {
+            artistInput.focus();
+        });
     }
 
     function displaySuggestions(artist, tracks) {
@@ -307,7 +537,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         limitedTracks.forEach(track => {
             suggestionsHTML += `
-                <div class="suggestion-item" onclick="searchTrack('${track.artist.name.replace("'", "\\'")}', '${track.title.replace("'", "\\'")}')">
+                <div class="suggestion-item" onclick="searchTrack('${track.artist.name.replace(/'/g, "\\'")}', '${track.title.replace(/'/g, "\\'")}')">
                     <div class="suggestion-title">${track.title}</div>
                     <div class="suggestion-artist">${track.artist.name}</div>
                 </div>
@@ -354,14 +584,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const limitedSongs = songs.slice(0, 15);
         let songsHTML = `
             <div class="song-results">
-                <h2>Canciones que coinciden con "${title}"</h2>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2>Canciones que coinciden con "${title}"</h2>
+                    <button id="backToSearch" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </button>
+                </div>
                 <p>Selecciona una canción para ver su letra:</p>
                 <div class="songs-list">
         `;
 
         limitedSongs.forEach(song => {
             songsHTML += `
-                <div class="song-item" onclick="searchTrack('${song.artist.name.replace("'", "\\'")}', '${song.title.replace("'", "\\'")}')">
+                <div class="song-item" onclick="searchTrack('${song.artist.name.replace(/'/g, "\\'")}', '${song.title.replace(/'/g, "\\'")}')">
                     <div class="song-item-info">
                         <div class="song-item-title"><i class="fas fa-play-circle"></i> ${song.title}</div>
                         <div class="song-item-artist">${song.artist.name}</div>
@@ -373,26 +608,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         songsHTML += `</div></div>`;
         resultsDiv.innerHTML = songsHTML;
-    }
 
-    // Función para mostrar notificación de descarga
-    function showDownloadNotification(artist, title) {
-        const notification = document.createElement('div');
-        notification.className = 'download-notification';
-        notification.innerHTML = `
-            <i class="fas fa-check-circle"></i>
-            <div class="notification-content">
-                <div class="notification-title">¡Descarga completada!</div>
-                <div class="notification-message">"${title}" de ${artist} se ha descargado correctamente</div>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Eliminar la notificación después de 3 segundos
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
+        document.getElementById('backToSearch')?.addEventListener('click', () => {
+            titleInput.focus();
+        });
     }
 
     function downloadLyricsAsPDF(artist, title, lyrics) {
@@ -403,24 +622,27 @@ document.addEventListener('DOMContentLoaded', function() {
             author: 'ConvertMusic'
         });
 
-        doc.setFont('helvetica');
+        // Encabezado
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(22);
         doc.setTextColor(40, 40, 40);
         doc.text(title, 105, 20, { align: 'center' });
 
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(16);
         doc.setTextColor(100, 100, 100);
         doc.text(artist, 105, 30, { align: 'center' });
 
+        // Letra
         doc.setFontSize(12);
         doc.setTextColor(20, 20, 20);
-        const splitLines = doc.splitTextToSize(lyrics, 180);
+        const formattedLyrics = lyrics.replace(/\[(.*?)\]/g, '\n$&\n');
+        const splitLines = doc.splitTextToSize(formattedLyrics, 180);
         doc.text(splitLines, 15, 45);
 
         doc.save(`${artist} - ${title}.pdf`);
         
-        // Mostrar notificación de descarga
-        showDownloadNotification(artist, title);
+        showNotification('Letra descargada como PDF');
     }
 
     function showLoading() {
@@ -437,7 +659,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function showError(message) {
         let errorMessage = message;
         
-        // Verificar si el error es de conexión
         if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
             errorMessage = 'Servidor no disponible. Por favor, verifica tu conexión a internet o intenta nuevamente más tarde.';
         }
@@ -481,52 +702,4 @@ document.addEventListener('DOMContentLoaded', function() {
             clearBtn.style.opacity = this.value ? '1' : '0';
         });
     });
-
-    // Configurar autocompletado
-    function setupAutocomplete(inputElement, type) {
-        inputElement.addEventListener('input', function() {
-            const query = this.value.trim();
-            if (query.length < 2) return;
-
-            const apiUrl = type === 'artist' 
-                ? `https://api.lyrics.ovh/suggest/${encodeURIComponent(query)}` 
-                : `https://api.lyrics.ovh/suggest/${encodeURIComponent(query)}`;
-
-            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`)
-                .then(response => response.json())
-                .then(data => {
-                    const content = JSON.parse(data.contents);
-                    if (content.data) {
-                        showAutocompleteSuggestions(inputElement, content.data, type);
-                    }
-                })
-                .catch(console.error);
-        });
-    }
-
-    function showAutocompleteSuggestions(inputElement, items, type) {
-        // Eliminar dropdown anterior si existe
-        const existingDropdown = inputElement.parentNode.querySelector('.suggestions-dropdown');
-        if (existingDropdown) existingDropdown.remove();
-
-        const dropdown = document.createElement('div');
-        dropdown.className = 'suggestions-dropdown';
-        items.slice(0, 5).forEach(item => {
-            const suggestion = document.createElement('div');
-            suggestion.className = 'suggestion-item';
-            suggestion.textContent = type === 'artist' ? item.artist.name : item.title;
-            suggestion.addEventListener('click', () => {
-                inputElement.value = type === 'artist' ? item.artist.name : item.title;
-                dropdown.remove();
-            });
-            dropdown.appendChild(suggestion);
-        });
-        
-        // Posicionar el dropdown debajo del input
-        inputElement.parentNode.appendChild(dropdown);
-    }
-
-    // Inicializar autocompletado
-    setupAutocomplete(artistInput, 'artist');
-    setupAutocomplete(titleInput, 'title');
 });
