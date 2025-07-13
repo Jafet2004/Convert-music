@@ -158,50 +158,115 @@ document.addEventListener('DOMContentLoaded', function() {
         setupFavoriteButton(artist, title);
     }
 
-    // Función para mostrar resultados
-    function displayResults(artist, title, lyrics, videoId) {
-        const videoEmbed = videoId ? `
-            <div class="video-section">
-                <div class="video-container">
-                    <div id="player"></div>
+    // Función para mostrar resultados con toda la letra visible
+function displayResults(artist, title, lyrics, videoId) {
+    const videoEmbed = videoId ? `
+        <div class="video-section">
+            <div class="video-container">
+                <div id="player"></div>
+            </div>
+            <button id="playBtn" class="play-btn">
+                <i class="fas fa-play"></i> Reproducir
+                <span class="pulse-animation"></span>
+            </button>
+        </div>
+    ` : '';
+
+    const formattedLyrics = formatLyrics(lyrics);
+
+    resultsDiv.innerHTML = `
+        <div class="lyrics-container">
+            <div class="song-info">
+                <div>
+                    <h2 class="song-title">${title}</h2>
+                    <h3 class="artist-name">${artist}</h3>
                 </div>
-                <button id="playBtn" class="play-btn">
-                    <i class="fas fa-play"></i> Reproducir
-                    <span class="pulse-animation"></span>
+                <div class="action-buttons">
+                    <button id="saveFavoriteBtn" class="favorite-btn">
+                        ${isSongFavorite(artist, title) ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>'} Favorito
+                    </button>
+                    <button id="downloadBtn" class="download-btn">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+            ${videoEmbed}
+            <div class="lyrics-content">
+                ${formattedLyrics}
+            </div>
+            <div class="lyrics-footer-actions">
+                <button id="copyLyricsBtn" class="copy-lyrics-btn">
+                    <i class="fas fa-copy"></i> Copiar letra
                 </button>
-            </div>
-        ` : '';
-
-        resultsDiv.innerHTML = `
-            <div class="lyrics-container">
-                <div class="song-info">
-                    <div>
-                        <h2 class="song-title">${title}</h2>
-                        <h3 class="artist-name">${artist}</h3>
-                    </div>
-                    <div class="action-buttons">
-                        <button id="saveFavoriteBtn" class="favorite-btn">
-                            ${isSongFavorite(artist, title) ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>'} Favorito
-                        </button>
-                        <button id="downloadBtn" class="download-btn">
-                            <i class="fas fa-file-pdf"></i> PDF
-                        </button>
-                    </div>
+                <div class="dropdown">
+                    <button class="share-btn dropdown-toggle" type="button" id="shareDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-share-alt"></i> Compartir letra
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="shareDropdown">
+                        <li><a class="dropdown-item" href="#" id="copyLinkBtn"><i class="fas fa-link"></i> Copiar enlace</a></li>
+                        <li><a class="dropdown-item" href="#" id="shareWhatsAppBtn"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
+                        <li><a class="dropdown-item" href="#" id="shareFacebookBtn"><i class="fab fa-facebook"></i> Facebook</a></li>
+                        <li><a class="dropdown-item" href="#" id="shareTwitterBtn"><i class="fab fa-twitter"></i> Twitter</a></li>
+                    </ul>
                 </div>
-                ${videoEmbed}
-                <div class="lyrics">${formatLyrics(lyrics)}</div>
             </div>
-        `;
+        </div>
+    `;
 
-        document.getElementById('downloadBtn')?.addEventListener('click', () => {
-            downloadLyricsAsPDF(artist, title, lyrics);
+    // Configurar botón de copiar letra
+    document.getElementById('copyLyricsBtn')?.addEventListener('click', function() {
+        navigator.clipboard.writeText(lyrics).then(() => {
+            showNotification('Letra copiada al portapapeles');
+        }).catch(err => {
+            console.error('Error al copiar: ', err);
+            showNotification('Error al copiar la letra');
         });
+    });
 
-        if (videoId) {
-            initializePlayer(videoId);
-        }
+    // Configurar botones de compartir
+    setupShareButtons(artist, title);
 
-        setupFavoriteButton(artist, title);
+    document.getElementById('downloadBtn')?.addEventListener('click', () => {
+        downloadLyricsAsPDF(artist, title, lyrics);
+    });
+
+    if (videoId) {
+        initializePlayer(videoId);
+    }
+
+    setupFavoriteButton(artist, title);
+}
+
+    // Configurar botones de compartir
+    function setupShareButtons(artist, title) {
+        const currentUrl = encodeURIComponent(window.location.href.split('?')[0] + `?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`);
+        const shareText = encodeURIComponent(`Mira la letra de "${title}" de ${artist}`);
+        
+        // Copiar enlace
+        document.getElementById('copyLinkBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            navigator.clipboard.writeText(window.location.href.split('?')[0] + `?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`).then(() => {
+                showNotification('Enlace copiado al portapapeles');
+            });
+        });
+        
+        // Compartir en WhatsApp
+        document.getElementById('shareWhatsAppBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.open(`https://wa.me/?text=${shareText}%20${currentUrl}`, '_blank');
+        });
+        
+        // Compartir en Facebook
+        document.getElementById('shareFacebookBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`, '_blank');
+        });
+        
+        // Compartir en Twitter
+        document.getElementById('shareTwitterBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${currentUrl}`, '_blank');
+        });
     }
 
     // Formatear letras
