@@ -961,32 +961,3 @@ header {
     border: 1px solid #e4e6eb;
 }
 
-.dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-.dropdown-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 16px;
-    color: #333;
-    text-decoration: none;
-    font-size: 14px;
-    transition: background-color 0.2s;
-    gap: 8px;
-}
-
-.dropdown-item:hover {
-    background-color: #f5f6f7;
-}
-
-.dropdown-item i {
-    width: 20px;
-    text-align: center;
-}
-
-/* Iconos específicos para cada opción */
-.dropdown-item:nth-child(1) i { color: #1877f2; } /* Facebook */
-.dropdown-item:nth-child(2) i { color: #25D366; } /* WhatsApp */
-.dropdown-item:nth-child(3) i { color: #1DA1F2; } /* Twitter */
-.dropdown-item:nth-child(4) i { color: #666; }   /* Copiar enlace */
