@@ -1,0 +1,198 @@
+:root {
+    --primary-color: #4a6fa5;
+    --secondary-color: #166088;
+    --accent-color: #4fc3f7;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --transition-speed: 0.3s;
+    --piano-black: #222;
+    --piano-white: #fff;
+    --piano-active: var(--accent-color);
+    --piano-shadow: rgba(0, 0, 0, 0.15);
+}
+
+/* Modo oscuro */
+.dark-mode {
+    --primary-color: #4a90e2;
+    --secondary-color: #2a75bb;
+    --accent-color: #3399ff;
+    --light-color: #121212;
+    --dark-color: #e0e0e0;
+    --piano-black: #ddd;
+    --piano-white: #222;
+    --piano-active: #3399ff;
+    --piano-shadow: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== Estilos Generales ===== */
+body {
+    font-family: 'Roboto', sans-serif;
+    color: var(--dark-color);
+    background-color: var(--light-color);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+.library-container {
+    max-width: 1100px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: var(--light-color);
+    border-radius: 16px;
+    box-shadow: 0 8px 25px var(--piano-shadow);
+    transition: all var(--transition-speed);
+}
+
+/* ===== Piano Styles Modern ===== */
+.piano-keys {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin: 2rem auto;
+    aspect-ratio: 3/1;
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px var(--piano-shadow);
+    background: linear-gradient(180deg, #fdfdfd, #eaeaea);
+    transition: background var(--transition-speed);
+}
+
+.dark-mode .piano-keys {
+    background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+}
+
+.piano-key {
+    position: relative;
+    flex: 1;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    transition: all var(--transition-speed) ease;
+}
+
+.dark-mode .piano-key {
+    border-color: #555;
+}
+
+.white-key {
+    background: var(--piano-white);
+    z-index: 1;
+    border-right: 1px solid #bbb;
+}
+
+.dark-mode .white-key {
+    background: var(--piano-black);
+    border-right: 1px solid #444;
+}
+
+.black-key {
+    position: absolute;
+    width: 60%;
+    height: 60%;
+    background: var(--piano-black);
+    z-index: 2;
+    border-radius: 0 0 5px 5px;
+    box-shadow: inset -2px -2px 5px rgba(0, 0, 0, 0.4);
+    transform-origin: bottom;
+    transition: transform var(--transition-speed) ease, background var(--transition-speed) ease;
+}
+
+.dark-mode .black-key {
+    background: var(--piano-white);
+    box-shadow: inset -2px -2px 5px rgba(255, 255, 255, 0.2);
+}
+
+/* Posicionamiento teclas negras (patrón 2-3) */
+.black-key[data-note^="C#"] { left: calc(100% / 14 * 1.65); }
+.black-key[data-note^="D#"] { left: calc(100% / 14 * 2.65); }
+.black-key[data-note^="F#"] { left: calc(100% / 14 * 5.65); }
+.black-key[data-note^="G#"] { left: calc(100% / 14 * 6.65); }
+.black-key[data-note^="A#"] { left: calc(100% / 14 * 7.65); }
+
+/* Teclas activas */
+.piano-key.active {
+    background-color: var(--piano-active);
+    box-shadow: 0 0 15px var(--piano-active);
+}
+
+.piano-key.active.black-key {
+    background-color: var(--secondary-color);
+    box-shadow: 0 0 10px var(--secondary-color);
+    transform: scaleY(0.95);
+}
+
+/* Finger Label */
+.finger {
+    position: absolute;
+    bottom: 5px;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: var(--light-color);
+}
+
+.dark-mode .finger {
+    color: var(--dark-color);
+}
+
+/* ===== Tarjetas de Instrumentos ===== */
+.instrument-card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px var(--piano-shadow);
+    background: var(--light-color);
+    transition: transform var(--transition-speed) ease;
+}
+
+.dark-mode .instrument-card {
+    background: #1a1a1a;
+    box-shadow: 0 6px 18px rgba(255, 255, 255, 0.1);
+}
+
+.instrument-card:hover {
+    transform: translateY(-8px);
+}
+
+/* ===== Botones Modernos ===== */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50px;
+    padding: 0.75rem 2rem;
+    box-shadow: 0 4px 8px var(--piano-shadow);
+    transition: all var(--transition-speed);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+/* ===== Animación Fade In ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.library-container {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .piano-keys {
+        aspect-ratio: 4/1;
+    }
+
+    .black-key {
+        height: 55%;
+    }
+
+    .library-container {
+        padding: 1rem;
+    }
+
+    .btn-primary {
+        padding: 0.5rem 1.5rem;
+    }
+}

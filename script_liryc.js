@@ -22,10 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
     artistInput.addEventListener('keypress', (e) => e.key === 'Enter' && searchLyrics());
     titleInput.addEventListener('keypress', (e) => e.key === 'Enter' && searchLyrics());
 
-    // Función principal de búsqueda
+    // Función principal de búsqueda (modificada)
     function searchLyrics() {
         const artist = artistInput.value.trim();
-        const title = titleInput.value.trim();
+        let title = titleInput.value.trim();
 
         if (!artist && !title) {
             showError('Por favor ingresa al menos un artista o una canción');
@@ -34,6 +34,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         showLoading();
         resetPlayer();
+
+        // Verificar si es una URL de YouTube
+        const youtubeUrlMatch = title.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+        if (youtubeUrlMatch && youtubeUrlMatch[1]) {
+            const videoId = youtubeUrlMatch[1];
+            getVideoInfoAndSearchLyrics(videoId);
+            return;
+        }
 
         currentSong = { artist, title };
         addToHistory(artist, title);
@@ -47,8 +55,70 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Función para buscar letras
-    function searchLyricsApi(artist, title) {
+    // Nueva función para obtener información del video y buscar letra
+    function getVideoInfoAndSearchLyrics(videoId) {
+        const apiKey = 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac';
+        const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
+
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) throw new Error('No se pudo obtener información del video');
+                return response.json();
+            })
+            .then(data => {
+                if (!data.items || data.items.length === 0) {
+                    throw new Error('Video no encontrado');
+                }
+
+                const videoInfo = data.items[0].snippet;
+                let title = videoInfo.title;
+                const artist = videoInfo.channelTitle;
+
+                // Limpiar el título (remover cosas como "Official Video" etc.)
+                title = cleanVideoTitle(title);
+
+                currentSong = { artist, title };
+                addToHistory(artist, title);
+                
+                // Buscar la letra con la información obtenida
+                searchLyricsApi(artist, title, videoId);
+            })
+            .catch(error => {
+                console.error('Error al obtener información del video:', error);
+                showError('No se pudo obtener información del video de YouTube');
+            });
+    }
+
+    // Función para limpiar el título del video
+    function cleanVideoTitle(title) {
+        // Eliminar partes comunes que no son parte del título real de la canción
+        const patternsToRemove = [
+            /\(official\s*(video|music\s*video|audio)\)/i,
+            /\[official\s*(video|music\s*video|audio)\]/i,
+            /official\s*(video|music\s*video|audio)/i,
+            /\(lyrics\)/i,
+            /\[lyrics\]/i,
+            /lyrics/i,
+            /\([0-9]{4}\)/, // Años entre paréntesis
+            /ft\.? .*$/i, // Características de otros artistas
+            /feat\.? .*$/i,
+            /with .*$/i,
+            /vs\.? .*$/i
+        ];
+
+        patternsToRemove.forEach(pattern => {
+            title = title.replace(pattern, '');
+        });
+
+        // Limpiar caracteres extraños y espacios múltiples
+        title = title.replace(/\s+/g, ' ').trim();
+        title = title.replace(/[^\w\s()\-&]/g, ''); // Mantener solo caracteres alfanuméricos básicos
+
+        return title;
+    }
+
+    // Función para buscar letras (modificada para aceptar videoId)
+    function searchLyricsApi(artist, title, videoId = null) {
         const proxyUrl = 'https://api.allorigins.win/get?url=';
         const apiUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
 
@@ -61,30 +131,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     const content = JSON.parse(data.contents);
                     if (content.error) {
-                        showVideoAndSuggestions(artist, title);
+                        showVideoAndSuggestions(artist, title, videoId);
                     } else {
-                        searchYoutubeVideo(artist, title, content.lyrics);
+                        // Si no tenemos videoId, buscamos uno
+                        if (!videoId) {
+                            searchYoutubeVideo(artist, title, content.lyrics);
+                        } else {
+                            // Si ya tenemos videoId, mostramos directamente
+                            displayResults(artist, title, content.lyrics, videoId, true);
+                        }
                     }
                 } catch (e) {
                     console.error('Error parsing lyrics:', e);
-                    showVideoAndSuggestions(artist, title);
+                    showVideoAndSuggestions(artist, title, videoId);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showVideoAndSuggestions(artist, title);
+                showVideoAndSuggestions(artist, title, videoId);
             });
     }
 
-    // Función para mostrar video y sugerencias
-    function showVideoAndSuggestions(artist, title) {
-        searchYoutubeVideo(artist, title, null, () => {
-            if (artist) {
-                searchArtistTracks(artist, false);
-            } else {
-                searchSongsByTitle(title);
-            }
-        });
+    // Función para mostrar video y sugerencias (modificada para aceptar videoId)
+    function showVideoAndSuggestions(artist, title, videoId = null) {
+        if (videoId) {
+            // Si ya tenemos videoId, mostramos directamente
+            displayVideoOnly(artist, title, videoId, () => {
+                if (artist) {
+                    searchArtistTracks(artist, false);
+                } else {
+                    searchSongsByTitle(title);
+                }
+            });
+        } else {
+            // Si no tenemos videoId, lo buscamos
+            searchYoutubeVideo(artist, title, null, () => {
+                if (artist) {
+                    searchArtistTracks(artist, false);
+                } else {
+                    searchSongsByTitle(title);
+                }
+            });
+        }
     }
 
     // Función para buscar video en YouTube
@@ -117,8 +205,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Función para mostrar solo el video
-    function displayVideoOnly(artist, title, videoId) {
+    // Función para mostrar solo el video (modificada para aceptar callback)
+    function displayVideoOnly(artist, title, videoId, callback = null) {
         const videoEmbed = videoId ? `
             <div class="video-section">
                 <div class="video-container">
@@ -156,86 +244,95 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         setupFavoriteButton(artist, title);
+        
+        if (callback) callback();
     }
 
-    // Función para mostrar resultados con toda la letra visible
-function displayResults(artist, title, lyrics, videoId) {
-    const videoEmbed = videoId ? `
-        <div class="video-section">
-            <div class="video-container">
-                <div id="player"></div>
-            </div>
-            <button id="playBtn" class="play-btn">
-                <i class="fas fa-play"></i> Reproducir
-                <span class="pulse-animation"></span>
-            </button>
-        </div>
-    ` : '';
-
-    const formattedLyrics = formatLyrics(lyrics);
-
-    resultsDiv.innerHTML = `
-        <div class="lyrics-container">
-            <div class="song-info">
-                <div>
-                    <h2 class="song-title">${title}</h2>
-                    <h3 class="artist-name">${artist}</h3>
+    // Función para mostrar resultados con toda la letra visible (modificada para mostrar origen YouTube)
+    function displayResults(artist, title, lyrics, videoId, isFromYoutubeUrl = false) {
+        const videoEmbed = videoId ? `
+            <div class="video-section">
+                <div class="video-container">
+                    <div id="player"></div>
                 </div>
-                <div class="action-buttons">
-                    <button id="saveFavoriteBtn" class="favorite-btn">
-                        ${isSongFavorite(artist, title) ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>'} Favorito
-                    </button>
-                    <button id="downloadBtn" class="download-btn">
-                        <i class="fas fa-file-pdf"></i> PDF
-                    </button>
-                </div>
-            </div>
-            ${videoEmbed}
-            <div class="lyrics-content">
-                ${formattedLyrics}
-            </div>
-            <div class="lyrics-footer-actions">
-                <button id="copyLyricsBtn" class="copy-lyrics-btn">
-                    <i class="fas fa-copy"></i> Copiar letra
+                <button id="playBtn" class="play-btn">
+                    <i class="fas fa-play"></i> Reproducir
+                    <span class="pulse-animation"></span>
                 </button>
-                <div class="dropdown">
-                    <button class="share-btn dropdown-toggle" type="button" id="shareDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-share-alt"></i> Compartir letra
+            </div>
+        ` : '';
+
+        const formattedLyrics = formatLyrics(lyrics);
+        const youtubeSourceInfo = isFromYoutubeUrl ? `
+            <div class="youtube-source-info">
+                <i class="fab fa-youtube"></i>
+                <span>Información obtenida desde YouTube</span>
+            </div>
+        ` : '';
+
+        resultsDiv.innerHTML = `
+            <div class="lyrics-container">
+                ${youtubeSourceInfo}
+                <div class="song-info">
+                    <div>
+                        <h2 class="song-title">${title}</h2>
+                        <h3 class="artist-name">${artist}</h3>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="saveFavoriteBtn" class="favorite-btn">
+                            ${isSongFavorite(artist, title) ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>'} Favorito
+                        </button>
+                        <button id="downloadBtn" class="download-btn">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+                ${videoEmbed}
+                <div class="lyrics-content">
+                    ${formattedLyrics}
+                </div>
+                <div class="lyrics-footer-actions">
+                    <button id="copyLyricsBtn" class="copy-lyrics-btn">
+                        <i class="fas fa-copy"></i> Copiar letra
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="shareDropdown">
-                        <li><a class="dropdown-item" href="#" id="copyLinkBtn"><i class="fas fa-link"></i> Copiar enlace</a></li>
-                        <li><a class="dropdown-item" href="#" id="shareWhatsAppBtn"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
-                        <li><a class="dropdown-item" href="#" id="shareFacebookBtn"><i class="fab fa-facebook"></i> Facebook</a></li>
-                        <li><a class="dropdown-item" href="#" id="shareTwitterBtn"><i class="fab fa-twitter"></i> Twitter</a></li>
-                    </ul>
+                    <div class="dropdown">
+                        <button class="share-btn dropdown-toggle" type="button" id="shareDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-share-alt"></i> Compartir letra
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="shareDropdown">
+                            <li><a class="dropdown-item" href="#" id="copyLinkBtn"><i class="fas fa-link"></i> Copiar enlace</a></li>
+                            <li><a class="dropdown-item" href="#" id="shareWhatsAppBtn"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
+                            <li><a class="dropdown-item" href="#" id="shareFacebookBtn"><i class="fab fa-facebook"></i> Facebook</a></li>
+                            <li><a class="dropdown-item" href="#" id="shareTwitterBtn"><i class="fab fa-twitter"></i> Twitter</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
-    `;
+        `;
 
-    // Configurar botón de copiar letra
-    document.getElementById('copyLyricsBtn')?.addEventListener('click', function() {
-        navigator.clipboard.writeText(lyrics).then(() => {
-            showNotification('Letra copiada al portapapeles');
-        }).catch(err => {
-            console.error('Error al copiar: ', err);
-            showNotification('Error al copiar la letra');
+        // Configurar botón de copiar letra
+        document.getElementById('copyLyricsBtn')?.addEventListener('click', function() {
+            navigator.clipboard.writeText(lyrics).then(() => {
+                showNotification('Letra copiada al portapapeles');
+            }).catch(err => {
+                console.error('Error al copiar: ', err);
+                showNotification('Error al copiar la letra');
+            });
         });
-    });
 
-    // Configurar botones de compartir
-    setupShareButtons(artist, title);
+        // Configurar botones de compartir
+        setupShareButtons(artist, title);
 
-    document.getElementById('downloadBtn')?.addEventListener('click', () => {
-        downloadLyricsAsPDF(artist, title, lyrics);
-    });
+        document.getElementById('downloadBtn')?.addEventListener('click', () => {
+            downloadLyricsAsPDF(artist, title, lyrics);
+        });
 
-    if (videoId) {
-        initializePlayer(videoId);
+        if (videoId) {
+            initializePlayer(videoId);
+        }
+
+        setupFavoriteButton(artist, title);
     }
-
-    setupFavoriteButton(artist, title);
-}
 
     // Configurar botones de compartir
     function setupShareButtons(artist, title) {

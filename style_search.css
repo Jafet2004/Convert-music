@@ -19,8 +19,8 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    background-color: #f5f5f5;
-    color: #333;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     padding: 0;
 }
 
@@ -368,20 +368,6 @@ header {
     transition: all 0.3s ease;
 }
 
-/* Animación de pulso */
-.pulse-animation {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50px;
-    animation: pulse 2s infinite;
-    opacity: 0;
-    z-index: -1;
-}
-
 @keyframes pulse {
     0% {
         transform: scale(0.8);
@@ -610,18 +596,11 @@ header {
 }
 
 /* Notificación de descarga */
-@keyframes slideIn {
-    0% { transform: translateY(100px); opacity: 0; }
-    20% { transform: translateY(0); opacity: 1; }
-    80% { transform: translateY(0); opacity: 1; }
-    100% { transform: translateY(100px); opacity: 0; }
-}
-
 .download-notification {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    background-color: #28a745;
+    background-color: var(--success-color);
     color: white;
     padding: 15px 25px;
     border-radius: 8px;
@@ -635,39 +614,12 @@ header {
     border-left: 5px solid #1e7e34;
 }
 
-.download-notification i {
-    margin-right: 15px;
-    font-size: 1.8rem;
-    color: #d4edda;
+@keyframes slideIn {
+    0% { transform: translateY(100px); opacity: 0; }
+    20% { transform: translateY(0); opacity: 1; }
+    80% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(100px); opacity: 0; }
 }
-
-.download-notification .notification-content {
-    display: flex;
-    flex-direction: column;
-}
-
-.download-notification .notification-title {
-    font-weight: bold;
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-}
-
-.download-notification .notification-message {
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-/* Efecto para pantallas pequeñas */
-@media (max-width: 768px) {
-    .download-notification {
-        right: 15px;
-        left: 15px;
-        max-width: none;
-        bottom: 15px;
-    }
-}
-
-/* Agrega esto al final de tu archivo CSS */
 
 /* Historial de búsquedas */
 .search-history {
@@ -785,118 +737,15 @@ header {
     color: #dc3545;
 }
 
-/* Notificaciones */
-.notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #28a745;
-    color: white;
-    padding: 15px 20px;
-    border-radius: 5px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    transform: translateY(100px);
-    opacity: 0;
-    transition: all 0.3s ease;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-}
-
-.notification.show {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.notification i {
-    margin-right: 10px;
-}
-
-/* Estilos para el modal de registro */
-.modal-content {
-    border-radius: 10px;
-    border: none;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-}
-
-.modal-header {
-    background: linear-gradient(135deg, #4a6fa5, #166088);
-    color: white;
-    border-bottom: none;
-    border-radius: 10px 10px 0 0;
-}
-
-.modal-title {
-    font-weight: 600;
-}
-
-.modal-body {
-    padding: 25px;
-}
-
-/* Estilos para la lista de letras locales */
-.local-lyrics-section {
-    margin-top: 30px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 10px;
-}
-
-.local-lyrics-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.local-lyrics-list li {
-    padding: 12px 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background 0.2s;
-}
-
-.local-lyrics-list li:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.local-lyric-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.local-lyric-title {
-    font-weight: 500;
-    margin-right: 8px;
-}
-
-.local-lyric-artist {
-    font-size: 0.9em;
-    opacity: 0.8;
-}
-
-/* Botón de registrar */
-#registerBtn, #registerBtnMain {
-    transition: all 0.3s;
-}
-
-#registerBtn:hover, #registerBtnMain:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
 /* Estilos para el contenedor de botones de acciones */
 .lyrics-footer-actions {
     display: flex;
     gap: 10px;
     margin-top: 20px;
     padding-top: 15px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--border-color);
 }
 
-/* Estilos base para ambos botones */
 .copy-lyrics-btn,
 .share-btn {
     display: inline-flex;
@@ -907,26 +756,20 @@ header {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition);
     border: none;
     gap: 8px;
 }
 
-/* Estilos específicos para el botón de copiar */
 .copy-lyrics-btn {
     background-color: #f0f2f5;
-    color: #333;
+    color: var(--text-color);
 }
 
 .copy-lyrics-btn:hover {
     background-color: #e4e6e9;
 }
 
-.copy-lyrics-btn:active {
-    background-color: #d8dadf;
-}
-
-/* Estilos específicos para el botón de compartir */
 .share-btn {
     background-color: #1877f2;
     color: white;
@@ -934,16 +777,6 @@ header {
 
 .share-btn:hover {
     background-color: #166fe5;
-}
-
-.share-btn:active {
-    background-color: #1460c7;
-}
-
-/* Estilos para el menú desplegable de compartir */
-.dropdown {
-    position: relative;
-    display: inline-block;
 }
 
 .dropdown-menu {
@@ -958,6 +791,23 @@ header {
     z-index: 100;
     padding: 8px 0;
     margin-bottom: 10px;
-    border: 1px solid #e4e6eb;
+    border: 1px solid var(--border-color);
 }
 
+.youtube-source-info {
+    background-color: var(--bg-color);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 4px solid #ff0000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.youtube-source-info i {
+    color: #ff0000;
+    font-size: 18px;
+}

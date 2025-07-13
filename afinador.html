@@ -345,151 +345,16 @@
                 </div>
             </div>
 
-            <!-- Sección de Acordes de Guitarra (colocar antes del footer) -->
-            <div class="container chords-container mt-5">
-                <div class="accordion" id="chordsAccordion">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="chordsHeading">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#chordsCollapse" aria-expanded="false" aria-controls="chordsCollapse">
-                                <i class="fas fa-guitar me-2"></i> Explora los principales acordes para guitarra
-                            </button>
-                        </h2>
-                        <div id="chordsCollapse" class="accordion-collapse collapse" aria-labelledby="chordsHeading"
-                            data-bs-parent="#chordsAccordion">
-                            <div class="accordion-body">
-                                <!-- Filtros de Acordes -->
-                                <div class="chords-filters mb-4">
-                                    <div class="row g-3">
-                                        <div class="col-md-3">
-                                            <label for="chordTypeFilter" class="form-label">Tipo de Acorde</label>
-                                            <select class="form-select" id="chordTypeFilter">
-                                                <option value="all">Todos los tipos</option>
-                                                <option value="major">Mayores</option>
-                                                <option value="minor">Menores</option>
-                                                <option value="7">Séptima</option>
-                                                <option value="m7">Menor séptima</option>
-                                                <option value="maj7">Mayor séptima</option>
-                                                <option value="sus2">Sus2</option>
-                                                <option value="sus4">Sus4</option>
-                                                <option value="dim">Disminuido</option>
-                                                <option value="aug">Aumentado</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label for="noteFilter" class="form-label">Nota Principal</label>
-                                            <select class="form-select" id="noteFilter">
-                                                <option value="all">Todas las notas</option>
-                                                <option value="C">C</option>
-                                                <option value="C#/Db">C#/Db</option>
-                                                <option value="D">D</option>
-                                                <option value="D#/Eb">D#/Eb</option>
-                                                <option value="E">E</option>
-                                                <option value="F">F</option>
-                                                <option value="F#/Gb">F#/Gb</option>
-                                                <option value="G">G</option>
-                                                <option value="Ab">G#/Ab</option>
-                                                <option value="A">A</option>
-                                                <option value="Bb">A#/Bb</option>
-                                                <option value="B">B</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label for="difficultyFilter" class="form-label">Dificultad</label>
-                                            <select class="form-select" id="difficultyFilter">
-                                                <option value="all">Todas</option>
-                                                <option value="easy">Fácil</option>
-                                                <option value="medium">Media</option>
-                                                <option value="hard">Difícil</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3 d-flex align-items-end">
-                                            <button class="btn btn-primary w-100" id="applyFilters">Aplicar
-                                                Filtros</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Lista de Acordes -->
-                                <div class="chords-grid" id="chordsGrid">
-                                    <!-- Los acordes se cargarán aquí dinámicamente -->
-                                </div>
-
-                                <!-- Plantilla de Acorde -->
-                                <template id="chordTemplate">
-                                    <div class="chord-card">
-                                        <div class="chord-diagram">
-                                            <div class="chord-name"></div>
-                                            <div class="guitar-neck">
-                                                <div class="nut"></div>
-                                                <div class="frets">
-                                                    <div class="fret first-fret">
-                                                        <div class="fret-position">1</div>
-                                                        <div class="strings">
-                                                            <div class="string" data-string="6"></div>
-                                                            <div class="string" data-string="5"></div>
-                                                            <div class="string" data-string="4"></div>
-                                                            <div class="string" data-string="3"></div>
-                                                            <div class="string" data-string="2"></div>
-                                                            <div class="string" data-string="1"></div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="fret">
-                                                        <div class="strings">
-                                                            <div class="string" data-string="6"></div>
-                                                            <div class="string" data-string="5"></div>
-                                                            <div class="string" data-string="4"></div>
-                                                            <div class="string" data-string="3"></div>
-                                                            <div class="string" data-string="2"></div>
-                                                            <div class="string" data-string="1"></div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="fret">
-                                                        <div class="strings">
-                                                            <div class="string" data-string="6"></div>
-                                                            <div class="string" data-string="5"></div>
-                                                            <div class="string" data-string="4"></div>
-                                                            <div class="string" data-string="3"></div>
-                                                            <div class="string" data-string="2"></div>
-                                                            <div class="string" data-string="1"></div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="fret">
-                                                        <div class="strings">
-                                                            <div class="string" data-string="6"></div>
-                                                            <div class="string" data-string="5"></div>
-                                                            <div class="string" data-string="4"></div>
-                                                            <div class="string" data-string="3"></div>
-                                                            <div class="string" data-string="2"></div>
-                                                            <div class="string" data-string="1"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="open-strings">
-                                                    <div class="open-string" data-string="6"></div>
-                                                    <div class="open-string" data-string="5"></div>
-                                                    <div class="open-string" data-string="4"></div>
-                                                    <div class="open-string" data-string="3"></div>
-                                                    <div class="open-string" data-string="2"></div>
-                                                    <div class="open-string" data-string="1"></div>
-                                                </div>
-                                                <div class="finger-positions"></div>
-                                            </div>
-                                        </div>
-                                        <div class="chord-info">
-                                            <div class="chord-type"></div>
-                                            <div class="chord-notes"></div>
-                                            <button class="btn btn-sm btn-outline-secondary play-chord">
-                                                <i class="fas fa-play me-1"></i>Escuchar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<!-- Link to Library Section -->
+<div class="container text-center mt-5">
+    <div class="py-4">
+        <h3>¿Necesitas ayuda con acordes?</h3>
+        <p class="text mb-4">Visita nuestra biblioteca musical para aprender acordes de guitarra y piano</p>
+        <a href="biblioteca.html" class="btn btn-primary btn-lg">
+            <i class="fas fa-book-open me-2"></i> Biblioteca Musical
+        </a>
+    </div>
+</div>
         </div>
     </div>
 
