@@ -7,7 +7,7 @@ let favoriteSongs = JSON.parse(localStorage.getItem('favoriteSongs')) || [];
 let player = null;
 let currentSong = null;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Elementos del DOM
     const searchBtn = document.getElementById('searchBtn');
     const artistInput = document.getElementById('artist');
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 currentSong = { artist, title };
                 addToHistory(artist, title);
-                
+
                 // Buscar la letra con la información obtenida
                 searchLyricsApi(artist, title, videoId);
             })
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         setupFavoriteButton(artist, title);
-        
+
         if (callback) callback();
     }
 
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         // Configurar botón de copiar letra
-        document.getElementById('copyLyricsBtn')?.addEventListener('click', function() {
+        document.getElementById('copyLyricsBtn')?.addEventListener('click', function () {
             navigator.clipboard.writeText(lyrics).then(() => {
                 showNotification('Letra copiada al portapapeles');
             }).catch(err => {
@@ -338,29 +338,29 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupShareButtons(artist, title) {
         const currentUrl = encodeURIComponent(window.location.href.split('?')[0] + `?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`);
         const shareText = encodeURIComponent(`Mira la letra de "${title}" de ${artist}`);
-        
+
         // Copiar enlace
-        document.getElementById('copyLinkBtn')?.addEventListener('click', function(e) {
+        document.getElementById('copyLinkBtn')?.addEventListener('click', function (e) {
             e.preventDefault();
             navigator.clipboard.writeText(window.location.href.split('?')[0] + `?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`).then(() => {
                 showNotification('Enlace copiado al portapapeles');
             });
         });
-        
+
         // Compartir en WhatsApp
-        document.getElementById('shareWhatsAppBtn')?.addEventListener('click', function(e) {
+        document.getElementById('shareWhatsAppBtn')?.addEventListener('click', function (e) {
             e.preventDefault();
             window.open(`https://wa.me/?text=${shareText}%20${currentUrl}`, '_blank');
         });
-        
+
         // Compartir en Facebook
-        document.getElementById('shareFacebookBtn')?.addEventListener('click', function(e) {
+        document.getElementById('shareFacebookBtn')?.addEventListener('click', function (e) {
             e.preventDefault();
             window.open(`https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`, '_blank');
         });
-        
+
         // Compartir en Twitter
-        document.getElementById('shareTwitterBtn')?.addEventListener('click', function(e) {
+        document.getElementById('shareTwitterBtn')?.addEventListener('click', function (e) {
             e.preventDefault();
             window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${currentUrl}`, '_blank');
         });
@@ -377,12 +377,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const favoriteBtn = document.getElementById('saveFavoriteBtn');
         if (!favoriteBtn) return;
 
-        favoriteBtn.addEventListener('click', function(e) {
+        favoriteBtn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             toggleFavorite(artist, title);
-            
+
             // Actualizar el estado visual del botón
             if (this.classList.contains('is-favorite')) {
                 this.innerHTML = '<i class="far fa-heart"></i> Favorito';
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.classList.add('is-favorite');
                 showNotification('Agregado a favoritos');
             }
-            
+
             // Actualizar la lista de favoritos en el historial si está visible
             if (document.querySelector('.favorites-section')) {
                 showSearchHistory();
@@ -412,16 +412,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Verificar si una canción está en favoritos
     function isSongFavorite(artist, title) {
-        return favoriteSongs.some(song => 
-            song.artist.toLowerCase() === artist.toLowerCase() && 
+        return favoriteSongs.some(song =>
+            song.artist.toLowerCase() === artist.toLowerCase() &&
             song.title.toLowerCase() === title.toLowerCase()
         );
     }
 
     // Alternar favorito
     function toggleFavorite(artist, title) {
-        const index = favoriteSongs.findIndex(song => 
-            song.artist.toLowerCase() === artist.toLowerCase() && 
+        const index = favoriteSongs.findIndex(song =>
+            song.artist.toLowerCase() === artist.toLowerCase() &&
             song.title.toLowerCase() === title.toLowerCase()
         );
 
@@ -437,10 +437,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Historial de búsquedas
     function addToHistory(artist, title) {
         const entry = { artist, title, date: new Date().toISOString() };
-        
+
         // Evitar duplicados
-        const isDuplicate = searchHistory.some(item => 
-            item.artist.toLowerCase() === artist.toLowerCase() && 
+        const isDuplicate = searchHistory.some(item =>
+            item.artist.toLowerCase() === artist.toLowerCase() &&
             item.title.toLowerCase() === title.toLowerCase()
         );
 
@@ -466,7 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             return;
         }
-        
+
         const historyHTML = `
             <div class="search-history">
                 ${searchHistory.length > 0 ? `
@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
         `;
-        
+
         const historyContainer = document.createElement('div');
         historyContainer.innerHTML = historyHTML;
         resultsDiv.innerHTML = '';
@@ -533,9 +533,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span>${message}</span>
             </div>
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
             notification.classList.add('show');
             setTimeout(() => {
@@ -554,8 +554,8 @@ document.addEventListener('DOMContentLoaded', function() {
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-            
-            window.onYouTubeIframeAPIReady = function() {
+
+            window.onYouTubeIframeAPIReady = function () {
                 createPlayer(videoId);
             };
         } else {
@@ -586,7 +586,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function onPlayerReady(event) {
         const playBtn = document.getElementById('playBtn');
         if (playBtn) {
-            playBtn.addEventListener('click', function() {
+            playBtn.addEventListener('click', function () {
                 togglePlayPause(event);
             });
         }
@@ -707,7 +707,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         suggestionsHTML += `</div></div>`;
-        
+
         // Agregar las sugerencias al final del contenido existente
         const suggestionsContainer = document.createElement('div');
         suggestionsContainer.innerHTML = suggestionsHTML;
@@ -777,34 +777,99 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function downloadLyricsAsPDF(artist, title, lyrics) {
-        const doc = new jsPDF();
-        doc.setProperties({
-            title: `${title} - ${artist}`,
-            subject: 'Letra de canción',
-            author: 'ConvertMusic'
-        });
+        try {
+            const doc = new jsPDF();
 
-        // Encabezado
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(22);
-        doc.setTextColor(40, 40, 40);
-        doc.text(title, 105, 20, { align: 'center' });
+            // Configuración del documento
+            doc.setProperties({
+                title: `${title} - ${artist}`,
+                subject: 'Letra de canción',
+                author: 'ConvertMusic'
+            });
 
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(16);
-        doc.setTextColor(100, 100, 100);
-        doc.text(artist, 105, 30, { align: 'center' });
+            // Encabezado
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(22);
+            doc.setTextColor(40, 40, 40);
+            doc.text(title, 105, 20, { align: 'center' });
 
-        // Letra
-        doc.setFontSize(12);
-        doc.setTextColor(20, 20, 20);
-        const formattedLyrics = lyrics.replace(/\[(.*?)\]/g, '\n$&\n');
-        const splitLines = doc.splitTextToSize(formattedLyrics, 180);
-        doc.text(splitLines, 15, 45);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(16);
+            doc.setTextColor(100, 100, 100);
+            doc.text(artist, 105, 30, { align: 'center' });
 
-        doc.save(`${artist} - ${title}.pdf`);
-        
-        showNotification('Letra descargada como PDF');
+            // Configuración para texto en dos columnas
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 15;
+            const columnWidth = (pageWidth - 3 * margin) / 2;
+            let yPos = 45;
+            let currentColumn = 0;
+
+            // Procesar la letra
+            const formattedLyrics = lyrics.replace(/\[(.*?)\]/g, '\n$&\n');
+            const lines = formattedLyrics.split('\n');
+
+            // Función para agregar texto a una columna
+            const addTextToColumn = (text, column) => {
+                const xPos = margin + (column * (columnWidth + margin));
+                const textLines = doc.splitTextToSize(text, columnWidth);
+
+                doc.setFontSize(12);
+                doc.setTextColor(20, 20, 20);
+
+                // Manejar secciones especiales (como [Coro])
+                const isSection = text.match(/^\[.*\]$/);
+                if (isSection) {
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(50, 50, 150);
+                }
+
+                doc.text(textLines, xPos, yPos);
+
+                if (isSection) {
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(20, 20, 20);
+                }
+
+                yPos += textLines.length * 7; // Ajustar espacio entre líneas
+            };
+
+            // Distribuir el texto en columnas
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                // Cambiar de columna si el texto no cabe
+                if (yPos > doc.internal.pageSize.getHeight() - 20) {
+                    yPos = 45;
+                    currentColumn++;
+
+                    // Si ambas columnas están llenas, agregar nueva página
+                    if (currentColumn > 1) {
+                        doc.addPage();
+                        yPos = 45;
+                        currentColumn = 0;
+                    }
+                }
+
+                addTextToColumn(line, currentColumn);
+            }
+
+            // Sanitizar nombre de archivo
+            const safeFilename = `${artist} - ${title}`.replace(/[<>:"\/\\|?*]/g, '');
+
+            // Guardar el PDF
+            doc.save(`${safeFilename}.pdf`);
+
+            // Mostrar notificación después de guardar
+            setTimeout(() => {
+                showNotification('Letra descargada como PDF');
+            }, 500);
+
+        } catch (error) {
+            console.error('Error al generar PDF:', error);
+            showNotification('Error al generar el PDF');
+        }
     }
 
     function showLoading() {
@@ -820,7 +885,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showError(message) {
         let errorMessage = message;
-        
+
         if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
             errorMessage = 'Servidor no disponible. Por favor, verifica tu conexión a internet o intenta nuevamente más tarde.';
         }
@@ -839,7 +904,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función global para buscar desde la lista de canciones
-    window.searchTrack = function(artist, title) {
+    window.searchTrack = function (artist, title) {
         artistInput.value = artist;
         titleInput.value = title;
         searchLyrics();
@@ -847,7 +912,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para limpiar inputs
     document.querySelectorAll('.clear-input').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             const targetId = this.getAttribute('data-target');
             document.getElementById(targetId).value = '';
             this.style.opacity = '0';
@@ -859,8 +924,8 @@ document.addEventListener('DOMContentLoaded', function() {
     ['artist', 'title'].forEach(id => {
         const input = document.getElementById(id);
         const clearBtn = document.querySelector(`.clear-input[data-target="${id}"]`);
-        
-        input.addEventListener('input', function() {
+
+        input.addEventListener('input', function () {
             clearBtn.style.opacity = this.value ? '1' : '0';
         });
     });

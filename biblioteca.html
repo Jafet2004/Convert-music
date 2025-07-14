@@ -12,7 +12,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style_biblioteca.css">
     <link rel="stylesheet" href="style_chord.css">
     <link rel="stylesheet" href="style_dark.css">
@@ -22,35 +24,44 @@
     <header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
             <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">
-                <a href="index.html" style="color: inherit; text-decoration: none;">Convert<span style="color: #4fc3f7;">Music</span></a>
+                <a href="index.html" style="color: inherit; text-decoration: none;">Convert<span
+                        style="color: #4fc3f7;">Music</span></a>
             </div>
 
             <div class="d-flex align-items-center">
                 <nav aria-label="Navegación principal">
                     <ul class="nav">
-                        <li class="nav-item"><a class="nav-link text-white" href="index.html"><i class="fas fa-home me-1" aria-hidden="true"></i> Inicio</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="index.html"><i
+                                    class="fas fa-home me-1" aria-hidden="true"></i> Inicio</a></li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle text-white" href="#" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-tools me-1" aria-hidden="true"></i> Herramientas
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="convert.html"><i class="fas fa-exchange-alt me-1" aria-hidden="true"></i> Convertidor de Tonalidades</a></li>
-                                <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1" aria-hidden="true"></i> Creación de Partituras</a></li>
-                                <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1" aria-hidden="true"></i> Buscar Letras</a></li>
-                                <li><a class="dropdown-item" href="afinador.html"><i class="fas fa-sliders-h me-1" aria-hidden="true"></i> Afinador Musical</a></li>
+                                <li><a class="dropdown-item" href="convert.html"><i class="fas fa-exchange-alt me-1"
+                                            aria-hidden="true"></i> Convertidor de Tonalidades</a></li>
+                                <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"
+                                            aria-hidden="true"></i> Creación de Partituras</a></li>
+                                <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"
+                                            aria-hidden="true"></i> Buscar Letras</a></li>
+                                <li><a class="dropdown-item" href="afinador.html"><i class="fas fa-sliders-h me-1"
+                                            aria-hidden="true"></i> Afinador Musical</a></li>
                             </ul>
                         </li>
                     </ul>
                 </nav>
 
                 <div class="d-flex">
-                    <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3" aria-label="Alternar modo oscuro">
+                    <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3"
+                        aria-label="Alternar modo oscuro">
                         <i class="fas fa-moon" id="darkModeIcon" aria-hidden="true"></i>
                         <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
                     </button>
-                    
+
                     <!-- Botón de usuario -->
-                    <a href="perfil.html" class="btn btn-outline-light ms-2 ms-md-3" title="Perfil" aria-label="Ir a perfil">
+                    <a href="perfil.html" class="btn btn-outline-light ms-2 ms-md-3" title="Perfil"
+                        aria-label="Ir a perfil">
                         <i class="fas fa-user" aria-hidden="true"></i>
                     </a>
                 </div>
@@ -67,17 +78,20 @@
         <!-- Pestañas de instrumentos -->
         <ul class="nav nav-tabs mb-4" id="instrumentTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="guitar-tab" data-bs-toggle="tab" data-bs-target="#guitar-tab-pane" type="button" role="tab" aria-controls="guitar-tab-pane" aria-selected="true">
+                <button class="nav-link active" id="guitar-tab" data-bs-toggle="tab" data-bs-target="#guitar-tab-pane"
+                    type="button" role="tab" aria-controls="guitar-tab-pane" aria-selected="true">
                     <i class="fas fa-guitar me-2" aria-hidden="true"></i> Guitarra
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="piano-tab" data-bs-toggle="tab" data-bs-target="#piano-tab-pane" type="button" role="tab" aria-controls="piano-tab-pane" aria-selected="false">
+                <button class="nav-link" id="piano-tab" data-bs-toggle="tab" data-bs-target="#piano-tab-pane"
+                    type="button" role="tab" aria-controls="piano-tab-pane" aria-selected="false">
                     <i class="fas fa-piano-keyboard me-2" aria-hidden="true"></i> Piano
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="theory-tab" data-bs-toggle="tab" data-bs-target="#theory-tab-pane" type="button" role="tab" aria-controls="theory-tab-pane" aria-selected="false">
+                <button class="nav-link" id="theory-tab" data-bs-toggle="tab" data-bs-target="#theory-tab-pane"
+                    type="button" role="tab" aria-controls="theory-tab-pane" aria-selected="false">
                     <i class="fas fa-music me-2" aria-hidden="true"></i> Teoría Musical
                 </button>
             </li>
@@ -86,10 +100,12 @@
         <!-- Contenido de las pestañas -->
         <div class="tab-content" id="instrumentTabsContent">
             <!-- Pestaña de Guitarra -->
-            <div class="tab-pane fade show active" id="guitar-tab-pane" role="tabpanel" aria-labelledby="guitar-tab" tabindex="0">
+            <div class="tab-pane fade show active" id="guitar-tab-pane" role="tabpanel" aria-labelledby="guitar-tab"
+                tabindex="0">
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
-                        <h2 class="h4 mb-0"><i class="fas fa-filter me-2" aria-hidden="true"></i>Filtrar Acordes de Guitarra</h2>
+                        <h2 class="h4 mb-0"><i class="fas fa-filter me-2" aria-hidden="true"></i>Filtrar Acordes de
+                            Guitarra</h2>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
@@ -153,7 +169,8 @@
             <div class="tab-pane fade" id="piano-tab-pane" role="tabpanel" aria-labelledby="piano-tab" tabindex="0">
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
-                        <h2 class="h4 mb-0"><i class="fas fa-filter me-2" aria-hidden="true"></i>Filtrar Acordes de Piano</h2>
+                        <h2 class="h4 mb-0"><i class="fas fa-filter me-2" aria-hidden="true"></i>Filtrar Acordes de
+                            Piano</h2>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
@@ -205,8 +222,9 @@
             <!-- Pestaña de Teoría Musical -->
             <div class="tab-pane fade" id="theory-tab-pane" role="tabpanel" aria-labelledby="theory-tab" tabindex="0">
                 <section class="theory-section mb-5" aria-labelledby="theory-heading">
-                    <h2 id="theory-heading" class="mb-4"><i class="fas fa-question-circle me-2" aria-hidden="true"></i> Fundamentos de Teoría Musical</h2>
-                    
+                    <h2 id="theory-heading" class="mb-4"><i class="fas fa-question-circle me-2" aria-hidden="true"></i>
+                        Fundamentos de Teoría Musical</h2>
+
                     <div class="card mb-4">
                         <div class="card-header bg-info text-white">
                             <h3 class="h5 mb-0">Notas Musicales y Escalas</h3>
@@ -214,18 +232,21 @@
                         <div class="card-body">
                             <p>La música occidental se basa en un sistema de 12 notas:</p>
                             <ul>
-                                <li><strong>Notas naturales:</strong> C (Do), D (Re), E (Mi), F (Fa), G (Sol), A (La), B (Si)</li>
+                                <li><strong>Notas naturales:</strong> C (Do), D (Re), E (Mi), F (Fa), G (Sol), A (La), B
+                                    (Si)</li>
                                 <li><strong>Notas alteradas:</strong> C#/Db, D#/Eb, F#/Gb, G#/Ab, A#/Bb</li>
                             </ul>
-                            
+
                             <h4 class="mt-4">Escalas Principales</h4>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p><strong>Escala Mayor:</strong> Tono - Tono - Semitono - Tono - Tono - Tono - Semitono</p>
+                                    <p><strong>Escala Mayor:</strong> Tono - Tono - Semitono - Tono - Tono - Tono -
+                                        Semitono</p>
                                     <p>Ejemplo (Do Mayor): C - D - E - F - G - A - B</p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p><strong>Escala Menor Natural:</strong> Tono - Semitono - Tono - Tono - Semitono - Tono - Tono</p>
+                                    <p><strong>Escala Menor Natural:</strong> Tono - Semitono - Tono - Tono - Semitono -
+                                        Tono - Tono</p>
                                     <p>Ejemplo (La Menor): A - B - C - D - E - F - G</p>
                                 </div>
                             </div>
@@ -238,7 +259,7 @@
                         </div>
                         <div class="card-body">
                             <p>Los acordes se forman superponiendo intervalos de tercera:</p>
-                            
+
                             <div class="row">
                                 <div class="col-md-4">
                                     <h4>Acorde Mayor</h4>
@@ -265,7 +286,7 @@
                         </div>
                         <div class="card-body">
                             <p>Las progresiones de acordes siguen patrones armónicos basados en grados:</p>
-                            
+
                             <h4 class="mt-3">Grados en la Escala Mayor</h4>
                             <div class="table-responsive">
                                 <table class="table table-bordered">
@@ -305,7 +326,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <h4 class="mt-4">Progresiones Comunes</h4>
                             <ul>
                                 <li><strong>I - IV - V:</strong> Clásica en rock y pop</li>
@@ -457,14 +478,14 @@
     <script src="script_chord.js"></script>
     <script src="dark_mode.js"></script>
     <script>
-         // Función para renderizar acordes de piano con filtros
+        // Función para renderizar acordes de piano con filtros
         function renderPianoChords(filters = {}) {
             const pianoGrid = document.getElementById('pianoChordsGrid');
             pianoGrid.innerHTML = '';
-            
+
             const filteredChords = chordsData.filter(chord => {
                 if (chord.instrument !== 'piano') return false;
-                
+
                 if (filters.type && filters.type !== 'all' && chord.type !== filters.type) return false;
                 if (filters.note && filters.note !== 'all') {
                     const rootNote = chord.name.replace(/[^A-G#b]/g, '');
@@ -477,21 +498,21 @@
                 }
                 return true;
             });
-            
+
             if (filteredChords.length === 0) {
                 pianoGrid.innerHTML = '<div class="col-12 text-center py-4">No se encontraron acordes con los filtros seleccionados</div>';
                 return;
             }
 
             const template = document.getElementById('pianoChordTemplate');
-            
+
             filteredChords.forEach(chord => {
                 const clone = template.content.cloneNode(true);
-                
+
                 clone.querySelector('.chord-name').textContent = chord.name;
-                
+
                 let typeText = '';
-                switch(chord.type) {
+                switch (chord.type) {
                     case 'major': typeText = 'Mayor'; break;
                     case 'minor': typeText = 'Menor'; break;
                     case '7': typeText = 'Séptima'; break;
@@ -504,20 +525,20 @@
                     default: typeText = chord.type;
                 }
                 clone.querySelector('.chord-type').textContent = typeText;
-                
+
                 clone.querySelector('.chord-notes').textContent = chord.notes.join(', ');
-                
+
                 // Dibujar teclas de piano
                 drawPianoChordDiagram(clone, chord);
 
                 // Botón para reproducir acorde
                 const playButton = clone.querySelector('.play-chord');
                 playButton.addEventListener('click', () => playChordSound(chord.notes));
-                
+
                 pianoGrid.appendChild(clone);
             });
         }
-        
+
         // Aplicar filtros de piano
         document.getElementById('applyPianoFilters')?.addEventListener('click', () => {
             const filters = {
@@ -569,7 +590,8 @@
                 <ul class="nav justify-content-center">
                     <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
                     <li class="nav-item"><a href="about.html" class="nav-link text-white">Acerca de</a></li>
-                    <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i class="fas fa-envelope me-2" aria-hidden="true"></i>Contacto</a></li>
+                    <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i
+                                class="fas fa-envelope me-2" aria-hidden="true"></i>Contacto</a></li>
                 </ul>
             </div>
         </div>

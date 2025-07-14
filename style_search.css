@@ -133,7 +133,7 @@ header {
     color: var(--danger-color);
 }
 
-.input-with-clear input:not(:placeholder-shown) + .clear-input {
+.input-with-clear input:not(:placeholder-shown)+.clear-input {
     opacity: 1;
 }
 
@@ -373,10 +373,12 @@ header {
         transform: scale(0.8);
         opacity: 0.5;
     }
+
     70% {
         transform: scale(1.1);
         opacity: 0;
     }
+
     100% {
         transform: scale(1);
         opacity: 0;
@@ -384,7 +386,10 @@ header {
 }
 
 /* Track lists */
-.artist-results, .song-results, .artist-tracks, .suggestions {
+.artist-results,
+.song-results,
+.artist-tracks,
+.suggestions {
     background: var(--card-bg);
     border-radius: 12px;
     padding: 2rem;
@@ -393,11 +398,16 @@ header {
     transition: var(--transition);
 }
 
-.artist-results:hover, .song-results:hover, .artist-tracks:hover, .suggestions:hover {
+.artist-results:hover,
+.song-results:hover,
+.artist-tracks:hover,
+.suggestions:hover {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
-.artist-results h2, .song-results h2, .suggestions h3 {
+.artist-results h2,
+.song-results h2,
+.suggestions h3 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
     color: var(--secondary-color);
@@ -478,8 +488,13 @@ header {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .error-message {
@@ -557,25 +572,25 @@ header {
     .search-inputs {
         grid-template-columns: 1fr;
     }
-    
+
     .song-info {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .action-buttons {
         width: 100%;
         justify-content: flex-end;
     }
-    
+
     .search-hero h1 {
         font-size: 2rem;
     }
-    
+
     .song-title {
         font-size: 1.5rem;
     }
-    
+
     .artist-name {
         font-size: 1rem;
     }
@@ -585,40 +600,59 @@ header {
     .search-hero h1 {
         font-size: 1.8rem;
     }
-    
+
     .search-box {
         padding: 1.5rem;
     }
-    
-    .lyrics-container, .artist-results, .song-results, .suggestions {
+
+    .lyrics-container,
+    .artist-results,
+    .song-results,
+    .suggestions {
         padding: 1.5rem;
     }
 }
 
-/* Notificación de descarga */
-.download-notification {
+.notification {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background-color: var(--success-color);
+    bottom: 20px;
+    right: 20px;
+    background: #4CAF50;
     color: white;
-    padding: 15px 25px;
-    border-radius: 8px;
-    z-index: 1050;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    animation: slideIn 3s ease-in-out forwards;
-    pointer-events: none;
-    max-width: 350px;
-    border-left: 5px solid #1e7e34;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.notification.show {
+    transform: translateY(0);
+    opacity: 1;
 }
 
 @keyframes slideIn {
-    0% { transform: translateY(100px); opacity: 0; }
-    20% { transform: translateY(0); opacity: 1; }
-    80% { transform: translateY(0); opacity: 1; }
-    100% { transform: translateY(100px); opacity: 0; }
+    0% {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+
+    20% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    80% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100px);
+        opacity: 0;
+    }
 }
 
 /* Historial de búsquedas */
@@ -658,13 +692,15 @@ header {
     background: rgba(247, 37, 133, 0.1);
 }
 
-.history-list, .favorites-list {
+.history-list,
+.favorites-list {
     list-style: none;
     padding: 0;
     margin: 0 0 2rem 0;
 }
 
-.history-list li, .favorites-list li {
+.history-list li,
+.favorites-list li {
     padding: 0.8rem 0;
     border-bottom: 1px solid var(--border-color);
     cursor: pointer;
@@ -674,22 +710,26 @@ header {
     transition: var(--transition);
 }
 
-.history-list li:hover, .favorites-list li:hover {
+.history-list li:hover,
+.favorites-list li:hover {
     background: rgba(0, 0, 0, 0.03);
 }
 
-.history-item, .favorite-item {
+.history-item,
+.favorite-item {
     display: flex;
     flex-direction: column;
     flex: 1;
 }
 
-.history-title, .favorite-title {
+.history-title,
+.favorite-title {
     font-weight: 500;
     color: var(--secondary-color);
 }
 
-.history-artist, .favorite-artist {
+.history-artist,
+.favorite-artist {
     font-size: 0.85rem;
     color: var(--text-light);
     margin-top: 0.2rem;

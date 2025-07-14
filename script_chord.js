@@ -403,7 +403,7 @@ const chordsData = [
         }
     },
     // ... (otros acordes mayores de piano)
-    
+
     {
         name: "Am",
         type: "minor",
@@ -417,7 +417,7 @@ const chordsData = [
         }
     },
     // ... (otros acordes menores de piano)
-    
+
     {
         name: "C7",
         type: "7",
@@ -520,7 +520,7 @@ function drawPianoChordDiagram(container, chord) {
     // Crear teclado básico (2 octavas)
     const octave = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     let keyboard = [];
-    
+
     // Generar 2 octavas
     for (let i = 3; i <= 4; i++) {
         octave.forEach(note => {
@@ -533,11 +533,11 @@ function drawPianoChordDiagram(container, chord) {
         const keyElement = document.createElement('div');
         keyElement.className = `piano-key ${key.isBlack ? 'black-key' : 'white-key'}`;
         keyElement.dataset.note = key.note;
-        
+
         // Marcar si es parte del acorde
         if (chord.pianoKeys.includes(key.note)) {
             keyElement.classList.add('active');
-            
+
             // Mostrar dedo recomendado (simplificado)
             if (chord.handPosition) {
                 if (chord.handPosition.left.includes(key.note)) {
@@ -547,7 +547,7 @@ function drawPianoChordDiagram(container, chord) {
                 }
             }
         }
-        
+
         pianoKeys.appendChild(keyElement);
     });
 }
@@ -561,7 +561,7 @@ function renderChords(instrument, filters = {}) {
     const filteredChords = chordsData.filter(chord => {
         // Filtrar por instrumento
         if (chord.instrument !== instrument) return false;
-        
+
         // Aplicar otros filtros
         if (filters.type && filters.type !== 'all' && chord.type !== filters.type) return false;
         if (filters.note && filters.note !== 'all') {
@@ -587,10 +587,10 @@ function renderChords(instrument, filters = {}) {
 
     filteredChords.forEach(chord => {
         const clone = template.content.cloneNode(true);
-        
+
         // Configurar información común
         clone.querySelector('.chord-name').textContent = chord.name;
-        
+
         // Mostrar tipo de acorde
         let typeText = '';
         switch (chord.type) {
@@ -606,7 +606,7 @@ function renderChords(instrument, filters = {}) {
             default: typeText = chord.type;
         }
         clone.querySelector('.chord-type').textContent = typeText;
-        
+
         // Mostrar notas del acorde
         clone.querySelector('.chord-notes').textContent = chord.notes.join(', ');
 
