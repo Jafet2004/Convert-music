@@ -217,3 +217,59 @@
             height: 160px;
         }
     }
+
+/* Estilos para el diagrama de piano */
+.piano-keys {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin: 2rem auto;
+    aspect-ratio: 3/1;
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    background: linear-gradient(180deg, #fdfdfd, #eaeaea);
+    transition: background 0.3s;
+}
+.piano-key {
+    position: relative;
+    flex: 1;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+.white-key {
+    background: #fff;
+    z-index: 1;
+    border-right: 1px solid #bbb;
+}
+.black-key {
+    position: absolute;
+    width: 60%;
+    height: 60%;
+    background: #222;
+    z-index: 2;
+    border-radius: 0 0 5px 5px;
+    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.4);
+    transform-origin: bottom;
+    transition: transform 0.3s, background 0.3s;
+}
+.piano-key.active {
+    background-color: #4fc3f7;
+    box-shadow: 0 0 15px #4fc3f7;
+}
+.piano-key.active.black-key {
+    background-color: #166088;
+    box-shadow: 0 0 10px #166088;
+    transform: scaleY(0.95);
+}
+.finger {
+    position: absolute;
+    bottom: 5px;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: #f8f9fa;
+}

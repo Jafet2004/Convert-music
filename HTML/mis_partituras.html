@@ -7,12 +7,12 @@
     <link rel="icon" href="CM.png" type="image/x-icon">
     <link rel="icon" href="icon.png" type="image/png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <link rel="stylesheet" href="style_dark.css">
+    <link rel="stylesheet" href="../CSS/style_dark.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .score-card {
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
             cursor: pointer;
         }
         .score-card:hover {
@@ -20,7 +20,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         .score-card .card-footer {
-            transition: opacity 0.2s;
+            transition: opacity 0.3s;
             opacity: 0;
         }
         .score-card:hover .card-footer {
@@ -34,49 +34,43 @@
             align-items: center;
             text-align: center;
         }
-        .clef-icon {
-            font-size: 1.5rem;
-            margin-right: 5px;
+        .vex-preview {
+            background-color: white;
+            border-radius: 4px;
+            padding: 5px;
+            border: 1px solid #eee;
         }
-        .back-button {
-            cursor: pointer;
-            margin-right: 15px;
-            font-size: 1.2rem;
+        .vex-preview svg {
+            width: 100%;
+            height: auto;
         }
-        
-        /* Nuevos estilos para animación de descarga */
-        .download-success-animation {
+        .clef-icon.flipped {
+            transform: rotate(180deg);
+            display: inline-block;
+        }
+        .download-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1050;
             opacity: 0;
-            transform: translate(-50%, -20px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: inline-flex;
-            align-items: center;
-            padding: 10px 20px;
-            border-radius: 50px;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
         }
-        
-        .btn .fa-spinner {
-            margin-right: 5px;
-        }
-        
-        .score-card .btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-8px);}
-            60% {transform: translateY(-4px);}
-        }
-        
-        .download-success {
-            animation: bounce 0.8s;
+        @media (max-width: 768px) {
+            .score-card .card-footer {
+                opacity: 1 !important;
+            }
         }
     </style>
 </head>
 <body>
-    <header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
+<header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
             <div class="d-flex align-items-center">
                 <i class="fas fa-arrow-left back-button" onclick="window.history.back()"></i>
@@ -115,17 +109,37 @@
             </div>
         </div>
     </header>
+
     <main class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1><i class="fas fa-music me-2"></i>Mis Partituras</h1>
-            <a href="partitura.html" class="btn btn-primary">
-                <i class="fas fa-plus me-1"></i> Nueva Partitura
-            </a>
+        <div id="organization-controls"></div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" id="searchScores" class="form-control" placeholder="Buscar partituras...">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-filter"></i></span>
+                    <select id="filterClef" class="form-select">
+                        <option value="">Todas las claves</option>
+                        <option value="treble">Clave de Sol</option>
+                        <option value="bass">Clave de Fa</option>
+                        <option value="alto">Clave de Do</option>
+                    </select>
+                    <select id="filterTimeSig" class="form-select">
+                        <option value="">Todos los compases</option>
+                        <option value="4/4">4/4</option>
+                        <option value="3/4">3/4</option>
+                        <option value="2/4">2/4</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
-        <div id="scores-container" class="row g-4">
-            <!-- Las partituras se cargarán aquí dinámicamente -->
-        </div>
+        <div id="scores-container" class="row g-4"></div>
 
         <div id="empty-state" class="empty-state text-muted">
             <i class="fas fa-music fa-4x mb-3"></i>
@@ -136,7 +150,7 @@
             </a>
         </div>
 
-        <!-- Modal para visualizar partitura -->
+        <!-- Modales -->
         <div class="modal fade" id="scoreModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
@@ -145,44 +159,24 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div id="modal-score-content" class="w-100 overflow-auto p-3 bg-white"></div>
+                        <div id="modal-score-content"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                         <button id="downloadPdfBtn" type="button" class="btn btn-primary">
-                            <i class="fas fa-file-pdf me-1"></i> Descargar PDF
+                            <i class="fas fa-file-pdf me-1"></i> Descargar
                         </button>
-                        <button id="fullscreenBtn" type="button" class="btn btn-success">
-                            <i class="fas fa-expand me-1"></i> Pantalla Completa
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal para pantalla completa -->
-        <div class="modal fade" id="fullscreenModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Vista Previa en Pantalla Completa</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-0">
-                        <div id="fullscreen-score-content" class="w-100 overflow-auto bg-white"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <script src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="dark_mode.js"></script>
-    <script src="agregar_part.js"></script>
+    <script src="../JS/agregar_part.js"></script>
 </body>
 </html>
