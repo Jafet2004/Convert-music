@@ -12,70 +12,106 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+/**
+ * Carga la biblioteca VexFlow desde CDN
+ */
 function loadVexFlowLibrary() {
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js';
-    script.onload = initializeApp;
-    script.onerror = function() {
-        showMessage('Error al cargar la biblioteca de partituras', 'danger');
-    };
-    document.head.appendChild(script);
-}
-
-function initializeApp() {
-    // Configurar controles de organización
-    setupOrganizationControls();
-    
-    // Cargar partituras guardadas
-    loadSavedScores();
-    
-    // Configurar modo oscuro si existe
-    if (typeof setupDarkMode === 'function') {
-        setupDarkMode();
+    try {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js';
+        script.onload = initializeApp;
+        script.onerror = function() {
+            showMessage('Error al cargar la biblioteca de partituras', 'danger');
+        };
+        document.head.appendChild(script);
+    } catch (error) {
+        console.error('Error al cargar VexFlow:', error);
+        showMessage('Error crítico: No se puede cargar el editor de partituras', 'danger');
     }
 }
 
+/**
+ * Inicializa la aplicación después de cargar las dependencias
+ */
+function initializeApp() {
+    try {
+        // Configurar controles de organización
+        setupOrganizationControls();
+        
+        // Cargar partituras guardadas
+        loadSavedScores();
+        
+        // Configurar modo oscuro si existe
+        if (typeof setupDarkMode === 'function') {
+            setupDarkMode();
+        }
+    } catch (error) {
+        console.error('Error al inicializar la aplicación:', error);
+        showMessage('Error al iniciar la aplicación', 'danger');
+    }
+}
+
+/**
+ * Configura los controles de organización de la interfaz
+ */
 function setupOrganizationControls() {
-    const controls = `
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center">
-                <h1 class="mb-0 me-3"><i class="fas fa-music me-2"></i>Mis Partituras</h1>
-                <span class="badge bg-primary rounded-pill" id="totalScores">0</span>
+    try {
+        const controls = `
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center">
+                    <h1 class="mb-0 me-3"><i class="fas fa-music me-2"></i>Mis Partituras</h1>
+                    <span class="badge bg-primary rounded-pill" id="totalScores">0</span>
+                </div>
             </div>
-            <div class="btn-group">
-                <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            <div class="btn-group my-4">
+                <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Ordenar partituras">
                     <i class="fas fa-sort me-1"></i> Ordenar
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item sort-option" data-sort="date-desc">Más recientes</a></li>
-                    <li><a class="dropdown-item sort-option" data-sort="date-asc">Más antiguas</a></li>
-                    <li><a class="dropdown-item sort-option" data-sort="name-asc">Nombre (A-Z)</a></li>
-                    <li><a class="dropdown-item sort-option" data-sort="name-desc">Nombre (Z-A)</a></li>
+                    <li><a class="dropdown-item sort-option" href="#" data-sort="date-desc">Más recientes</a></li>
+                    <li><a class="dropdown-item sort-option" href="#" data-sort="date-asc">Más antiguas</a></li>
+                    <li><a class="dropdown-item sort-option" href="#" data-sort="name-asc">Nombre (A-Z)</a></li>
+                    <li><a class="dropdown-item sort-option" href="#" data-sort="name-desc">Nombre (Z-A)</a></li>
                 </ul>
-                <button id="newScoreBtn" class="btn btn-primary">
-                    <i class="fas fa-plus me-1"></i> Nueva
+                <button id="newScoreBtn" class="btn btn-primary" aria-label="Crear nueva partitura">
+                    <i class="fas fa-plus me-2"></i> Nueva
                 </button>
             </div>
-        </div>
-    `;
-    
-    document.getElementById('organization-controls').innerHTML = controls;
-    
-    // Event listeners
-    document.querySelectorAll('.sort-option').forEach(option => {
-        option.addEventListener('click', () => sortScores(option.dataset.sort));
-    });
-    
-    document.getElementById('newScoreBtn').addEventListener('click', () => {
-        window.location.href = 'partitura.html';
-    });
+        `;
+        
+        document.getElementById('organization-controls').innerHTML = controls;
+        
+        // Event listeners
+        document.querySelectorAll('.sort-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.preventDefault();
+                sortScores(option.dataset.sort);
+            });
+        });
+        
+        document.getElementById('newScoreBtn').addEventListener('click', () => {
+            window.location.href = 'partitura.html';
+        });
+        
+    } catch (error) {
+        console.error('Error al configurar controles:', error);
+        showMessage('Error al cargar los controles', 'danger');
+    }
 }
 
+/**
+ * Carga las partituras guardadas en localStorage
+ */
 function loadSavedScores() {
     try {
         showLoadingState();
         
         const savedScores = JSON.parse(localStorage.getItem('savedScores') || '[]');
+        
+        // Validar estructura de datos
+        if (!Array.isArray(savedScores)) {
+            throw new Error('Formato de partituras guardadas no válido');
+        }
         
         if (savedScores.length === 0) {
             showEmptyState();
@@ -90,6 +126,9 @@ function loadSavedScores() {
     }
 }
 
+/**
+ * Muestra el estado de carga
+ */
 function showLoadingState() {
     const container = document.getElementById('scores-container');
     container.innerHTML = `
@@ -103,12 +142,19 @@ function showLoadingState() {
     document.getElementById('empty-state').style.display = 'none';
 }
 
+/**
+ * Muestra el estado cuando no hay partituras
+ */
 function showEmptyState() {
     document.getElementById('scores-container').style.display = 'none';
     document.getElementById('empty-state').style.display = 'flex';
     document.getElementById('totalScores').textContent = '0';
 }
 
+/**
+ * Muestra el estado de error
+ * @param {Error} error - Objeto de error
+ */
 function showErrorState(error) {
     console.error('Error al cargar partituras:', error);
     document.getElementById('empty-state').innerHTML = `
@@ -123,19 +169,35 @@ function showErrorState(error) {
     document.getElementById('empty-state').style.display = 'flex';
 }
 
+/**
+ * Renderiza las tarjetas de partituras
+ * @param {Array} scores - Array de partituras
+ */
 function renderScoreCards(scores) {
-    const container = document.getElementById('scores-container');
-    container.innerHTML = '';
-    container.style.display = 'flex';
-    
-    document.getElementById('totalScores').textContent = scores.length;
-    
-    scores.forEach((score, index) => {
-        const card = createScoreCard(score, index);
-        container.appendChild(card);
-    });
+    try {
+        const container = document.getElementById('scores-container');
+        container.innerHTML = '';
+        container.style.display = 'flex';
+        
+        document.getElementById('totalScores').textContent = scores.length;
+        
+        scores.forEach((score, index) => {
+            const card = createScoreCard(score, index);
+            container.appendChild(card);
+        });
+        
+    } catch (error) {
+        console.error('Error al renderizar partituras:', error);
+        showMessage('Error al mostrar las partituras', 'danger');
+    }
 }
 
+/**
+ * Crea una tarjeta de partitura
+ * @param {Object} score - Objeto de partitura
+ * @param {number} index - Índice de la partitura
+ * @returns {HTMLElement} Elemento DOM de la tarjeta
+ */
 function createScoreCard(score, index) {
     const col = document.createElement('div');
     col.className = 'col-md-6 col-lg-4 mb-4';
@@ -144,7 +206,7 @@ function createScoreCard(score, index) {
     const previewNotes = getPreviewNotes(score.notes);
     
     col.innerHTML = `
-        <div class="card score-card h-100" data-index="${index}">
+        <div class="card score-card h-100" data-index="${index}" data-clef="${score.clef}" data-time-sig="${score.timeSignature}">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <h5 class="card-title mb-3">${score.name || 'Partitura sin nombre'}</h5>
@@ -152,23 +214,23 @@ function createScoreCard(score, index) {
                 </div>
                 <div class="mb-3">
                     <div class="vex-preview mb-2">${renderMiniPreview(score)}</div>
-                    <small class="text-muted">${previewNotes}</small>
+                    <small class="text">${previewNotes}</small>
                 </div>
                 <div class="d-flex flex-wrap gap-2 mb-2">
                     <span class="badge bg-primary">${clefIcon} ${getClefName(score.clef)}</span>
                     <span class="badge bg-secondary">${score.timeSignature}</span>
-                    <span class="badge bg-info text-dark">${score.keySignature}</span>
+                    <span class="badge bg-info text">${score.keySignature}</span>
                 </div>
             </div>
             <div class="card-footer bg-transparent border-top-0 d-flex justify-content-between">
-                <button class="btn btn-sm btn-outline-primary download-pdf">
+                <button class="btn btn-sm btn-outline-primary download-pdf" aria-label="Descargar PDF">
                     <i class="fas fa-file-pdf me-1"></i> PDF
                 </button>
                 <div class="btn-group">
-                    <button class="btn btn-sm btn-outline-success edit-score">
+                    <button class="btn btn-sm btn-outline-success edit-score" aria-label="Editar partitura">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger delete-score">
+                    <button class="btn btn-sm btn-outline-danger delete-score" aria-label="Eliminar partitura">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
@@ -202,6 +264,11 @@ function createScoreCard(score, index) {
     return col;
 }
 
+/**
+ * Obtiene el icono de clave musical
+ * @param {string} clef - Tipo de clave
+ * @returns {string} HTML del icono
+ */
 function getClefIcon(clef) {
     switch(clef) {
         case 'treble': return '<i class="fas fa-music clef-icon" title="Clave de Sol"></i>';
@@ -210,6 +277,11 @@ function getClefIcon(clef) {
     }
 }
 
+/**
+ * Obtiene el nombre de la clave musical
+ * @param {string} clef - Tipo de clave
+ * @returns {string} Nombre de la clave
+ */
 function getClefName(clef) {
     switch(clef) {
         case 'treble': return 'Clave de Sol';
@@ -219,6 +291,11 @@ function getClefName(clef) {
     }
 }
 
+/**
+ * Obtiene una vista previa de las notas
+ * @param {Array} notes - Array de notas
+ * @returns {string} Texto de vista previa
+ */
 function getPreviewNotes(notes) {
     const noteNames = { 'c': 'Do', 'd': 'Re', 'e': 'Mi', 'f': 'Fa', 'g': 'Sol', 'a': 'La', 'b': 'Si' };
     const preview = notes.slice(0, 3).map(note => {
@@ -229,6 +306,11 @@ function getPreviewNotes(notes) {
     return notes.length > 3 ? [...preview, '...'].join(', ') : preview.join(', ');
 }
 
+/**
+ * Obtiene el símbolo de duración de nota
+ * @param {string} duration - Duración de la nota
+ * @returns {string} Símbolo musical
+ */
 function getDurationSymbol(duration) {
     const symbols = {
         'w': '𝅝', 'h': '𝅗𝅥', 'q': '𝅘𝅥', '8': '𝅘𝅥𝅮', '16': '𝅘𝅥𝅯',
@@ -237,8 +319,17 @@ function getDurationSymbol(duration) {
     return symbols[duration] || duration;
 }
 
+/**
+ * Renderiza una vista previa miniaturizada de la partitura
+ * @param {Object} score - Objeto de partitura
+ * @returns {string} HTML del renderizado
+ */
 function renderMiniPreview(score) {
     try {
+        if (!VF || !VF.Renderer) {
+            throw new Error('VexFlow no está cargado correctamente');
+        }
+        
         const div = document.createElement('div');
         div.style.width = '100%';
         div.style.height = '40px';
@@ -253,14 +344,20 @@ function renderMiniPreview(score) {
         if (score.keySignature) stave.addKeySignature(score.keySignature);
         stave.setContext(context).draw();
         
-        const previewNotes = score.notes.slice(0, 4).map(note => (
-            new VF.StaveNote({
-                keys: note.keys,
-                duration: note.duration,
-                clef: note.clef || score.clef,
-                auto_stem: true
-            })
-        ));
+        // Limitar a 4 notas para la vista previa
+        const previewNotes = score.notes.slice(0, 4).map(note => {
+            try {
+                return new VF.StaveNote({
+                    keys: note.keys,
+                    duration: note.duration,
+                    clef: note.clef || score.clef,
+                    auto_stem: true
+                });
+            } catch (error) {
+                console.error('Error al crear nota:', note, error);
+                return null;
+            }
+        }).filter(note => note !== null);
         
         if (previewNotes.length > 0) {
             new VF.Formatter()
@@ -277,10 +374,15 @@ function renderMiniPreview(score) {
     }
 }
 
+/**
+ * Configura la búsqueda y filtrado de partituras
+ */
 function setupSearchAndFilter() {
     const searchInput = document.getElementById('searchScores');
     const filterClef = document.getElementById('clef');
     const filterTimeSig = document.getElementById('timeSignature');
+    
+    if (!searchInput || !filterClef || !filterTimeSig) return;
     
     const applyFilters = () => {
         const searchTerm = searchInput.value.toLowerCase();
@@ -299,10 +401,10 @@ function setupSearchAndFilter() {
             const matchesTimeSig = timeSigFilter === '' || timeSig === timeSigFilter;
             
             if (matchesSearch && matchesClef && matchesTimeSig) {
-                card.style.display = '';
+                card.parentElement.style.display = '';
                 visibleCount++;
             } else {
-                card.style.display = 'none';
+                card.parentElement.style.display = 'none';
             }
         });
         
@@ -314,28 +416,45 @@ function setupSearchAndFilter() {
     filterTimeSig.addEventListener('change', applyFilters);
 }
 
+/**
+ * Ordena las partituras según el método especificado
+ * @param {string} method - Método de ordenación
+ */
 function sortScores(method) {
-    const savedScores = JSON.parse(localStorage.getItem('savedScores') || []);
-    
-    switch(method) {
-        case 'date-desc':
-            savedScores.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            break;
-        case 'date-asc':
-            savedScores.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            break;
-        case 'name-asc':
-            savedScores.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-            break;
-        case 'name-desc':
-            savedScores.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
-            break;
+    try {
+        const savedScores = JSON.parse(localStorage.getItem('savedScores') || '[]');
+        
+        if (!Array.isArray(savedScores)) {
+            throw new Error('Datos de partituras no válidos');
+        }
+        
+        switch(method) {
+            case 'date-desc':
+                savedScores.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                break;
+            case 'date-asc':
+                savedScores.sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0));
+                break;
+            case 'name-asc':
+                savedScores.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                break;
+            case 'name-desc':
+                savedScores.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+                break;
+        }
+        
+        localStorage.setItem('savedScores', JSON.stringify(savedScores));
+        renderScoreCards(savedScores);
+    } catch (error) {
+        console.error('Error al ordenar partituras:', error);
+        showMessage('Error al ordenar partituras', 'danger');
     }
-    
-    localStorage.setItem('savedScores', JSON.stringify(savedScores));
-    renderScoreCards(savedScores);
 }
 
+/**
+ * Abre una partitura para edición
+ * @param {Object} score - Objeto de partitura
+ */
 function openScoreForEditing(score) {
     try {
         localStorage.setItem('currentScoreToLoad', JSON.stringify(score));
@@ -346,6 +465,10 @@ function openScoreForEditing(score) {
     }
 }
 
+/**
+ * Elimina una partitura
+ * @param {number} index - Índice de la partitura a eliminar
+ */
 function deleteScore(index) {
     if (!confirm('¿Estás seguro de eliminar esta partitura?')) return;
     
@@ -362,6 +485,10 @@ function deleteScore(index) {
     }
 }
 
+/**
+ * Muestra un modal con la partitura completa
+ * @param {Object} score - Objeto de partitura
+ */
 function showScoreModal(score) {
     currentScore = score;
     const modal = new bootstrap.Modal(document.getElementById('scoreModal'));
@@ -386,14 +513,19 @@ function showScoreModal(score) {
             spaceBetweenStaves: 10
         });
         
-        const vexNotes = score.notes.map(note => (
-            new VF.StaveNote({
-                keys: note.keys,
-                duration: note.duration,
-                clef: note.clef || score.clef,
-                auto_stem: true
-            })
-        ));
+        const vexNotes = score.notes.map(note => {
+            try {
+                return new VF.StaveNote({
+                    keys: note.keys,
+                    duration: note.duration,
+                    clef: note.clef || score.clef,
+                    auto_stem: true
+                });
+            } catch (error) {
+                console.error('Error al crear nota:', note, error);
+                return null;
+            }
+        }).filter(note => note !== null);
         
         const stave = system.addStave({
             voices: [
@@ -430,7 +562,26 @@ function showScoreModal(score) {
     modal.show();
 }
 
+/**
+ * Descarga la partitura como PDF
+ * @param {Object} score - Objeto de partitura
+ */
 function downloadPdf(score) {
+    // Verificar si jsPDF está disponible
+    if (!window.jspdf) {
+        // Cargar jsPDF dinámicamente si no está disponible
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = () => {
+            showMessage('Biblioteca PDF cargada, intenta nuevamente', 'info');
+        };
+        script.onerror = () => {
+            showMessage('Error al cargar la biblioteca PDF', 'danger');
+        };
+        document.head.appendChild(script);
+        return;
+    }
+
     showMessage('Generando PDF...', 'info');
     
     const tempContainer = document.createElement('div');
@@ -452,14 +603,19 @@ function downloadPdf(score) {
             spaceBetweenStaves: 30
         });
         
-        const vexNotes = score.notes.map(note => (
-            new VF.StaveNote({
-                keys: note.keys,
-                duration: note.duration,
-                clef: note.clef || score.clef,
-                auto_stem: true
-            })
-        ));
+        const vexNotes = score.notes.map(note => {
+            try {
+                return new VF.StaveNote({
+                    keys: note.keys,
+                    duration: note.duration,
+                    clef: note.clef || score.clef,
+                    auto_stem: true
+                });
+            } catch (error) {
+                console.error('Error al crear nota:', note, error);
+                return null;
+            }
+        }).filter(note => note !== null);
         
         const stave = system.addStave({
             voices: [
@@ -508,12 +664,17 @@ function downloadPdf(score) {
     }
 }
 
+/**
+ * Genera un PDF a partir de una imagen renderizada
+ * @param {Image} img - Imagen de la partitura
+ * @param {Object} score - Objeto de partitura
+ */
 function generatePdfFromImage(img, score) {
     try {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        const widthInPoints = 8.5 * 72;
+        const widthInPoints = 8.5 * 72; // Tamaño carta en puntos (1 pulgada = 72 puntos)
         const heightInPoints = 11 * 72;
         canvas.width = widthInPoints;
         canvas.height = heightInPoints;
@@ -565,9 +726,14 @@ function generatePdfFromImage(img, score) {
     }
 }
 
+/**
+ * Muestra una notificación de descarga completada
+ * @param {string} scoreName - Nombre de la partitura
+ */
 function showDownloadNotification(scoreName) {
     const notification = document.createElement('div');
     notification.className = 'download-notification';
+    notification.setAttribute('role', 'alert');
     notification.innerHTML = `
         <i class="fas fa-check-circle me-2"></i>
         <div>
@@ -589,10 +755,16 @@ function showDownloadNotification(scoreName) {
     }, 3000);
 }
 
+/**
+ * Muestra un mensaje temporal en la interfaz
+ * @param {string} text - Texto del mensaje
+ * @param {string} type - Tipo de mensaje (success, danger, info, etc.)
+ */
 function showMessage(text, type) {
     const messageEl = document.createElement('div');
     messageEl.className = `alert alert-${type} position-fixed top-0 start-50 translate-middle-x mt-3`;
     messageEl.style.zIndex = '1000';
+    messageEl.setAttribute('role', 'alert');
     messageEl.innerHTML = `
         <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
         ${text}
