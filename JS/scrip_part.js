@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const VF = Vex.Flow;
     let notes = [];
     let scoreName = "Mi melodía";
+    let audioContext;
+    let isPlaying = false;
+    let playTimeout;
 
     // Elementos del DOM
     const nameInput = document.getElementById('name');
@@ -19,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewScoreBtn = document.getElementById('previewScore');
     const downloadPdfBtn = document.getElementById('downloadPdf');
     const downloadFromModalBtn = document.getElementById('downloadFromModal');
+    const playScoreBtn = document.getElementById('playScore');
     const noteList = document.getElementById('noteList');
     const noteCount = document.getElementById('noteCount');
     const scoreContent = document.getElementById('score-content');
@@ -60,11 +64,138 @@ document.addEventListener('DOMContentLoaded', function() {
         previewScoreBtn.addEventListener('click', showFullscreenPreview);
         downloadPdfBtn.addEventListener('click', () => downloadScore(scoreContent));
         downloadFromModalBtn.addEventListener('click', () => downloadScore(fullscreenScore));
+        playScoreBtn.addEventListener('click', togglePlayback);
 
         updateScoreName();
         updateNoteOptions(clefSelect.value);
         updateNoteList();
         showMessage('Selecciona notas/silencios y haz clic en "Ver Partitura"', 'info');
+    }
+
+    function togglePlayback() {
+        if (isPlaying) {
+            stopPlayback();
+        } else {
+            startPlayback();
+        }
+    }
+
+    function stopPlayback() {
+        isPlaying = false;
+        if (audioContext) {
+            audioContext.close();
+            audioContext = null;
+        }
+        if (playTimeout) {
+            clearTimeout(playTimeout);
+            playTimeout = null;
+        }
+        updatePlayButton();
+    }
+
+    function startPlayback() {
+        if (notes.length === 0) {
+            showMessage('No hay notas para reproducir', 'warning');
+            return;
+        }
+        
+        isPlaying = true;
+        updatePlayButton();
+        
+        try {
+            // Crear contexto de audio si no existe
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            const tempo = parseInt(tempoInput.value) || 120;
+            const bpmFactor = 60 / tempo; // segundos por negra
+            
+            // Calcular duración en segundos para cada nota
+            let currentTime = 0;
+            
+            notes.forEach((note, index) => {
+                const duration = getNoteDurationInSeconds(note.duration, bpmFactor);
+                
+                if (!note.duration.endsWith('r')) { // Si no es un silencio
+                    playTimeout = setTimeout(() => {
+                        if (!isPlaying) return;
+                        
+                        const frequency = getNoteFrequency(note.key);
+                        playNote(frequency, duration);
+                    }, currentTime * 1000);
+                }
+                
+                currentTime += duration;
+            });
+            
+            // Detener la reproducción al final
+            playTimeout = setTimeout(() => {
+                stopPlayback();
+            }, currentTime * 1000);
+            
+        } catch (error) {
+            console.error('Error al reproducir:', error);
+            showMessage('Error al reproducir: ' + error.message, 'danger');
+            stopPlayback();
+        }
+    }
+
+    function getNoteDurationInSeconds(duration, bpmFactor) {
+        // bpmFactor es la duración de una negra en segundos
+        switch(duration.replace('r', '')) {
+            case 'w': return bpmFactor * 4; // redonda = 4 negras
+            case 'h': return bpmFactor * 2; // blanca = 2 negras
+            case 'q': return bpmFactor;     // negra = 1 negra
+            case '8': return bpmFactor / 2; // corchea = 1/2 negra
+            case '16': return bpmFactor / 4; // semicorchea = 1/4 negra
+            default: return bpmFactor;
+        }
+    }
+
+    function getNoteFrequency(noteValue) {
+        // Mapeo de notas a frecuencias (en Hz)
+        const noteMap = {
+            'c/2': 65.41, 'd/2': 73.42, 'e/2': 82.41, 'f/2': 87.31, 'g/2': 98.00, 'a/2': 110.00, 'b/2': 123.47,
+            'c/3': 130.81, 'd/3': 146.83, 'e/3': 164.81, 'f/3': 174.61, 'g/3': 196.00, 'a/3': 220.00, 'b/3': 246.94,
+            'c/4': 261.63, 'd/4': 293.66, 'e/4': 329.63, 'f/4': 349.23, 'g/4': 392.00, 'a/4': 440.00, 'b/4': 493.88,
+            'c/5': 523.25, 'd/5': 587.33, 'e/5': 659.25, 'f/5': 698.46, 'g/5': 783.99, 'a/5': 880.00, 'b/5': 987.77
+        };
+        
+        return noteMap[noteValue] || 440; // La4 como valor por defecto
+    }
+
+    function playNote(frequency, duration) {
+        if (!audioContext || !isPlaying) return;
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.type = 'sine'; // Puedes cambiar a 'square', 'sawtooth' o 'triangle' para diferentes timbres
+        oscillator.frequency.value = frequency;
+        
+        // Configurar envolvente para que el sonido no sea demasiado abrupto
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + duration);
+    }
+
+    function updatePlayButton() {
+        if (isPlaying) {
+            playScoreBtn.innerHTML = '<i class="fas fa-stop me-1"></i> <span class="d-none d-sm-inline">Detener</span>';
+            playScoreBtn.classList.remove('btn-info');
+            playScoreBtn.classList.add('btn-danger');
+        } else {
+            playScoreBtn.innerHTML = '<i class="fas fa-play me-1"></i> <span class="d-none d-sm-inline">Reproducir</span>';
+            playScoreBtn.classList.remove('btn-danger');
+            playScoreBtn.classList.add('btn-info');
+        }
     }
 
     function loadScoreData(score) {
@@ -240,12 +371,14 @@ document.addEventListener('DOMContentLoaded', function() {
         drawScoreBtn.disabled = false;
         previewScoreBtn.disabled = false;
         downloadPdfBtn.disabled = false;
+        playScoreBtn.disabled = false;
     }
 
     function disableButtons() {
         drawScoreBtn.disabled = true;
         previewScoreBtn.disabled = true;
         downloadPdfBtn.disabled = true;
+        playScoreBtn.disabled = true;
     }
 
     function clearScorePreview() {
@@ -432,121 +565,119 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-async function downloadScore(container) {
-    if (!container.hasChildNodes() || container.querySelector('svg') === null) {
-        showMessage('Primero debes generar la partitura', 'danger');
-        return;
+    async function downloadScore(container) {
+        if (!container.hasChildNodes() || container.querySelector('svg') === null) {
+            showMessage('Primero debes generar la partitura', 'danger');
+            return;
+        }
+        try {
+            showMessage('Generando PDF...', 'info');
+            
+            // Crear contenedor temporal para tamaño carta
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.width = '8.5in';
+            tempContainer.style.height = '11in';
+            tempContainer.style.padding = '0.5in';
+            tempContainer.style.backgroundColor = 'white';
+            tempContainer.style.boxSizing = 'border-box';
+            
+            // Clonar el contenido y escalarlo para que quepa
+            const clone = container.cloneNode(true);
+            clone.style.transform = 'scale(0.9)';
+            clone.style.transformOrigin = 'top left';
+            tempContainer.appendChild(clone);
+            document.body.appendChild(tempContainer);
+            
+            // Configuración de html2canvas para tamaño carta
+            const canvas = await html2canvas(tempContainer, {
+                scale: 2,
+                backgroundColor: '#ffffff',
+                width: 8.5 * 96,
+                height: 11 * 96,
+                logging: false,
+                useCORS: true
+            });
+            
+            document.body.removeChild(tempContainer);
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'in',
+                format: 'letter'
+            });
+
+            // Añadir imagen al PDF ajustada a tamaño carta
+            const imgData = canvas.toDataURL('image/png');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+            
+            // Texto centrado en el PDF
+            pdf.setFontSize(12);
+            pdf.setTextColor(100);
+            pdf.text(`${scoreName}`, pdfWidth / 2, 0.5, { align: 'center' });
+            pdf.text("Generado con @ConvertMusic", pdfWidth / 2, pdfHeight - 0.5, { align: 'center' });
+
+            const fileName = `${(scoreName || 'partitura').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+            pdf.save(fileName);
+            
+            // Mostrar animación de descarga mejorada
+            showDownloadNotification(scoreName);
+            
+        } catch (error) {
+            console.error('Error al generar PDF:', error);
+            showMessage('Error al generar el PDF: ' + error.message, 'danger');
+        }
     }
-    try {
-        showMessage('Generando PDF...', 'info');
-        
-        // Crear contenedor temporal para tamaño carta
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.width = '8.5in';
-        tempContainer.style.height = '11in';
-        tempContainer.style.padding = '0.5in';
-        tempContainer.style.backgroundColor = 'white';
-        tempContainer.style.boxSizing = 'border-box';
-        
-        // Clonar el contenido y escalarlo para que quepa
-        const clone = container.cloneNode(true);
-        clone.style.transform = 'scale(0.9)';
-        clone.style.transformOrigin = 'top left';
-        tempContainer.appendChild(clone);
-        document.body.appendChild(tempContainer);
-        
-        // Configuración de html2canvas para tamaño carta
-        const canvas = await html2canvas(tempContainer, {
-            scale: 2,
-            backgroundColor: '#ffffff',
-            width: 8.5 * 96,
-            height: 11 * 96,
-            logging: false,
-            useCORS: true
-        });
-        
-        document.body.removeChild(tempContainer);
 
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'in',
-            format: 'letter'
-        });
-
-        // Añadir imagen al PDF ajustada a tamaño carta
-        const imgData = canvas.toDataURL('image/png');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
+    function showDownloadNotification(scoreName) {
+        const notification = document.createElement('div');
+        notification.className = 'download-notification';
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1050;
+        `;
         
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+        notification.innerHTML = `
+            <i class="fas fa-check-circle" style="font-size:24px;margin-right:10px;"></i>
+            <div>
+                <div style="font-weight:bold;">¡Descarga completada!</div>
+                <div style="font-size:0.9em;opacity:0.9;">"${scoreName}" se ha descargado correctamente</div>
+            </div>
+        `;
         
-        // Texto centrado en el PDF
-        pdf.setFontSize(12);
-        pdf.setTextColor(100);
-        pdf.text(`${scoreName}`, pdfWidth / 2, 0.5, { align: 'center' });
-        pdf.text("Generado con @ConvertMusic", pdfWidth / 2, pdfHeight - 0.5, { align: 'center' });
-
-        const fileName = `${(scoreName || 'partitura').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
-        pdf.save(fileName);
+        document.body.appendChild(notification);
         
-        // Mostrar animación de descarga mejorada
-        showDownloadNotification(scoreName);
-        
-    } catch (error) {
-        console.error('Error al generar PDF:', error);
-        showMessage('Error al generar el PDF: ' + error.message, 'danger');
-    }
-}
-
-// Función para mostrar la notificación de descarga mejorada
-function showDownloadNotification(scoreName) {
-    const notification = document.createElement('div');
-    notification.className = 'download-notification';
-    notification.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #28a745;
-        color: white;
-        padding: 15px 20px;
-        border-radius: 5px;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.3s ease;
-        z-index: 1050;
-    `;
-    
-    notification.innerHTML = `
-        <i class="fas fa-check-circle" style="font-size:24px;margin-right:10px;"></i>
-        <div>
-            <div style="font-weight:bold;">¡Descarga completada!</div>
-            <div style="font-size:0.9em;opacity:0.9;">"${scoreName}" se ha descargado correctamente</div>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Animación de entrada
-    setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateY(0)';
-    }, 10);
-    
-    // Eliminar después de 3 segundos con animación
-    setTimeout(() => {
-        notification.style.opacity = '0';
+        // Animación de entrada
         setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, 3000);
-}
-
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateY(0)';
+        }, 10);
+        
+        // Eliminar después de 3 segundos con animación
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
 
     function saveCurrentScore() {
         if (!notes || notes.length === 0) {

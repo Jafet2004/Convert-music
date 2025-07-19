@@ -171,6 +171,9 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h2 class="mb-0"><i class="fas fa-music me-2"></i>Vista previa</h2>
                         <div class="button-group d-flex flex-wrap gap-2">
+                            <button id="playScore" class="btn btn-info flex-grow-1">
+                                <i class="fas fa-play me-1"></i> <span class="d-none d-sm-inline">Reproducir</span>
+                            </button>
                             <button id="drawScore" class="btn btn-success flex-grow-1">
                                 <i class="fas fa-eye me-1"></i> <span class="d-none d-sm-inline">Ver Partitura</span>
                             </button>
@@ -182,19 +185,14 @@
                             <button id="downloadPdf" class="btn btn-secondary flex-grow-1" disabled>
                                 <i class="fas fa-download me-1"></i> <span class="d-none d-sm-inline">Descargar</span>
                             </button>
-                            <!-- Dentro de la sección de botones en partitura.html, después del botón de descargar -->
-                            <button id="saveScore" class="btn btn-info flex-grow-1 ">
-                                <i class="fas fa-save me-1"></i> <span class="d-none d-sm-inline">Guardar
-                                    Partitura</span>
+                            <button id="saveScore" class="btn btn-info flex-grow-1">
+                                <i class="fas fa-save me-1"></i> <span class="d-none d-sm-inline">Guardar Partitura</span>
                             </button>
                             <button id="viewScores" class="btn btn-warning flex-grow-1">
-                                <i class="fas fa-folder-open me-1"></i> <span class="d-none d-sm-inline">Mis
-                                    Partituras</span>
+                                <i class="fas fa-folder-open me-1"></i> <span class="d-none d-sm-inline">Mis Partituras</span>
                             </button>
                         </div>
-
                     </div>
-
 
                     <div id="score-content" class="w-100 overflow-auto border rounded bg-white p-3"
                         style="min-height: 300px;">
@@ -204,18 +202,14 @@
                                 <p>Agrega notas y haz clic en "Ver Partitura"</p>
                             </div>
                         </div>
-
                     </div>
-
                 </section>
-
             </div>
         </div>
 
         <div id="message" class="alert alert-info mt-4">
             <i class="fas fa-info-circle"></i> Comienza seleccionando las notas para tu partitura
         </div>
-
 
         <div class="modal fade" id="fullscreenModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-fullscreen">
@@ -235,7 +229,6 @@
                 </div>
             </div>
         </div>
-
     </main>
 
 <footer class="bg-dark text-white py-4">
