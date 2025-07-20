@@ -3,9 +3,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const VF = Vex.Flow;
     let notes = [];
     let scoreName = "Mi melodía";
-    let audioContext;
+    let audioContext = null;
     let isPlaying = false;
-    let playTimeout;
+    let isPaused = false;
+    let playTimeout = null;
+    let playbackStartTime = 0;
+    let playbackPosition = 0;
+    let gainNode = null;
+    let oscillatorNodes = [];
 
     // Elementos del DOM
     const nameInput = document.getElementById('name');
@@ -55,6 +60,11 @@ document.addEventListener('DOMContentLoaded', function() {
     init();
 
     function init() {
+        if (!nameInput || !clefSelect || !addNoteBtn) {
+            console.error('Elementos esenciales del DOM no encontrados');
+            return;
+        }
+
         nameInput.addEventListener('change', updateScoreName);
         clefSelect.addEventListener('change', () => updateNoteOptions(clefSelect.value));
         addNoteBtn.addEventListener('click', addNote);
@@ -74,65 +84,81 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function togglePlayback() {
         if (isPlaying) {
-            stopPlayback();
+            if (isPaused) {
+                resumePlayback();
+            } else {
+                pausePlayback();
+            }
         } else {
             startPlayback();
         }
     }
 
-    function stopPlayback() {
+    function pausePlayback() {
+        isPaused = true;
         isPlaying = false;
-        if (audioContext) {
-            audioContext.close();
-            audioContext = null;
-        }
+        
+        // Detener todos los osciladores
+        oscillatorNodes.forEach(osc => {
+            try {
+                osc.stop();
+            } catch(e) { console.error('Error stopping oscillator:', e); }
+        });
+        oscillatorNodes = [];
+        
+        // Calcular posición actual
+        playbackPosition += audioContext.currentTime - playbackStartTime;
+        
+        // Limpiar timeout
         if (playTimeout) {
             clearTimeout(playTimeout);
             playTimeout = null;
         }
+        
+        updatePlayButton();
+    }
+
+    function resumePlayback() {
+        if (!audioContext) {
+            startPlayback();
+            return;
+        }
+        
+        isPaused = false;
+        isPlaying = true;
+        playbackStartTime = audioContext.currentTime;
+        
+        continuePlaybackFromPosition(playbackPosition);
+        
         updatePlayButton();
     }
 
     function startPlayback() {
-        if (notes.length === 0) {
+        if (!notes || notes.length === 0) {
             showMessage('No hay notas para reproducir', 'warning');
             return;
         }
         
+        stopPlayback(); // Limpiar cualquier reproducción anterior
+        
         isPlaying = true;
+        isPaused = false;
+        playbackPosition = 0;
         updatePlayButton();
         
         try {
-            // Crear contexto de audio si no existe
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            // Crear contexto de audio
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) throw new Error('Web Audio API no soportada');
+            audioContext = new AudioContext();
             
-            const tempo = parseInt(tempoInput.value) || 120;
-            const bpmFactor = 60 / tempo; // segundos por negra
+            // Configurar nodo de ganancia con volumen estándar
+            gainNode = audioContext.createGain();
+            gainNode.gain.value = 0.5; // Volumen medio por defecto
+            gainNode.connect(audioContext.destination);
             
-            // Calcular duración en segundos para cada nota
-            let currentTime = 0;
-            
-            notes.forEach((note, index) => {
-                const duration = getNoteDurationInSeconds(note.duration, bpmFactor);
-                
-                if (!note.duration.endsWith('r')) { // Si no es un silencio
-                    playTimeout = setTimeout(() => {
-                        if (!isPlaying) return;
-                        
-                        const frequency = getNoteFrequency(note.key);
-                        playNote(frequency, duration);
-                    }, currentTime * 1000);
-                }
-                
-                currentTime += duration;
-            });
-            
-            // Detener la reproducción al final
-            playTimeout = setTimeout(() => {
-                stopPlayback();
-            }, currentTime * 1000);
+            playbackStartTime = audioContext.currentTime;
+            continuePlaybackFromPosition(0);
             
         } catch (error) {
             console.error('Error al reproducir:', error);
@@ -141,9 +167,130 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function continuePlaybackFromPosition(position) {
+        if (!audioContext || !isPlaying) return;
+        
+        const tempo = parseInt(tempoInput.value) || 120;
+        if (isNaN(tempo) || tempo <= 0) return;
+        
+        const bpmFactor = 60 / tempo;
+        let currentTime = position;
+        let totalDuration = 0;
+        
+        // Calcular duración total para el timeout final
+        notes.forEach(note => {
+            if (!note || !note.duration) return;
+            totalDuration += getNoteDurationInSeconds(note.duration, bpmFactor);
+        });
+        
+        // Programar todas las notas
+        notes.forEach((note, index) => {
+            if (!note || !note.duration) return;
+            
+            const duration = getNoteDurationInSeconds(note.duration, bpmFactor);
+            const startTime = currentTime;
+            const endTime = startTime + duration;
+            
+            if (!note.duration.endsWith('r')) { // Si no es un silencio
+                playTimeout = setTimeout(() => {
+                    if (!isPlaying || !audioContext) return;
+                    
+                    const frequency = getNoteFrequency(note.key);
+                    if (frequency) {
+                        playTone(frequency, duration);
+                    }
+                }, startTime * 1000);
+            }
+            
+            currentTime = endTime;
+        });
+        
+        // Programar fin de reproducción
+        playTimeout = setTimeout(() => {
+            if (isPlaying) {
+                stopPlayback();
+            }
+        }, totalDuration * 1000);
+    }
+
+    function playTone(frequency, duration) {
+        if (!audioContext || !isPlaying || !frequency || !duration || !gainNode) return;
+        
+        try {
+            const oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine'; // Timbre estándar para todas las claves
+            
+            // Configurar envolvente ADSR para sonido más natural
+            const env = audioContext.createGain();
+            env.gain.setValueAtTime(0, audioContext.currentTime);
+            env.gain.linearRampToValueAtTime(0.8, audioContext.currentTime + 0.01); // Ataque rápido
+            env.gain.exponentialRampToValueAtTime(0.3, audioContext.currentTime + duration * 0.8); // Decaimiento
+            env.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration); // Liberación
+            
+            oscillator.frequency.value = frequency;
+            oscillator.connect(env);
+            env.connect(gainNode);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + duration);
+            
+            oscillatorNodes.push(oscillator);
+            
+        } catch (error) {
+            console.error('Error al reproducir tono:', error);
+        }
+    }
+
+    function stopPlayback() {
+        isPlaying = false;
+        isPaused = false;
+        
+        if (playTimeout) {
+            clearTimeout(playTimeout);
+            playTimeout = null;
+        }
+        
+        // Detener todos los osciladores
+        oscillatorNodes.forEach(osc => {
+            try {
+                osc.stop();
+            } catch(e) { console.error('Error stopping oscillator:', e); }
+        });
+        oscillatorNodes = [];
+        
+        if (audioContext) {
+            audioContext.close().catch(e => console.error('Error closing audio context:', e));
+            audioContext = null;
+        }
+        
+        gainNode = null;
+        playbackPosition = 0;
+        updatePlayButton();
+    }
+
+    function updatePlayButton() {
+        if (!playScoreBtn) return;
+        
+        if (isPlaying) {
+            playScoreBtn.innerHTML = '<i class="fas fa-pause me-1"></i> <span class="d-none d-sm-inline">Pausar</span>';
+            playScoreBtn.classList.remove('btn-info', 'btn-danger');
+            playScoreBtn.classList.add('btn-warning');
+        } else if (isPaused) {
+            playScoreBtn.innerHTML = '<i class="fas fa-play me-1"></i> <span class="d-none d-sm-inline">Reanudar</span>';
+            playScoreBtn.classList.remove('btn-warning', 'btn-danger');
+            playScoreBtn.classList.add('btn-info');
+        } else {
+            playScoreBtn.innerHTML = '<i class="fas fa-play me-1"></i> <span class="d-none d-sm-inline">Reproducir</span>';
+            playScoreBtn.classList.remove('btn-warning', 'btn-danger');
+            playScoreBtn.classList.add('btn-info');
+        }
+    }
+
     function getNoteDurationInSeconds(duration, bpmFactor) {
-        // bpmFactor es la duración de una negra en segundos
-        switch(duration.replace('r', '')) {
+        if (!duration) return bpmFactor;
+        
+        const baseDuration = duration.replace('r', '');
+        switch(baseDuration) {
             case 'w': return bpmFactor * 4; // redonda = 4 negras
             case 'h': return bpmFactor * 2; // blanca = 2 negras
             case 'q': return bpmFactor;     // negra = 1 negra
@@ -154,7 +301,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getNoteFrequency(noteValue) {
-        // Mapeo de notas a frecuencias (en Hz)
+        if (!noteValue) return 440; // La4 como valor por defecto
+        
         const noteMap = {
             'c/2': 65.41, 'd/2': 73.42, 'e/2': 82.41, 'f/2': 87.31, 'g/2': 98.00, 'a/2': 110.00, 'b/2': 123.47,
             'c/3': 130.81, 'd/3': 146.83, 'e/3': 164.81, 'f/3': 174.61, 'g/3': 196.00, 'a/3': 220.00, 'b/3': 246.94,
@@ -162,75 +310,39 @@ document.addEventListener('DOMContentLoaded', function() {
             'c/5': 523.25, 'd/5': 587.33, 'e/5': 659.25, 'f/5': 698.46, 'g/5': 783.99, 'a/5': 880.00, 'b/5': 987.77
         };
         
-        return noteMap[noteValue] || 440; // La4 como valor por defecto
-    }
-
-    function playNote(frequency, duration) {
-        if (!audioContext || !isPlaying) return;
-        
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.type = 'sine'; // Puedes cambiar a 'square', 'sawtooth' o 'triangle' para diferentes timbres
-        oscillator.frequency.value = frequency;
-        
-        // Configurar envolvente para que el sonido no sea demasiado abrupto
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + duration);
-    }
-
-    function updatePlayButton() {
-        if (isPlaying) {
-            playScoreBtn.innerHTML = '<i class="fas fa-stop me-1"></i> <span class="d-none d-sm-inline">Detener</span>';
-            playScoreBtn.classList.remove('btn-info');
-            playScoreBtn.classList.add('btn-danger');
-        } else {
-            playScoreBtn.innerHTML = '<i class="fas fa-play me-1"></i> <span class="d-none d-sm-inline">Reproducir</span>';
-            playScoreBtn.classList.remove('btn-danger');
-            playScoreBtn.classList.add('btn-info');
-        }
+        return noteMap[noteValue] || 440;
     }
 
     function loadScoreData(score) {
-        try {
-            // Validar que la partitura tenga los datos necesarios
-            if (!score || !score.clef || !score.notes || !Array.isArray(score.notes)) {
-                throw new Error('Datos de partitura incompletos');
-            }
+        if (!score || !score.clef || !score.notes || !Array.isArray(score.notes)) {
+            throw new Error('Datos de partitura incompletos');
+        }
 
-            // Cargar los valores básicos
-            document.getElementById('name').value = score.name || '';
-            document.getElementById('clef').value = score.clef;
-            document.getElementById('timeSignature').value = score.timeSignature;
-            document.getElementById('keySignature').value = score.keySignature;
-            document.getElementById('tempo').value = score.tempo || 120;
+        try {
+            if (nameInput) nameInput.value = score.name || '';
+            if (clefSelect) clefSelect.value = score.clef;
+            if (timeSignatureSelect) timeSignatureSelect.value = score.timeSignature;
+            if (keySignatureSelect) keySignatureSelect.value = score.keySignature;
+            if (tempoInput) tempoInput.value = score.tempo || 120;
             
-            // Actualizar las opciones de notas según la clave
             updateNoteOptions(score.clef);
             
-            // Cargar las notas
             notes = score.notes.map(note => {
+                if (!note || !note.keys || !note.duration) {
+                    console.warn('Nota inválida encontrada:', note);
+                    return { key: 'c/4', duration: 'q' }; // Valor por defecto
+                }
                 return {
-                    key: note.keys[0], // Tomamos la primera nota (puede ser un silencio)
-                    duration: note.duration
+                    key: note.keys[0] || (clefSelect.value === 'bass' ? 'd/3' : 'b/4'),
+                    duration: note.duration || 'q'
                 };
             });
             
-            // Actualizar la lista de notas
             updateNoteList();
             enableButtons();
             
-            // Mostrar mensaje
-            showMessage(`Partitura "${score.name}" cargada correctamente`, 'success');
+            showMessage(`Partitura "${score.name || 'sin nombre'}" cargada correctamente`, 'success');
             
-            // Renderizar automáticamente después de un pequeño retraso
             setTimeout(() => {
                 drawScoreHandler();
             }, 100);
@@ -242,23 +354,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateNoteOptions(clef) {
+        if (!noteSelect) return;
+        
         noteSelect.innerHTML = '<option value="seleccione" selected>Seleccione una nota</option>';
         const notesForClef = {
             'treble': [
                 { value: 'c/4', name: 'Do4' }, { value: 'd/4', name: 'Re4' }, { value: 'e/4', name: 'Mi4' }, { value: 'f/4', name: 'Fa4' },
                 { value: 'g/4', name: 'Sol4' }, { value: 'a/4', name: 'La4' }, { value: 'b/4', name: 'Si4' },
                 { value: 'c/5', name: 'Do5' }, { value: 'd/5', name: 'Re5' }, { value: 'e/5', name: 'Mi5' }
-            ], 'bass': [
+            ], 
+            'bass': [
                 { value: 'c/2', name: 'Do2' }, { value: 'd/2', name: 'Re2' }, { value: 'e/2', name: 'Mi2' }, { value: 'f/2', name: 'Fa2' },
                 { value: 'g/2', name: 'Sol2' }, { value: 'a/2', name: 'La2' }, { value: 'b/2', name: 'Si2' },
                 { value: 'c/3', name: 'Do3' }, { value: 'd/3', name: 'Re3' }, { value: 'e/3', name: 'Mi3' }
-            ], 'alto': [
+            ], 
+            'alto': [
                 { value: 'f/3', name: 'Fa3' }, { value: 'g/3', name: 'Sol3' }, { value: 'a/3', name: 'La3' }, { value: 'b/3', name: 'Si3' },
                 { value: 'c/4', name: 'Do4 (central)' }, { value: 'd/4', name: 'Re4' }, { value: 'e/4', name: 'Mi4' },
                 { value: 'f/4', name: 'Fa4' }, { value: 'g/4', name: 'Sol4' }, { value: 'a/4', name: 'La4' }
             ]
         };
-        notesForClef[clef].forEach(note => {
+        
+        const clefNotes = notesForClef[clef] || notesForClef.treble;
+        clefNotes.forEach(note => {
             const option = document.createElement('option');
             option.value = note.value;
             option.textContent = note.name;
@@ -267,52 +385,84 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateScoreName() {
-        scoreName = nameInput.value.trim() || "Mi melodía";
+        if (nameInput) {
+            scoreName = nameInput.value.trim() || "Mi melodía";
+        }
     }
 
     function showMessage(text, type = 'info') {
-        const icons = { 'info': 'info-circle', 'success': 'check-circle', 'warning': 'exclamation-circle', 'danger': 'exclamation-triangle' };
-        messageDiv.innerHTML = `<i class="fas fa-${icons[type]} me-2"></i>${text}`;
+        if (!messageDiv) return;
+        
+        const icons = { 
+            'info': 'info-circle', 
+            'success': 'check-circle', 
+            'warning': 'exclamation-circle', 
+            'danger': 'exclamation-triangle' 
+        };
+        
+        messageDiv.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'} me-2"></i>${text}`;
         messageDiv.className = `alert alert-${type} d-flex align-items-center`;
+        
         if (type !== 'info') {
             setTimeout(() => showMessage('Listo para agregar más elementos a tu partitura.', 'info'), 3000);
         }
     }
 
     function addNote() {
+        if (!noteSelect || !durationSelect) return;
+        
         const noteValue = noteSelect.value;
         const durationValue = durationSelect.value;
+        
         if (!durationValue) {
             showMessage("Debes seleccionar una duración", "danger");
             return;
         }
+        
         if (!durationValue.endsWith('r') && noteValue === "seleccione") {
             showMessage("Para notas musicales debes seleccionar una nota", "danger");
             return;
         }
-        notes.push({ key: noteValue, duration: durationValue });
+        
+        notes.push({ 
+            key: noteValue || 'c/4', 
+            duration: durationValue || 'q' 
+        });
+        
         updateNoteList();
         enableButtons();
-        noteSelect.value = 'seleccione';
-        durationSelect.value = '';
+        
+        if (noteSelect) noteSelect.value = 'seleccione';
+        if (durationSelect) durationSelect.value = '';
+        
         showMessage(`Elemento agregado: ${getNoteDescription(notes[notes.length-1])}`, "success");
     }
 
     function getNoteDescription(note) {
-        if (note.duration.endsWith('r')) return getDurationSymbol(note.duration);
-        const noteName = getNoteName(note.key);
-        const durationName = getDurationSymbol(note.duration);
+        if (!note) return 'Nota inválida';
+        
+        if (note.duration.endsWith('r')) {
+            return getDurationSymbol(note.duration) || 'Silencio';
+        }
+        
+        const noteName = getNoteName(note.key) || 'Nota';
+        const durationName = getDurationSymbol(note.duration) || 'Duración';
         return `${noteName} (${durationName})`;
     }
 
     function getNoteName(noteValue) {
-        const allOptions = document.querySelectorAll('#note option');
+        if (!noteValue || !noteSelect) return noteValue;
+        
+        const allOptions = noteSelect.querySelectorAll('option');
         const option = Array.from(allOptions).find(opt => opt.value === noteValue);
         return option ? option.textContent : noteValue;
     }
 
     function getDurationSymbol(duration) {
-        const option = Array.from(durationSelect.options).find(opt => opt.value === duration);
+        if (!duration || !durationSelect) return duration;
+        
+        const options = durationSelect.querySelectorAll('option');
+        const option = Array.from(options).find(opt => opt.value === duration);
         return option ? option.textContent : duration;
     }
 
@@ -340,25 +490,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateNoteList() {
+        if (!noteList || !noteCount) return;
+        
         noteCount.textContent = notes.length;
+        
         if (notes.length === 0) {
             noteList.innerHTML = "No hay elementos agregados aún";
             noteList.className = 'p-3 bg-light border rounded empty';
             return;
         }
+        
         let html = '<div class="list-group">';
         notes.forEach((note, index) => {
+            if (!note) return;
+            
             html += `<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                 <span>${index + 1}. ${getNoteDescription(note)}</span>
-                <button class="btn btn-sm btn-outline-danger remove-note" data-index="${index}"><i class="fas fa-times"></i></button>
+                <button class="btn btn-sm btn-outline-danger remove-note" data-index="${index}">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>`;
         });
         html += '</div>';
+        
         noteList.innerHTML = html;
         noteList.className = 'p-3 bg-light border rounded';
+        
         document.querySelectorAll('.remove-note').forEach(btn => {
             btn.addEventListener('click', function() {
                 const index = parseInt(this.getAttribute('data-index'));
+                if (isNaN(index) || index < 0 || index >= notes.length) return;
+                
                 const removedNote = notes.splice(index, 1)[0];
                 updateNoteList();
                 showMessage(`Elemento eliminado: ${getNoteDescription(removedNote)}`, "success");
@@ -368,47 +530,73 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function enableButtons() {
-        drawScoreBtn.disabled = false;
-        previewScoreBtn.disabled = false;
-        downloadPdfBtn.disabled = false;
-        playScoreBtn.disabled = false;
+        if (drawScoreBtn) drawScoreBtn.disabled = false;
+        if (previewScoreBtn) previewScoreBtn.disabled = false;
+        if (downloadPdfBtn) downloadPdfBtn.disabled = false;
+        if (playScoreBtn) playScoreBtn.disabled = false;
     }
 
     function disableButtons() {
-        drawScoreBtn.disabled = true;
-        previewScoreBtn.disabled = true;
-        downloadPdfBtn.disabled = true;
-        playScoreBtn.disabled = true;
+        if (drawScoreBtn) drawScoreBtn.disabled = true;
+        if (previewScoreBtn) previewScoreBtn.disabled = true;
+        if (downloadPdfBtn) downloadPdfBtn.disabled = true;
+        if (playScoreBtn) playScoreBtn.disabled = true;
     }
 
     function clearScorePreview() {
-        scoreContent.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100 text-muted"><div class="text-center">
-            <i class="fas fa-music fa-3x mb-3"></i><p>Agrega notas y haz clic en "Ver Partitura"</p>
-        </div></div>`;
+        if (!scoreContent) return;
+        
+        scoreContent.innerHTML = `
+            <div class="d-flex justify-content-center align-items-center h-100 text-muted">
+                <div class="text-center">
+                    <i class="fas fa-music fa-3x mb-3"></i>
+                    <p>Agrega notas y haz clic en "Ver Partitura"</p>
+                </div>
+            </div>`;
     }
 
     function drawScoreHandler() {
-        if (notes.length === 0) {
+        if (!notes || notes.length === 0) {
             showMessage('Debes agregar al menos una nota o silencio', 'danger');
             return;
         }
+        
         if (drawScore(scoreContent)) {
             showMessage('Partitura generada correctamente', 'success');
         }
     }
 
     function createVexFlowNote(noteData) {
-        const clef = clefSelect.value;
+        if (!noteData || !VF || !VF.StaveNote) {
+            console.error('Vex.Flow no está disponible o nota inválida');
+            return null;
+        }
+        
+        const clef = clefSelect ? clefSelect.value : 'treble';
         let keys;
+        
         if (noteData.duration.endsWith('r')) {
             keys = [clef === 'bass' ? 'd/3' : 'b/4'];
         } else {
-            keys = [noteData.key];
+            keys = [noteData.key || 'c/4'];
         }
-        return new VF.StaveNote({ keys: keys, duration: noteData.duration, clef: clef, auto_stem: true });
+        
+        try {
+            return new VF.StaveNote({ 
+                keys: keys, 
+                duration: noteData.duration || 'q', 
+                clef: clef, 
+                auto_stem: true 
+            });
+        } catch (error) {
+            console.error('Error al crear nota VexFlow:', error);
+            return null;
+        }
     }
 
     function getDurationFromTicks(ticks) {
+        if (!VF || !VF.RESOLUTION) return 'qr';
+        
         const quarterTicks = VF.RESOLUTION / 4;
         
         if (ticks === quarterTicks) return 'qr';
@@ -424,24 +612,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function drawScore(container, isFullscreen = false) {
+        if (!container || !VF || !VF.Renderer) {
+            showMessage("Error: No se puede renderizar la partitura", "danger");
+            return false;
+        }
+
         try {
             container.innerHTML = '';
-            const clef = clefSelect.value;
-            const timeSignature = timeSignatureSelect.value;
-            const key = keySignatureSelect.value;
-            const tempo = tempoInput.value || 120;
+            
+            const clef = clefSelect ? clefSelect.value : 'treble';
+            const timeSignature = timeSignatureSelect ? timeSignatureSelect.value : '4/4';
+            const key = keySignatureSelect ? keySignatureSelect.value : 'C';
+            const tempo = tempoInput ? parseInt(tempoInput.value) || 120 : 120;
 
             const [beatsPerMeasure, beatValue] = timeSignature.split('/').map(Number);
+            if (isNaN(beatsPerMeasure) || isNaN(beatValue)) {
+                throw new Error('Compás inválido');
+            }
+            
             const ticksPerMeasure = (4 / beatValue) * beatsPerMeasure * VF.RESOLUTION / 4;
-
-            const vexNotes = notes.map(createVexFlowNote);
+            const vexNotes = notes.map(createVexFlowNote).filter(note => note !== null);
 
             const measures = [];
             let currentMeasure = [];
             let currentTicks = 0;
             
             vexNotes.forEach(note => {
-                const noteTicks = note.getTicks().value();
+                if (!note) return;
+                
+                const noteTicks = note.getTicks ? note.getTicks().value() : VF.RESOLUTION / 4;
                 
                 if (currentTicks + noteTicks > ticksPerMeasure) {
                     const remainingTicks = ticksPerMeasure - currentTicks;
@@ -449,7 +648,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (remainingTicks > 0) {
                         try {
                             const restDuration = getDurationFromTicks(remainingTicks);
-                            currentMeasure.push(new VF.GhostNote({ duration: restDuration }));
+                            if (VF.GhostNote) {
+                                currentMeasure.push(new VF.GhostNote({ duration: restDuration }));
+                            }
                             currentTicks += remainingTicks;
                         } catch (e) {
                             console.warn("No se pudo crear silencio para", remainingTicks, "ticks");
@@ -471,7 +672,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (remainingTicks > 0) {
                     try {
                         const restDuration = getDurationFromTicks(remainingTicks);
-                        currentMeasure.push(new VF.GhostNote({ duration: restDuration }));
+                        if (VF.GhostNote) {
+                            currentMeasure.push(new VF.GhostNote({ duration: restDuration }));
+                        }
                     } catch (e) {
                         console.warn("No se pudo crear silencio final para", remainingTicks, "ticks");
                     }
@@ -481,7 +684,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
-            const containerWidth = container.clientWidth;
+            const containerWidth = container.clientWidth || 800;
             renderer.resize(containerWidth, 500);
             const context = renderer.getContext();
 
@@ -502,11 +705,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentX = 0;
                     if (i > 0) currentY += 120;
                     stave = new VF.Stave(currentX, currentY, headerWidth);
-                    stave.addClef(clef);
+                    
+                    if (stave.addClef) stave.addClef(clef);
                     if (i === 0) {
-                        stave.addKeySignature(key);
-                        stave.addTimeSignature(timeSignature);
-                        stave.setTempo({ duration: 'q', bpm: tempo }, -10);
+                        if (stave.addKeySignature) stave.addKeySignature(key);
+                        if (stave.addTimeSignature) stave.addTimeSignature(timeSignature);
+                        if (stave.setTempo) stave.setTempo({ duration: 'q', bpm: tempo }, -10);
                     }
                     stave.setContext(context).draw();
                     currentX += headerWidth;
@@ -516,8 +720,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 stave.setContext(context).draw();
 
                 const measureNotes = measures[i];
-                VF.Beam.generateBeams(measureNotes.filter(n => !(n instanceof VF.GhostNote)));
-                VF.Formatter.FormatAndDraw(context, stave, measureNotes);
+                if (VF.Beam && VF.Beam.generateBeams) {
+                    VF.Beam.generateBeams(measureNotes.filter(n => !(n instanceof VF.GhostNote)));
+                }
+                
+                if (VF.Formatter && VF.Formatter.FormatAndDraw) {
+                    VF.Formatter.FormatAndDraw(context, stave, measureNotes);
+                }
 
                 currentX += noteStaveWidth;
                 stavesDrawnOnLine++;
@@ -530,50 +739,65 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             renderer.resize(containerWidth, totalHeight + 40);
+            return true;
 
         } catch (error) {
             console.error('Error al generar partitura:', error);
             showMessage("Error al generar la partitura: " + error.message, "danger");
             return false;
         }
-        return true;
     }
 
     function showFullscreenPreview() {
-        if (notes.length === 0) {
+        if (!notes || notes.length === 0) {
             showMessage('Debes agregar al menos una nota o silencio', 'danger');
             return;
         }
 
-        fullscreenScore.innerHTML = '';
-        const scoreClone = scoreContent.cloneNode(true);
-        fullscreenScore.appendChild(scoreClone);
-
-        const modalDialog = document.querySelector('#fullscreenModal .modal-dialog');
-        modalDialog.classList.add('modal-xl');
-        modalDialog.style.maxWidth = '95vw';
-
-        fullscreenModal.show();
-
-        document.getElementById('fullscreenModal').addEventListener('shown.bs.modal', function() {
-            const svg = fullscreenScore.querySelector('svg');
-            if (svg) {
-                svg.style.width = '100%';
-                svg.style.height = 'auto';
-                svg.style.maxHeight = 'calc(100vh - 200px)';
+        if (!fullscreenScore || !fullscreenModal) return;
+        
+        // Primero dibujar la partitura en el modal
+        if (drawScore(fullscreenScore, true)) {
+            // Configurar el modal para mejor visualización
+            const modalDialog = document.querySelector('#fullscreenModal .modal-dialog');
+            if (modalDialog) {
+                modalDialog.classList.add('modal-xl');
+                modalDialog.style.maxWidth = '95vw';
+                modalDialog.style.maxHeight = '90vh';
             }
-        });
+
+            // Mostrar el modal
+            fullscreenModal.show();
+
+            // Ajustar el SVG después de que el modal se muestre
+            const modalElement = document.getElementById('fullscreenModal');
+            if (modalElement) {
+                modalElement.addEventListener('shown.bs.modal', function() {
+                    const svg = fullscreenScore.querySelector('svg');
+                    if (svg) {
+                        svg.style.width = '100%';
+                        svg.style.height = 'auto';
+                        svg.style.maxHeight = 'calc(100vh - 200px)';
+                    }
+                });
+            }
+        }
     }
 
     async function downloadScore(container) {
-        if (!container.hasChildNodes() || container.querySelector('svg') === null) {
+        if (!container || !container.hasChildNodes() || container.querySelector('svg') === null) {
             showMessage('Primero debes generar la partitura', 'danger');
             return;
         }
+        
+        if (!window.html2canvas || !window.jspdf) {
+            showMessage('Bibliotecas requeridas no cargadas', 'danger');
+            return;
+        }
+        
         try {
             showMessage('Generando PDF...', 'info');
             
-            // Crear contenedor temporal para tamaño carta
             const tempContainer = document.createElement('div');
             tempContainer.style.position = 'absolute';
             tempContainer.style.left = '-9999px';
@@ -583,14 +807,12 @@ document.addEventListener('DOMContentLoaded', function() {
             tempContainer.style.backgroundColor = 'white';
             tempContainer.style.boxSizing = 'border-box';
             
-            // Clonar el contenido y escalarlo para que quepa
             const clone = container.cloneNode(true);
             clone.style.transform = 'scale(0.9)';
             clone.style.transformOrigin = 'top left';
             tempContainer.appendChild(clone);
             document.body.appendChild(tempContainer);
             
-            // Configuración de html2canvas para tamaño carta
             const canvas = await html2canvas(tempContainer, {
                 scale: 2,
                 backgroundColor: '#ffffff',
@@ -609,14 +831,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 format: 'letter'
             });
 
-            // Añadir imagen al PDF ajustada a tamaño carta
             const imgData = canvas.toDataURL('image/png');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
             
             pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
             
-            // Texto centrado en el PDF
             pdf.setFontSize(12);
             pdf.setTextColor(100);
             pdf.text(`${scoreName}`, pdfWidth / 2, 0.5, { align: 'center' });
@@ -625,7 +845,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const fileName = `${(scoreName || 'partitura').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
             pdf.save(fileName);
             
-            // Mostrar animación de descarga mejorada
             showDownloadNotification(scoreName);
             
         } catch (error) {
@@ -658,19 +877,17 @@ document.addEventListener('DOMContentLoaded', function() {
             <i class="fas fa-check-circle" style="font-size:24px;margin-right:10px;"></i>
             <div>
                 <div style="font-weight:bold;">¡Descarga completada!</div>
-                <div style="font-size:0.9em;opacity:0.9;">"${scoreName}" se ha descargado correctamente</div>
+                <div style="font-size:0.9em;opacity:0.9;">"${scoreName || 'Partitura'}" se ha descargado correctamente</div>
             </div>
         `;
         
         document.body.appendChild(notification);
         
-        // Animación de entrada
         setTimeout(() => {
             notification.style.opacity = '1';
             notification.style.transform = 'translateY(0)';
         }, 10);
         
-        // Eliminar después de 3 segundos con animación
         setTimeout(() => {
             notification.style.opacity = '0';
             setTimeout(() => {
@@ -686,20 +903,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            const scoreName = document.getElementById('name').value || 'Partitura sin nombre';
-            const clef = document.getElementById('clef').value;
-            const timeSignature = document.getElementById('timeSignature').value;
-            const keySignature = document.getElementById('keySignature').value;
-            const tempo = document.getElementById('tempo').value || 120;
+            const scoreName = nameInput ? nameInput.value || 'Partitura sin nombre' : 'Partitura sin nombre';
+            const clef = clefSelect ? clefSelect.value : 'treble';
+            const timeSignature = timeSignatureSelect ? timeSignatureSelect.value : '4/4';
+            const keySignature = keySignatureSelect ? keySignatureSelect.value : 'C';
+            const tempo = tempoInput ? tempoInput.value || 120 : 120;
             
             const serializedNotes = notes.map(note => {
                 const keys = note.duration.endsWith('r') ? 
                     [clef === 'bass' ? 'd/3' : 'b/4'] : 
-                    [note.key];
+                    [note.key || 'c/4'];
                 
                 return {
                     keys: keys,
-                    duration: note.duration,
+                    duration: note.duration || 'q',
                     stem_direction: clef === 'bass' ? -1 : 1,
                     clef: clef
                 };
@@ -740,8 +957,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Event listeners adicionales con comprobación de existencia
     document.getElementById('saveScore')?.addEventListener('click', function() {
-        if (notes.length === 0) {
+        if (!notes || notes.length === 0) {
             showMessage('No hay notas para guardar', 'warning');
             return;
         }
