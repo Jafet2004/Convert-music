@@ -354,8 +354,7 @@ body.dark-mode .scale-marker::after {
 .dark-mode .lyrics-container,
 .dark-mode .artist-results, 
 .dark-mode .song-results,
-.dark-mode .artist-tracks,
-.dark-mode .results-container {
+.dark-mode .artist-tracks {
     background-color: var(--card-bg);
     border-color: var(--border-color);
     box-shadow: var(--shadow);

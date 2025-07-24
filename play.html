@@ -1,46 +1,153 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConvertMusic - Reproductor</title>
+    <title>MusicPlayer - Reproductor Musical</title>
+    
+    <!-- Metadatos -->
+    <meta name="description" content="Reproductor musical avanzado con gestión de playlists y favoritos">
+    <meta name="theme-color" content="#4a6fa5">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    
+    <!-- Hojas de estilo -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/CSS/style_repro.css">
+    <link rel="stylesheet" href="css/style_repro.css">
+    
+    <!-- Estilos adicionales -->
+    <style>
+        /* Estilos para el reproductor optimizado */
+        #currentPlaylistName {
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: none;
+        }
+        
+        #bufferingIndicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: #4a6fa5;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4a6fa5;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .notification i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .repeat-btn.active {
+            color: #4a6fa5;
+        }
+        
+        .is-favorite {
+            color: #ff4081;
+        }
+        
+        /* Mejoras de accesibilidad */
+        [role="button"], button, input[type="range"] {
+            cursor: pointer;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 5px;
+            background: #ddd;
+            border-radius: 5px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #4a6fa5;
+            border-radius: 50%;
+        }
+
+        /* Ocultar reproductor inicialmente */
+        .now-playing {
+            display: none;
+        }
+    </style>
 </head>
+
 <body>
-    <header class="py-3">
+    <!-- Barra de navegación -->
+    <header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
-            <div class="logo fs-3 fw-bold">Convert<span>Music</span></div>
+            <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span
+                    style="color: #4fc3f7;">Music</span></div>
 
             <div class="d-flex align-items-center">
                 <nav>
                     <ul class="nav">
-                        <li class="nav-item"><a class="nav-link text-white" href="#"><i class="fas fa-home me-1"></i> Inicio</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="index.html" aria-label="Inicio"><i
+                                    class="fas fa-home me-1"></i> Inicio</a></li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
                                 <i class="fas fa-tools me-1"></i> Herramientas
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-music me-1"></i> Creación de Partituras</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-search me-1"></i> Buscar Letras</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-sliders-h me-1"></i> Afinador Musical</a></li>
+                                <li><a class="dropdown-item" href="convert.html"><i
+                                            class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
+                                <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i>
+                                        Creación de Partituras</a></li>
+                                <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i>
+                                        Buscar Letras</a></li>
+                                <li><a class="dropdown-item" href="afinador.html"><i class="fas fa-sliders-h me-1"></i>
+                                        Afinador Musical</a></li>
                             </ul>
                         </li>
                     </ul>
                 </nav>
 
                 <div class="d-flex">
-                    <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
+                    <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3" aria-label="Cambiar modo oscuro">
                         <i class="fas fa-moon" id="darkModeIcon"></i>
                         <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
                     </button>
-                    
-                    <a href="#" class="btn btn-outline-light ms-2 ms-md-3" title="Perfil">
+
+                    <a href="perfil.html" class="btn btn-outline-light ms-2 ms-md-3" title="Perfil" aria-label="Perfil de usuario">
                         <i class="fas fa-user"></i>
                     </a>
                 </div>
@@ -48,115 +155,189 @@
         </div>
     </header>
 
-    <div class="main-container">
-        <div class="sidebar">
-            <div class="sidebar-item active">
-                <i class="fas fa-home"></i>
-                <span>Inicio</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-search"></i>
-                <span>Buscar</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-book"></i>
-                <span>Tu Biblioteca</span>
-            </div>
-            <div class="sidebar-item mt-4">
-                <i class="fas fa-plus-square"></i>
-                <span>Crear playlist</span>
-            </div>
-            <div class="sidebar-item" id="favorites-item">
-                <i class="fas fa-heart"></i>
-                <span>Tus favoritas</span>
-            </div>
-        </div>
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <div class="container">
+            <div class="search-hero">
+                <h1>Reproductor Musical</h1>
+                <p class="subtitle">Busca y reproduce tus canciones favoritas</p>
 
-        <div class="content">
-            <div class="search-container">
                 <div class="search-box">
-                    <input type="text" class="search-input" id="searchInput" placeholder="Buscar canciones o artistas...">
-                    <button class="search-btn" id="searchBtn"><i class="fas fa-search"></i></button>
-                </div>
-            </div>
-
-            <div class="results-container" id="resultsContainer">
-                <div class="loading" id="loadingIndicator" style="display: none;">
-                    <div class="loading-spinner">
-                        <i class="fas fa-compact-disc fa-spin"></i>
+                    <div class="input-group">
+                        <label for="search" class="visually-hidden">Buscar canciones</label>
+                        <div class="input-with-clear">
+                            <input type="text" id="search" placeholder="Ej: New Wine - Aceite fresco o URL de YouTube"
+                                title="Buscar canciones" aria-label="Buscar canciones">
+                            <button class="clear-input" data-target="search" aria-label="Limpiar búsqueda">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
-                    <p>Buscando canciones...</p>
+                    <button id="searchBtn" class="search-button" aria-label="Buscar">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
                 </div>
-                <!-- Los resultados se mostrarán aquí -->
+            </div>
+
+            <!-- Reproductor -->
+            <div class="player-container">
+                <div class="now-playing">
+                    <div class="album-art">
+                        <img id="albumArt" src="https://via.placeholder.com/300" alt="Portada del álbum" aria-hidden="true">
+                    </div>
+                    <div class="song-info">
+                        <h2 id="currentSongTitle" aria-live="polite">No hay canción seleccionada</h2>
+                        <h3 id="currentSongArtist" aria-live="polite">Busca una canción para reproducir</h3>
+                        <div id="currentPlaylistName" aria-live="polite"></div>
+                    </div>
+                    <div class="player-controls">
+                        <button id="prevBtn" class="control-btn" title="Canción anterior" aria-label="Canción anterior">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button id="playBtn" class="control-btn play-btn" title="Reproducir/Pausar" aria-label="Reproducir/Pausar">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button id="nextBtn" class="control-btn" title="Siguiente canción" aria-label="Siguiente canción">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                        <button id="repeatBtn" class="control-btn" title="Repetir playlist" aria-label="Repetir playlist">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                    <div class="progress-container">
+                        <span id="currentTime" aria-live="polite">0:00</span>
+                        <input type="range" id="progressBar" min="0" max="100" value="0" 
+                               title="Barra de progreso" aria-label="Barra de progreso de la canción">
+                        <span id="duration">0:00</span>
+                    </div>
+                    <div class="volume-container">
+                        <i class="fas fa-volume-down" aria-hidden="true"></i>
+                        <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.7"
+                            title="Control de volumen" aria-label="Control de volumen">
+                        <i class="fas fa-volume-up" aria-hidden="true"></i>
+                    </div>
+                    <div class="player-actions">
+                        <button id="favoriteBtn" class="action-btn" aria-label="Agregar a favoritos">
+                            <i class="far fa-heart"></i> Favorito
+                        </button>
+                        <button id="addToPlaylistBtn" class="action-btn" aria-label="Agregar a playlist">
+                            <i class="fas fa-plus"></i> Playlist
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resultados de búsqueda y playlists -->
+                <div id="results" class="results-container" role="region" aria-live="polite">
+                    <div class="welcome-message">
+                        <div class="welcome-content">
+                            <i class="fas fa-search"></i>
+                            <h3>Busca tu música favorita</h3>
+                            <p>Comienza escribiendo el nombre de una canción o artista, o pega una URL de YouTube</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal para agregar a playlist -->
+    <div class="modal fade" id="playlistModal" tabindex="-1" aria-labelledby="playlistModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="playlistModalLabel">Agregar a playlist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="playlistSelect" class="form-label">Seleccionar playlist</label>
+                        <select class="form-select" id="playlistSelect" aria-label="Seleccionar playlist">
+                            <option value="">Selecciona una playlist</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <button id="createPlaylistBtn" class="btn btn-sm btn-outline-primary" aria-label="Crear nueva playlist">
+                            <i class="fas fa-plus"></i> Nueva playlist
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Cancelar">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="addToPlaylistConfirm" aria-label="Agregar canción">Agregar</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="player-container" id="playerContainer" style="display: none;">
-        <div class="player-song-info">
-            <div class="player-song-image" id="playerSongImage">
-                <i class="fas fa-music"></i>
-            </div>
-            <div class="player-song-details">
-                <h4 id="playerSongTitle">No hay canción seleccionada</h4>
-                <p id="playerSongArtist">Selecciona una canción para comenzar</p>
-            </div>
-            <button class="player-btn" id="showLyricsBtn">
-                <i class="fas fa-align-left"></i>
-            </button>
-        </div>
-
-        <div class="player-controls">
-            <div class="player-buttons">
-                <button class="player-btn" id="shuffleBtn">
-                    <i class="fas fa-random"></i>
-                </button>
-                <button class="player-btn" id="prevBtn">
-                    <i class="fas fa-step-backward"></i>
-                </button>
-                <button class="player-btn play-pause" id="playPauseBtn">
-                    <i class="fas fa-play"></i>
-                </button>
-                <button class="player-btn" id="nextBtn">
-                    <i class="fas fa-step-forward"></i>
-                </button>
-                <button class="player-btn" id="repeatBtn">
-                    <i class="fas fa-redo"></i>
-                </button>
-            </div>
-            <div class="progress-container">
-                <div class="progress-time" id="currentTime">0:00</div>
-                <div class="progress-bar" id="progressBar">
-                    <div class="progress" id="progress"></div>
+    <!-- Modal para nueva playlist -->
+    <div class="modal fade" id="newPlaylistModal" tabindex="-1" aria-labelledby="newPlaylistModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newPlaylistModalLabel">Crear nueva playlist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="progress-time" id="duration">0:00</div>
-            </div>
-        </div>
-
-        <div class="player-extra">
-            <div class="volume-container">
-                <i class="fas fa-volume-up volume-icon" id="volumeIcon"></i>
-                <div class="volume-bar" id="volumeBar">
-                    <div class="volume-progress" id="volumeProgress"></div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="newPlaylistName" class="form-label">Nombre de la playlist</label>
+                        <input type="text" class="form-control" id="newPlaylistName" required aria-required="true"
+                            aria-label="Nombre de la nueva playlist">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Cancelar">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="createPlaylistConfirm" aria-label="Crear playlist">Crear</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="lyrics-container" id="lyricsContainer">
-        <button class="close-lyrics" id="closeLyricsBtn">
-            <i class="fas fa-times"></i>
-        </button>
-        <div class="lyrics-content" id="lyricsContent">
-            Cargando letra...
-        </div>
-    </div>
-
-    <div class="notification" id="notification"></div>
-
-    <audio id="audioPlayer"></audio>
-
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/JS/repro.js"></script>
+    <script src="js/dark_mode.js"></script>
+    
+    <!-- Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registrado con éxito:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('Error al registrar ServiceWorker:', error);
+                    });
+            });
+        }
+    </script>
+    
+    <!-- Reproductor de YouTube (oculto) -->
+    <div id="ytPlayerIframe" style="width:1px;height:1px;position:fixed;left:-9999px;top:0;"></div>
+    
+    <!-- Script del reproductor musical -->
+    <script src="js/repro.js"></script>
 </body>
+
+<!-- Pie de página -->
+
+<footer class="bg-dark text-white py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col text-center">
+                <div class="footer-logo fs-4 fw-bold">Convert<span class="text-primary">Music</span></div>
+                <p class="mt-2">Tu plataforma integral de herramientas musicales.</p>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a href="index.html" class="nav-link text-white">Inicio</a></li>
+                    <li class="nav-item"><a href="about.html" class="nav-link text-white">Acerca de</a></li>
+                    <li class="nav-item"><a href="mailto:jafetalexander58@gmail.com" class="nav-link text-white"><i
+                                class="fas fa-envelope me-2"></i>Contacto</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="text-center pt-3 border-top">
+            &copy; 2025 ConvertMusic. Todos los derechos reservados.
+        </div>
+    </div>
+</footer>
+
 </html>

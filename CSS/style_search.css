@@ -24,10 +24,7 @@ body {
     padding: 0;
 }
 
-/* Header */
-header {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+
 
 /* Contenido principal */
 .main-content {

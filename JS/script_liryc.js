@@ -6,26 +6,79 @@ const searchHistory = JSON.parse(localStorage.getItem('lyricsSearchHistory')) ||
 let favoriteSongs = JSON.parse(localStorage.getItem('favoriteSongs')) || [];
 let player = null;
 let currentSong = null;
+let isPlayerInitialized = false;
+
+// Configuración de API
+const API_CONFIG = {
+    lyrics: {
+        baseUrl: 'https://api.lyrics.ovh/v1',
+        suggestUrl: 'https://api.lyrics.ovh/suggest',
+        proxyUrl: 'https://api.allorigins.win/get?url='
+    },
+    youtube: {
+        apiKey: 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac',
+        videoUrl: 'https://www.googleapis.com/youtube/v3/videos',
+        searchUrl: 'https://www.googleapis.com/youtube/v3/search'
+    }
+};
+
+// Patrones para limpieza de títulos
+const TITLE_CLEAN_PATTERNS = [
+    /\(official\s*(video|music\s*video|audio)\)/i,
+    /\[official\s*(video|music\s*video|audio)\]/i,
+    /official\s*(video|music\s*video|audio)/i,
+    /\(lyrics\)/i,
+    /\[lyrics\]/i,
+    /lyrics/i,
+    /\([0-9]{4}\)/,
+    /ft\.? .*$/i,
+    /feat\.? .*$/i,
+    /with .*$/i,
+    /vs\.? .*$/i
+];
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Elementos del DOM
-    const searchBtn = document.getElementById('searchBtn');
-    const artistInput = document.getElementById('artist');
-    const titleInput = document.getElementById('title');
-    const resultsDiv = document.getElementById('results');
+    // Cache de elementos del DOM
+    const DOM = {
+        searchBtn: document.getElementById('searchBtn'),
+        artistInput: document.getElementById('artist'),
+        titleInput: document.getElementById('title'),
+        resultsDiv: document.getElementById('results'),
+        clearButtons: document.querySelectorAll('.clear-input')
+    };
 
     // Mostrar historial al cargar
     showSearchHistory();
 
-    // Event listeners para búsqueda
-    searchBtn.addEventListener('click', searchLyrics);
-    artistInput.addEventListener('keypress', (e) => e.key === 'Enter' && searchLyrics());
-    titleInput.addEventListener('keypress', (e) => e.key === 'Enter' && searchLyrics());
+    // Event listeners
+    DOM.searchBtn.addEventListener('click', searchLyrics);
+    DOM.artistInput.addEventListener('keypress', (e) => e.key === 'Enter' && searchLyrics());
+    DOM.titleInput.addEventListener('keypress', (e) => e.key === 'Enter' && searchLyrics());
 
-    // Función principal de búsqueda (modificada)
-    function searchLyrics() {
-        const artist = artistInput.value.trim();
-        let title = titleInput.value.trim();
+    // Configurar botones de limpiar
+    DOM.clearButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            document.getElementById(targetId).value = '';
+            this.style.opacity = '0';
+            document.getElementById(targetId).focus();
+        });
+    });
+
+    // Mostrar/ocultar botones de limpiar según contenido
+    ['artist', 'title'].forEach(id => {
+        const input = document.getElementById(id);
+        const clearBtn = document.querySelector(`.clear-input[data-target="${id}"]`);
+
+        input.addEventListener('input', function () {
+            clearBtn.style.opacity = this.value ? '1' : '0';
+        });
+    });
+
+    // Función principal de búsqueda
+    async function searchLyrics() {
+        const artist = DOM.artistInput.value.trim();
+        let title = DOM.titleInput.value.trim();
 
         if (!artist && !title) {
             showError('Por favor ingresa al menos un artista o una canción');
@@ -38,174 +91,139 @@ document.addEventListener('DOMContentLoaded', function () {
         // Verificar si es una URL de YouTube
         const youtubeUrlMatch = title.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
         if (youtubeUrlMatch && youtubeUrlMatch[1]) {
-            const videoId = youtubeUrlMatch[1];
-            getVideoInfoAndSearchLyrics(videoId);
+            await getVideoInfoAndSearchLyrics(youtubeUrlMatch[1]);
             return;
         }
 
         currentSong = { artist, title };
         addToHistory(artist, title);
 
-        if (artist && title) {
-            searchLyricsApi(artist, title);
-        } else if (artist) {
-            searchArtistTracks(artist, true);
-        } else {
-            searchSongsByTitle(title);
+        try {
+            if (artist && title) {
+                await searchLyricsApi(artist, title);
+            } else if (artist) {
+                await searchArtistTracks(artist, true);
+            } else {
+                await searchSongsByTitle(title);
+            }
+        } catch (error) {
+            console.error('Error en la búsqueda:', error);
+            showError('Ocurrió un error durante la búsqueda');
         }
     }
 
-    // Nueva función para obtener información del video y buscar letra
-    function getVideoInfoAndSearchLyrics(videoId) {
-        const apiKey = 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac';
-        const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
+    // Obtener información del video y buscar letra
+    async function getVideoInfoAndSearchLyrics(videoId) {
+        try {
+            const url = `${API_CONFIG.youtube.videoUrl}?part=snippet&id=${videoId}&key=${API_CONFIG.youtube.apiKey}`;
+            const response = await fetch(url);
+            
+            if (!response.ok) throw new Error('No se pudo obtener información del video');
+            
+            const data = await response.json();
+            if (!data.items || data.items.length === 0) {
+                throw new Error('Video no encontrado');
+            }
 
-        fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) throw new Error('No se pudo obtener información del video');
-                return response.json();
-            })
-            .then(data => {
-                if (!data.items || data.items.length === 0) {
-                    throw new Error('Video no encontrado');
-                }
+            const videoInfo = data.items[0].snippet;
+            let title = cleanVideoTitle(videoInfo.title);
+            const artist = videoInfo.channelTitle;
 
-                const videoInfo = data.items[0].snippet;
-                let title = videoInfo.title;
-                const artist = videoInfo.channelTitle;
+            currentSong = { artist, title };
+            addToHistory(artist, title);
 
-                // Limpiar el título (remover cosas como "Official Video" etc.)
-                title = cleanVideoTitle(title);
-
-                currentSong = { artist, title };
-                addToHistory(artist, title);
-
-                // Buscar la letra con la información obtenida
-                searchLyricsApi(artist, title, videoId);
-            })
-            .catch(error => {
-                console.error('Error al obtener información del video:', error);
-                showError('No se pudo obtener información del video de YouTube');
-            });
+            await searchLyricsApi(artist, title, videoId);
+        } catch (error) {
+            console.error('Error al obtener información del video:', error);
+            showError('No se pudo obtener información del video de YouTube');
+        }
     }
 
-    // Función para limpiar el título del video
+    // Limpiar el título del video
     function cleanVideoTitle(title) {
-        // Eliminar partes comunes que no son parte del título real de la canción
-        const patternsToRemove = [
-            /\(official\s*(video|music\s*video|audio)\)/i,
-            /\[official\s*(video|music\s*video|audio)\]/i,
-            /official\s*(video|music\s*video|audio)/i,
-            /\(lyrics\)/i,
-            /\[lyrics\]/i,
-            /lyrics/i,
-            /\([0-9]{4}\)/, // Años entre paréntesis
-            /ft\.? .*$/i, // Características de otros artistas
-            /feat\.? .*$/i,
-            /with .*$/i,
-            /vs\.? .*$/i
-        ];
-
-        patternsToRemove.forEach(pattern => {
-            title = title.replace(pattern, '');
+        let cleanedTitle = title;
+        TITLE_CLEAN_PATTERNS.forEach(pattern => {
+            cleanedTitle = cleanedTitle.replace(pattern, '');
         });
 
         // Limpiar caracteres extraños y espacios múltiples
-        title = title.replace(/\s+/g, ' ').trim();
-        title = title.replace(/[^\w\s()\-&]/g, ''); // Mantener solo caracteres alfanuméricos básicos
+        cleanedTitle = cleanedTitle.replace(/\s+/g, ' ').trim();
+        cleanedTitle = cleanedTitle.replace(/[^\w\s()\-&]/g, '');
 
-        return title;
+        return cleanedTitle;
     }
 
-    // Función para buscar letras (modificada para aceptar videoId)
-    function searchLyricsApi(artist, title, videoId = null) {
-        const proxyUrl = 'https://api.allorigins.win/get?url=';
-        const apiUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
-
-        fetch(proxyUrl + encodeURIComponent(apiUrl))
-            .then(response => {
-                if (!response.ok) throw new Error('No se pudo obtener la letra');
-                return response.json();
-            })
-            .then(data => {
-                try {
-                    const content = JSON.parse(data.contents);
-                    if (content.error) {
-                        showVideoAndSuggestions(artist, title, videoId);
-                    } else {
-                        // Si no tenemos videoId, buscamos uno
-                        if (!videoId) {
-                            searchYoutubeVideo(artist, title, content.lyrics);
-                        } else {
-                            // Si ya tenemos videoId, mostramos directamente
-                            displayResults(artist, title, content.lyrics, videoId, true);
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error parsing lyrics:', e);
-                    showVideoAndSuggestions(artist, title, videoId);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showVideoAndSuggestions(artist, title, videoId);
-            });
-    }
-
-    // Función para mostrar video y sugerencias (modificada para aceptar videoId)
-    function showVideoAndSuggestions(artist, title, videoId = null) {
-        if (videoId) {
-            // Si ya tenemos videoId, mostramos directamente
-            displayVideoOnly(artist, title, videoId, () => {
-                if (artist) {
-                    searchArtistTracks(artist, false);
+    // Buscar letras en la API
+    async function searchLyricsApi(artist, title, videoId = null) {
+        try {
+            const url = `${API_CONFIG.lyrics.baseUrl}/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
+            const response = await fetch(API_CONFIG.lyrics.proxyUrl + encodeURIComponent(url));
+            
+            if (!response.ok) throw new Error('No se pudo obtener la letra');
+            
+            const data = await response.json();
+            const content = JSON.parse(data.contents);
+            
+            if (content.error) {
+                await showVideoAndSuggestions(artist, title, videoId);
+            } else {
+                if (!videoId) {
+                    await searchYoutubeVideo(artist, title, content.lyrics);
                 } else {
-                    searchSongsByTitle(title);
+                    displayResults(artist, title, content.lyrics, videoId, true);
                 }
-            });
-        } else {
-            // Si no tenemos videoId, lo buscamos
-            searchYoutubeVideo(artist, title, null, () => {
-                if (artist) {
-                    searchArtistTracks(artist, false);
-                } else {
-                    searchSongsByTitle(title);
-                }
-            });
+            }
+        } catch (error) {
+            console.error('Error al buscar letra:', error);
+            await showVideoAndSuggestions(artist, title, videoId);
         }
     }
 
-    // Función para buscar video en YouTube
-    function searchYoutubeVideo(artist, title, lyrics, callback) {
-        const apiKey = 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac';
-        const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(artist + ' ' + title)}&key=${apiKey}&maxResults=1`;
+    // Mostrar video y sugerencias
+    async function showVideoAndSuggestions(artist, title, videoId = null) {
+        if (videoId) {
+            displayVideoOnly(artist, title, videoId);
+        } else {
+            await searchYoutubeVideo(artist, title);
+        }
 
-        fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) throw new Error('No se pudo obtener el video de YouTube');
-                return response.json();
-            })
-            .then(data => {
-                const videoId = data.items?.[0]?.id?.videoId || '';
-                if (lyrics) {
-                    displayResults(artist, title, lyrics, videoId);
-                } else {
-                    displayVideoOnly(artist, title, videoId);
-                    if (callback) callback();
-                }
-            })
-            .catch(error => {
-                console.error('Error al buscar el video:', error);
-                if (lyrics) {
-                    displayResults(artist, title, lyrics);
-                } else {
-                    displayVideoOnly(artist, title);
-                    if (callback) callback();
-                }
-            });
+        if (artist) {
+            await searchArtistTracks(artist, false);
+        } else {
+            await searchSongsByTitle(title);
+        }
     }
 
-    // Función para mostrar solo el video (modificada para aceptar callback)
+    // Buscar video en YouTube
+    async function searchYoutubeVideo(artist, title, lyrics = null, callback = null) {
+        try {
+            const query = artist ? `${artist} ${title}` : title;
+            const url = `${API_CONFIG.youtube.searchUrl}?part=snippet&q=${encodeURIComponent(query)}&key=${API_CONFIG.youtube.apiKey}&maxResults=1`;
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('No se pudo obtener el video de YouTube');
+            
+            const data = await response.json();
+            const videoId = data.items?.[0]?.id?.videoId || '';
+
+            if (lyrics) {
+                displayResults(artist, title, lyrics, videoId);
+            } else {
+                displayVideoOnly(artist, title, videoId);
+                if (callback) callback();
+            }
+        } catch (error) {
+            console.error('Error al buscar el video:', error);
+            if (lyrics) {
+                displayResults(artist, title, lyrics);
+            } else {
+                displayVideoOnly(artist, title);
+                if (callback) callback();
+            }
+        }
+    }
+
+    // Mostrar solo el video
     function displayVideoOnly(artist, title, videoId, callback = null) {
         const videoEmbed = videoId ? `
             <div class="video-section">
@@ -219,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         ` : '<p class="error-message">No se encontró el video de esta canción</p>';
 
-        resultsDiv.innerHTML = `
+        DOM.resultsDiv.innerHTML = `
             <div class="lyrics-container">
                 <div class="song-info">
                     <div>
@@ -248,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (callback) callback();
     }
 
-    // Función para mostrar resultados con toda la letra visible (modificada para mostrar origen YouTube)
+    // Mostrar resultados completos
     function displayResults(artist, title, lyrics, videoId, isFromYoutubeUrl = false) {
         const videoEmbed = videoId ? `
             <div class="video-section">
@@ -270,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         ` : '';
 
-        resultsDiv.innerHTML = `
+        DOM.resultsDiv.innerHTML = `
             <div class="lyrics-container">
                 ${youtubeSourceInfo}
                 <div class="song-info">
@@ -310,8 +328,8 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
 
-        // Configurar botón de copiar letra
-        document.getElementById('copyLyricsBtn')?.addEventListener('click', function () {
+        // Configurar botones interactivos
+        document.getElementById('copyLyricsBtn')?.addEventListener('click', () => {
             navigator.clipboard.writeText(lyrics).then(() => {
                 showNotification('Letra copiada al portapapeles');
             }).catch(err => {
@@ -320,7 +338,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // Configurar botones de compartir
         setupShareButtons(artist, title);
 
         document.getElementById('downloadBtn')?.addEventListener('click', () => {
@@ -339,7 +356,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const currentUrl = encodeURIComponent(window.location.href.split('?')[0] + `?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`);
         const shareText = encodeURIComponent(`Mira la letra de "${title}" de ${artist}`);
 
-        // Copiar enlace
         document.getElementById('copyLinkBtn')?.addEventListener('click', function (e) {
             e.preventDefault();
             navigator.clipboard.writeText(window.location.href.split('?')[0] + `?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`).then(() => {
@@ -347,19 +363,16 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // Compartir en WhatsApp
         document.getElementById('shareWhatsAppBtn')?.addEventListener('click', function (e) {
             e.preventDefault();
             window.open(`https://wa.me/?text=${shareText}%20${currentUrl}`, '_blank');
         });
 
-        // Compartir en Facebook
         document.getElementById('shareFacebookBtn')?.addEventListener('click', function (e) {
             e.preventDefault();
             window.open(`https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`, '_blank');
         });
 
-        // Compartir en Twitter
         document.getElementById('shareTwitterBtn')?.addEventListener('click', function (e) {
             e.preventDefault();
             window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${currentUrl}`, '_blank');
@@ -455,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showSearchHistory() {
         if (searchHistory.length === 0 && favoriteSongs.length === 0) {
-            resultsDiv.innerHTML = `
+            DOM.resultsDiv.innerHTML = `
                 <div class="welcome-message">
                     <div class="welcome-content">
                         <i class="fas fa-search"></i>
@@ -509,8 +522,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const historyContainer = document.createElement('div');
         historyContainer.innerHTML = historyHTML;
-        resultsDiv.innerHTML = '';
-        resultsDiv.appendChild(historyContainer);
+        DOM.resultsDiv.innerHTML = '';
+        DOM.resultsDiv.appendChild(historyContainer);
 
         // Agregar evento para limpiar historial
         document.getElementById('clearHistory')?.addEventListener('click', clearHistory);
@@ -523,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showNotification('Historial limpiado');
     }
 
-    // Función para mostrar notificación
+    // Mostrar notificación
     function showNotification(message) {
         const notification = document.createElement('div');
         notification.className = 'notification';
@@ -565,6 +578,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Crear el reproductor de YouTube
     function createPlayer(videoId) {
+        if (player) {
+            player.destroy();
+        }
+
         player = new YT.Player('player', {
             height: '360',
             width: '640',
@@ -580,6 +597,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 'onStateChange': onPlayerStateChange
             }
         });
+
+        isPlayerInitialized = true;
     }
 
     // Cuando el reproductor está listo
@@ -623,39 +642,34 @@ document.addEventListener('DOMContentLoaded', function () {
         if (player) {
             player.destroy();
             player = null;
+            isPlayerInitialized = false;
         }
     }
 
-    function searchArtistTracks(artist, isPrimarySearch = false) {
-        const proxyUrl = 'https://api.allorigins.win/get?url=';
-        const apiUrl = `https://api.lyrics.ovh/suggest/${encodeURIComponent(artist)}`;
-
-        fetch(proxyUrl + encodeURIComponent(apiUrl))
-            .then(response => {
-                if (!response.ok) throw new Error('No se pudieron obtener las canciones del artista');
-                return response.json();
-            })
-            .then(data => {
-                try {
-                    const content = JSON.parse(data.contents);
-                    if (content.data && content.data.length > 0) {
-                        if (isPrimarySearch) {
-                            displayArtistResults(artist, content.data);
-                        } else {
-                            displaySuggestions(artist, content.data);
-                        }
-                    } else if (isPrimarySearch) {
-                        showError(`No se encontraron canciones para ${artist}`);
-                    }
-                } catch (e) {
-                    console.error('Error al procesar canciones del artista:', e);
-                    if (isPrimarySearch) showError('Error al procesar los resultados');
+    // Buscar canciones de un artista
+    async function searchArtistTracks(artist, isPrimarySearch = false) {
+        try {
+            const url = `${API_CONFIG.lyrics.suggestUrl}/${encodeURIComponent(artist)}`;
+            const response = await fetch(API_CONFIG.lyrics.proxyUrl + encodeURIComponent(url));
+            
+            if (!response.ok) throw new Error('No se pudieron obtener las canciones del artista');
+            
+            const data = await response.json();
+            const content = JSON.parse(data.contents);
+            
+            if (content.data && content.data.length > 0) {
+                if (isPrimarySearch) {
+                    displayArtistResults(artist, content.data);
+                } else {
+                    displaySuggestions(artist, content.data);
                 }
-            })
-            .catch(error => {
-                console.error('Error al buscar canciones del artista:', error);
-                if (isPrimarySearch) showError('Error al buscar canciones del artista');
-            });
+            } else if (isPrimarySearch) {
+                showError(`No se encontraron canciones para ${artist}`);
+            }
+        } catch (error) {
+            console.error('Error al buscar canciones del artista:', error);
+            if (isPrimarySearch) showError('Error al buscar canciones del artista');
+        }
     }
 
     function displayArtistResults(artist, tracks) {
@@ -682,10 +696,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         tracksHTML += `</ul></div>`;
-        resultsDiv.innerHTML = tracksHTML;
+        DOM.resultsDiv.innerHTML = tracksHTML;
 
         document.getElementById('backToSearch')?.addEventListener('click', () => {
-            artistInput.focus();
+            DOM.artistInput.focus();
         });
     }
 
@@ -711,35 +725,29 @@ document.addEventListener('DOMContentLoaded', function () {
         // Agregar las sugerencias al final del contenido existente
         const suggestionsContainer = document.createElement('div');
         suggestionsContainer.innerHTML = suggestionsHTML;
-        resultsDiv.appendChild(suggestionsContainer);
+        DOM.resultsDiv.appendChild(suggestionsContainer);
     }
 
-    function searchSongsByTitle(title) {
-        const proxyUrl = 'https://api.allorigins.win/get?url=';
-        const apiUrl = `https://api.lyrics.ovh/suggest/${encodeURIComponent(title)}`;
-
-        fetch(proxyUrl + encodeURIComponent(apiUrl))
-            .then(response => {
-                if (!response.ok) throw new Error('No se pudieron encontrar canciones con ese título');
-                return response.json();
-            })
-            .then(data => {
-                try {
-                    const content = JSON.parse(data.contents);
-                    if (content.data && content.data.length > 0) {
-                        displaySongResults(title, content.data);
-                    } else {
-                        showError(`No se encontraron canciones con el título "${title}"`);
-                    }
-                } catch (e) {
-                    console.error('Error al procesar canciones:', e);
-                    showError('Error al procesar los resultados');
-                }
-            })
-            .catch(error => {
-                console.error('Error al buscar canciones:', error);
-                showError('Error al buscar canciones');
-            });
+    // Buscar canciones por título
+    async function searchSongsByTitle(title) {
+        try {
+            const url = `${API_CONFIG.lyrics.suggestUrl}/${encodeURIComponent(title)}`;
+            const response = await fetch(API_CONFIG.lyrics.proxyUrl + encodeURIComponent(url));
+            
+            if (!response.ok) throw new Error('No se pudieron encontrar canciones con ese título');
+            
+            const data = await response.json();
+            const content = JSON.parse(data.contents);
+            
+            if (content.data && content.data.length > 0) {
+                displaySongResults(title, content.data);
+            } else {
+                showError(`No se encontraron canciones con el título "${title}"`);
+            }
+        } catch (error) {
+            console.error('Error al buscar canciones:', error);
+            showError('Error al buscar canciones');
+        }
     }
 
     function displaySongResults(title, songs) {
@@ -769,13 +777,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         songsHTML += `</div></div>`;
-        resultsDiv.innerHTML = songsHTML;
+        DOM.resultsDiv.innerHTML = songsHTML;
 
         document.getElementById('backToSearch')?.addEventListener('click', () => {
-            titleInput.focus();
+            DOM.titleInput.focus();
         });
     }
 
+    // Descargar letras como PDF
     function downloadLyricsAsPDF(artist, title, lyrics) {
         try {
             const doc = new jsPDF();
@@ -872,8 +881,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Mostrar estado de carga
     function showLoading() {
-        resultsDiv.innerHTML = `
+        DOM.resultsDiv.innerHTML = `
             <div class="loading">
                 <div class="loading-spinner">
                     <i class="fas fa-compact-disc fa-spin"></i>
@@ -883,6 +893,7 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
     }
 
+    // Mostrar mensaje de error
     function showError(message) {
         let errorMessage = message;
 
@@ -890,7 +901,7 @@ document.addEventListener('DOMContentLoaded', function () {
             errorMessage = 'Servidor no disponible. Por favor, verifica tu conexión a internet o intenta nuevamente más tarde.';
         }
 
-        resultsDiv.innerHTML = `
+        DOM.resultsDiv.innerHTML = `
             <div class="error-message">
                 <div class="error-icon">
                     <i class="fas fa-exclamation-triangle"></i>
@@ -902,31 +913,12 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
     }
-
-    // Función global para buscar desde la lista de canciones
-    window.searchTrack = function (artist, title) {
-        artistInput.value = artist;
-        titleInput.value = title;
-        searchLyrics();
-    };
-
-    // Función para limpiar inputs
-    document.querySelectorAll('.clear-input').forEach(button => {
-        button.addEventListener('click', function () {
-            const targetId = this.getAttribute('data-target');
-            document.getElementById(targetId).value = '';
-            this.style.opacity = '0';
-            document.getElementById(targetId).focus();
-        });
-    });
-
-    // Mostrar/ocultar botones de limpiar según contenido
-    ['artist', 'title'].forEach(id => {
-        const input = document.getElementById(id);
-        const clearBtn = document.querySelector(`.clear-input[data-target="${id}"]`);
-
-        input.addEventListener('input', function () {
-            clearBtn.style.opacity = this.value ? '1' : '0';
-        });
-    });
 });
+
+// Función global para buscar desde la lista de canciones
+window.searchTrack = function (artist, title) {
+    document.getElementById('artist').value = artist;
+    document.getElementById('title').value = title;
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    document.querySelector('#searchBtn').click();
+};
