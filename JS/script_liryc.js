@@ -37,7 +37,7 @@ const TITLE_CLEAN_PATTERNS = [
     /vs\.? .*$/i
 ];
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     // Cache de elementos del DOM
     const DOM = {
         searchBtn: document.getElementById('searchBtn'),
@@ -52,16 +52,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Event listeners
     DOM.searchBtn.addEventListener('click', searchLyrics);
-    DOM.artistInput.addEventListener('keypress', (e) => e.key === 'Enter' && searchLyrics());
-    DOM.titleInput.addEventListener('keypress', (e) => e.key === 'Enter' && searchLyrics());
+    DOM.artistInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') searchLyrics();
+    });
+    DOM.titleInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') searchLyrics();
+    });
 
     // Configurar botones de limpiar
     DOM.clearButtons.forEach(button => {
-        button.addEventListener('click', function () {
+        button.addEventListener('click', function() {
             const targetId = this.getAttribute('data-target');
-            document.getElementById(targetId).value = '';
-            this.style.opacity = '0';
-            document.getElementById(targetId).focus();
+            const input = document.getElementById(targetId);
+            if (input) {
+                input.value = '';
+                this.style.opacity = '0';
+                input.focus();
+            }
         });
     });
 
@@ -69,16 +76,18 @@ document.addEventListener('DOMContentLoaded', function () {
     ['artist', 'title'].forEach(id => {
         const input = document.getElementById(id);
         const clearBtn = document.querySelector(`.clear-input[data-target="${id}"]`);
-
-        input.addEventListener('input', function () {
-            clearBtn.style.opacity = this.value ? '1' : '0';
-        });
+        
+        if (input && clearBtn) {
+            input.addEventListener('input', function() {
+                clearBtn.style.opacity = this.value ? '1' : '0';
+            });
+        }
     });
 
     // Función principal de búsqueda
     async function searchLyrics() {
         const artist = DOM.artistInput.value.trim();
-        let title = DOM.titleInput.value.trim();
+        const title = DOM.titleInput.value.trim();
 
         if (!artist && !title) {
             showError('Por favor ingresa al menos un artista o una canción');
@@ -115,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Obtener información del video y buscar letra
     async function getVideoInfoAndSearchLyrics(videoId) {
         try {
-            const url = `${API_CONFIG.youtube.videoUrl}?part=snippet&id=${videoId}&key=${API_CONFIG.youtube.apiKey}`;
+            const url = `${API_CONFIG.youtube.videoUrl}?part=snippet,contentDetails&id=${videoId}&key=${API_CONFIG.youtube.apiKey}`;
             const response = await fetch(url);
             
             if (!response.ok) throw new Error('No se pudo obtener información del video');
@@ -126,13 +135,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const videoInfo = data.items[0].snippet;
+            const contentDetails = data.items[0].contentDetails;
             let title = cleanVideoTitle(videoInfo.title);
             const artist = videoInfo.channelTitle;
+            const videoQuality = contentDetails.definition === 'hd' ? 'HD' : 'SD';
 
-            currentSong = { artist, title };
+            currentSong = { artist, title, videoId, videoQuality };
             addToHistory(artist, title);
 
-            await searchLyricsApi(artist, title, videoId);
+            await searchLyricsApi(artist, title, videoId, videoQuality);
         } catch (error) {
             console.error('Error al obtener información del video:', error);
             showError('No se pudo obtener información del video de YouTube');
@@ -154,48 +165,53 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Buscar letras en la API
-    async function searchLyricsApi(artist, title, videoId = null) {
+    async function searchLyricsApi(artist, title, videoId = null, videoQuality = null) {
         try {
             const url = `${API_CONFIG.lyrics.baseUrl}/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
-            const response = await fetch(API_CONFIG.lyrics.proxyUrl + encodeURIComponent(url));
+            const proxyUrl = `${API_CONFIG.lyrics.proxyUrl}${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
             
             if (!response.ok) throw new Error('No se pudo obtener la letra');
             
             const data = await response.json();
-            const content = JSON.parse(data.contents);
+            let content;
+            
+            try {
+                content = JSON.parse(data.contents);
+            } catch (e) {
+                content = data.contents ? JSON.parse(data.contents) : { error: "Invalid response" };
+            }
             
             if (content.error) {
-                await showVideoAndSuggestions(artist, title, videoId);
+                await showVideoAndSuggestions(artist, title, videoId, videoQuality);
             } else {
                 if (!videoId) {
                     await searchYoutubeVideo(artist, title, content.lyrics);
                 } else {
-                    displayResults(artist, title, content.lyrics, videoId, true);
+                    displayResults(artist, title, content.lyrics, videoId, true, videoQuality);
                 }
             }
         } catch (error) {
             console.error('Error al buscar letra:', error);
-            await showVideoAndSuggestions(artist, title, videoId);
+            await showVideoAndSuggestions(artist, title, videoId, videoQuality);
         }
     }
 
     // Mostrar video y sugerencias
-    async function showVideoAndSuggestions(artist, title, videoId = null) {
+    async function showVideoAndSuggestions(artist, title, videoId = null, videoQuality = null) {
         if (videoId) {
-            displayVideoOnly(artist, title, videoId);
+            displayVideoOnly(artist, title, videoId, videoQuality);
         } else {
             await searchYoutubeVideo(artist, title);
         }
 
         if (artist) {
             await searchArtistTracks(artist, false);
-        } else {
-            await searchSongsByTitle(title);
         }
     }
 
     // Buscar video en YouTube
-    async function searchYoutubeVideo(artist, title, lyrics = null, callback = null) {
+    async function searchYoutubeVideo(artist, title, lyrics = null) {
         try {
             const query = artist ? `${artist} ${title}` : title;
             const url = `${API_CONFIG.youtube.searchUrl}?part=snippet&q=${encodeURIComponent(query)}&key=${API_CONFIG.youtube.apiKey}&maxResults=1`;
@@ -205,12 +221,12 @@ document.addEventListener('DOMContentLoaded', function () {
             
             const data = await response.json();
             const videoId = data.items?.[0]?.id?.videoId || '';
+            const videoQuality = 'HD'; // Asumimos HD para búsquedas regulares
 
             if (lyrics) {
-                displayResults(artist, title, lyrics, videoId);
+                displayResults(artist, title, lyrics, videoId, false, videoQuality);
             } else {
-                displayVideoOnly(artist, title, videoId);
-                if (callback) callback();
+                displayVideoOnly(artist, title, videoId, videoQuality);
             }
         } catch (error) {
             console.error('Error al buscar el video:', error);
@@ -218,22 +234,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 displayResults(artist, title, lyrics);
             } else {
                 displayVideoOnly(artist, title);
-                if (callback) callback();
             }
         }
     }
 
     // Mostrar solo el video
-    function displayVideoOnly(artist, title, videoId, callback = null) {
+    function displayVideoOnly(artist, title, videoId, videoQuality = null) {
         const videoEmbed = videoId ? `
             <div class="video-section">
                 <div class="video-container">
                     <div id="player"></div>
                 </div>
-                <button id="playBtn" class="play-btn">
-                    <i class="fas fa-play"></i> Reproducir
-                    <span class="pulse-animation"></span>
-                </button>
+                <div class="video-info">
+                    <button id="playBtn" class="play-btn">
+                        <i class="fas fa-play"></i> Reproducir
+                        <span class="pulse-animation"></span>
+                    </button>
+                    ${videoQuality ? `<span class="video-quality-badge">${videoQuality}</span>` : ''}
+                </div>
             </div>
         ` : '<p class="error-message">No se encontró el video de esta canción</p>';
 
@@ -241,8 +259,8 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="lyrics-container">
                 <div class="song-info">
                     <div>
-                        <h2 class="song-title">${title}</h2>
-                        <h3 class="artist-name">${artist}</h3>
+                        <h2 class="song-title">${escapeHtml(title)}</h2>
+                        <h3 class="artist-name">${escapeHtml(artist)}</h3>
                     </div>
                     <div class="action-buttons">
                         <button id="saveFavoriteBtn" class="favorite-btn">
@@ -262,21 +280,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         setupFavoriteButton(artist, title);
-
-        if (callback) callback();
     }
 
     // Mostrar resultados completos
-    function displayResults(artist, title, lyrics, videoId, isFromYoutubeUrl = false) {
+    function displayResults(artist, title, lyrics, videoId, isFromYoutubeUrl = false, videoQuality = null) {
         const videoEmbed = videoId ? `
             <div class="video-section">
                 <div class="video-container">
                     <div id="player"></div>
                 </div>
-                <button id="playBtn" class="play-btn">
-                    <i class="fas fa-play"></i> Reproducir
-                    <span class="pulse-animation"></span>
-                </button>
+                <div class="video-info">
+                    <button id="playBtn" class="play-btn">
+                        <i class="fas fa-play"></i> Reproducir
+                        <span class="pulse-animation"></span>
+                    </button>
+                    ${videoQuality ? `<span class="video-quality-badge">${videoQuality}</span>` : ''}
+                </div>
             </div>
         ` : '';
 
@@ -293,8 +312,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 ${youtubeSourceInfo}
                 <div class="song-info">
                     <div>
-                        <h2 class="song-title">${title}</h2>
-                        <h3 class="artist-name">${artist}</h3>
+                        <h2 class="song-title">${escapeHtml(title)}</h2>
+                        <h3 class="artist-name">${escapeHtml(artist)}</h3>
                     </div>
                     <div class="action-buttons">
                         <button id="saveFavoriteBtn" class="favorite-btn">
@@ -329,20 +348,26 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
 
         // Configurar botones interactivos
-        document.getElementById('copyLyricsBtn')?.addEventListener('click', () => {
-            navigator.clipboard.writeText(lyrics).then(() => {
-                showNotification('Letra copiada al portapapeles');
-            }).catch(err => {
-                console.error('Error al copiar: ', err);
-                showNotification('Error al copiar la letra');
+        const copyBtn = document.getElementById('copyLyricsBtn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(lyrics).then(() => {
+                    showNotification('Letra copiada al portapapeles');
+                }).catch(err => {
+                    console.error('Error al copiar: ', err);
+                    showNotification('Error al copiar la letra');
+                });
             });
-        });
+        }
 
         setupShareButtons(artist, title);
 
-        document.getElementById('downloadBtn')?.addEventListener('click', () => {
-            downloadLyricsAsPDF(artist, title, lyrics);
-        });
+        const downloadBtn = document.getElementById('downloadBtn');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', function() {
+                downloadLyricsAsPDF(artist, title, lyrics);
+            });
+        }
 
         if (videoId) {
             initializePlayer(videoId);
@@ -351,36 +376,56 @@ document.addEventListener('DOMContentLoaded', function () {
         setupFavoriteButton(artist, title);
     }
 
+    // Escapar HTML para prevenir XSS
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     // Configurar botones de compartir
     function setupShareButtons(artist, title) {
         const currentUrl = encodeURIComponent(window.location.href.split('?')[0] + `?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`);
         const shareText = encodeURIComponent(`Mira la letra de "${title}" de ${artist}`);
 
-        document.getElementById('copyLinkBtn')?.addEventListener('click', function (e) {
-            e.preventDefault();
-            navigator.clipboard.writeText(window.location.href.split('?')[0] + `?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`).then(() => {
-                showNotification('Enlace copiado al portapapeles');
+        const copyLinkBtn = document.getElementById('copyLinkBtn');
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                navigator.clipboard.writeText(window.location.href.split('?')[0] + `?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`).then(() => {
+                    showNotification('Enlace copiado al portapapeles');
+                });
             });
-        });
+        }
 
-        document.getElementById('shareWhatsAppBtn')?.addEventListener('click', function (e) {
-            e.preventDefault();
-            window.open(`https://wa.me/?text=${shareText}%20${currentUrl}`, '_blank');
-        });
+        const whatsappBtn = document.getElementById('shareWhatsAppBtn');
+        if (whatsappBtn) {
+            whatsappBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.open(`https://wa.me/?text=${shareText}%20${currentUrl}`, '_blank');
+            });
+        }
 
-        document.getElementById('shareFacebookBtn')?.addEventListener('click', function (e) {
-            e.preventDefault();
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`, '_blank');
-        });
+        const facebookBtn = document.getElementById('shareFacebookBtn');
+        if (facebookBtn) {
+            facebookBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`, '_blank');
+            });
+        }
 
-        document.getElementById('shareTwitterBtn')?.addEventListener('click', function (e) {
-            e.preventDefault();
-            window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${currentUrl}`, '_blank');
-        });
+        const twitterBtn = document.getElementById('shareTwitterBtn');
+        if (twitterBtn) {
+            twitterBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${currentUrl}`, '_blank');
+            });
+        }
     }
 
     // Formatear letras
     function formatLyrics(lyrics) {
+        if (!lyrics) return '<p class="error-message">No se encontró la letra para esta canción.</p>';
         return lyrics.replace(/\n/g, '<br>')
             .replace(/\[(.*?)\]/g, '<span class="lyrics-section">$&</span>');
     }
@@ -390,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const favoriteBtn = document.getElementById('saveFavoriteBtn');
         if (!favoriteBtn) return;
 
-        favoriteBtn.addEventListener('click', function (e) {
+        favoriteBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
 
@@ -489,10 +534,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                     <ul class="history-list">
                         ${searchHistory.map(item => `
-                            <li onclick="searchTrack('${item.artist.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}')">
+                            <li onclick="searchTrack('${escapeHtml(item.artist).replace(/'/g, "\\'")}', '${escapeHtml(item.title).replace(/'/g, "\\'")}')">
                                 <span class="history-item">
-                                    <span class="history-title">${item.title}</span>
-                                    <span class="history-artist">${item.artist}</span>
+                                    <span class="history-title">${escapeHtml(item.title)}</span>
+                                    <span class="history-artist">${escapeHtml(item.artist)}</span>
                                 </span>
                                 <i class="fas fa-chevron-right"></i>
                             </li>
@@ -505,11 +550,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${favoriteSongs.length > 0 ? `
                         <ul class="favorites-list">
                             ${favoriteSongs.map(item => `
-                                <li onclick="searchTrack('${item.artist.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}')">
+                                <li onclick="searchTrack('${escapeHtml(item.artist).replace(/'/g, "\\'")}', '${escapeHtml(item.title).replace(/'/g, "\\'")}')">
                                     <span class="favorite-item">
                                         <i class="fas fa-heart"></i>
-                                        <span class="favorite-title">${item.title}</span>
-                                        <span class="favorite-artist">${item.artist}</span>
+                                        <span class="favorite-title">${escapeHtml(item.title)}</span>
+                                        <span class="favorite-artist">${escapeHtml(item.artist)}</span>
                                     </span>
                                     <i class="fas fa-chevron-right"></i>
                                 </li>
@@ -526,7 +571,10 @@ document.addEventListener('DOMContentLoaded', function () {
         DOM.resultsDiv.appendChild(historyContainer);
 
         // Agregar evento para limpiar historial
-        document.getElementById('clearHistory')?.addEventListener('click', clearHistory);
+        const clearHistoryBtn = document.getElementById('clearHistory');
+        if (clearHistoryBtn) {
+            clearHistoryBtn.addEventListener('click', clearHistory);
+        }
     }
 
     function clearHistory() {
@@ -543,7 +591,7 @@ document.addEventListener('DOMContentLoaded', function () {
         notification.innerHTML = `
             <div class="notification-content">
                 <i class="fas fa-check-circle"></i>
-                <span>${message}</span>
+                <span>${escapeHtml(message)}</span>
             </div>
         `;
 
@@ -568,7 +616,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-            window.onYouTubeIframeAPIReady = function () {
+            window.onYouTubeIframeAPIReady = function() {
                 createPlayer(videoId);
             };
         } else {
@@ -605,7 +653,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function onPlayerReady(event) {
         const playBtn = document.getElementById('playBtn');
         if (playBtn) {
-            playBtn.addEventListener('click', function () {
+            playBtn.addEventListener('click', function() {
                 togglePlayPause(event);
             });
         }
@@ -650,12 +698,19 @@ document.addEventListener('DOMContentLoaded', function () {
     async function searchArtistTracks(artist, isPrimarySearch = false) {
         try {
             const url = `${API_CONFIG.lyrics.suggestUrl}/${encodeURIComponent(artist)}`;
-            const response = await fetch(API_CONFIG.lyrics.proxyUrl + encodeURIComponent(url));
+            const proxyUrl = `${API_CONFIG.lyrics.proxyUrl}${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
             
             if (!response.ok) throw new Error('No se pudieron obtener las canciones del artista');
             
             const data = await response.json();
-            const content = JSON.parse(data.contents);
+            let content;
+            
+            try {
+                content = JSON.parse(data.contents);
+            } catch (e) {
+                content = data.contents ? JSON.parse(data.contents) : { data: [] };
+            }
             
             if (content.data && content.data.length > 0) {
                 if (isPrimarySearch) {
@@ -677,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let tracksHTML = `
             <div class="artist-results">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Canciones de ${artist}</h2>
+                    <h2>Canciones de ${escapeHtml(artist)}</h2>
                     <button id="backToSearch" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> Volver
                     </button>
@@ -688,9 +743,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         limitedTracks.forEach(track => {
             tracksHTML += `
-                <li onclick="searchTrack('${track.artist.name.replace(/'/g, "\\'")}', '${track.title.replace(/'/g, "\\'")}')">
-                    <i class="fas fa-play-circle"></i> ${track.title}
-                    <span class="badge bg-secondary">${track.artist.name}</span>
+                <li onclick="searchTrack('${escapeHtml(track.artist.name).replace(/'/g, "\\'")}', '${escapeHtml(track.title).replace(/'/g, "\\'")}')">
+                    <i class="fas fa-play-circle"></i> ${escapeHtml(track.title)}
+                    <span class="badge bg-secondary">${escapeHtml(track.artist.name)}</span>
                 </li>
             `;
         });
@@ -698,24 +753,27 @@ document.addEventListener('DOMContentLoaded', function () {
         tracksHTML += `</ul></div>`;
         DOM.resultsDiv.innerHTML = tracksHTML;
 
-        document.getElementById('backToSearch')?.addEventListener('click', () => {
-            DOM.artistInput.focus();
-        });
+        const backBtn = document.getElementById('backToSearch');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                DOM.artistInput.focus();
+            });
+        }
     }
 
     function displaySuggestions(artist, tracks) {
         const limitedTracks = tracks.slice(0, 6);
         let suggestionsHTML = `
             <div class="suggestions">
-                <h3>Otras canciones de ${artist}</h3>
+                <h3>Otras canciones de ${escapeHtml(artist)}</h3>
                 <div class="suggestion-list">
         `;
 
         limitedTracks.forEach(track => {
             suggestionsHTML += `
-                <div class="suggestion-item" onclick="searchTrack('${track.artist.name.replace(/'/g, "\\'")}', '${track.title.replace(/'/g, "\\'")}')">
-                    <div class="suggestion-title">${track.title}</div>
-                    <div class="suggestion-artist">${track.artist.name}</div>
+                <div class="suggestion-item" onclick="searchTrack('${escapeHtml(track.artist.name).replace(/'/g, "\\'")}', '${escapeHtml(track.title).replace(/'/g, "\\'")}')">
+                    <div class="suggestion-title">${escapeHtml(track.title)}</div>
+                    <div class="suggestion-artist">${escapeHtml(track.artist.name)}</div>
                 </div>
             `;
         });
@@ -732,12 +790,19 @@ document.addEventListener('DOMContentLoaded', function () {
     async function searchSongsByTitle(title) {
         try {
             const url = `${API_CONFIG.lyrics.suggestUrl}/${encodeURIComponent(title)}`;
-            const response = await fetch(API_CONFIG.lyrics.proxyUrl + encodeURIComponent(url));
+            const proxyUrl = `${API_CONFIG.lyrics.proxyUrl}${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
             
             if (!response.ok) throw new Error('No se pudieron encontrar canciones con ese título');
             
             const data = await response.json();
-            const content = JSON.parse(data.contents);
+            let content;
+            
+            try {
+                content = JSON.parse(data.contents);
+            } catch (e) {
+                content = data.contents ? JSON.parse(data.contents) : { data: [] };
+            }
             
             if (content.data && content.data.length > 0) {
                 displaySongResults(title, content.data);
@@ -755,7 +820,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let songsHTML = `
             <div class="song-results">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Canciones que coinciden con "${title}"</h2>
+                    <h2>Canciones que coinciden con "${escapeHtml(title)}"</h2>
                     <button id="backToSearch" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> Volver
                     </button>
@@ -766,10 +831,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         limitedSongs.forEach(song => {
             songsHTML += `
-                <div class="song-item" onclick="searchTrack('${song.artist.name.replace(/'/g, "\\'")}', '${song.title.replace(/'/g, "\\'")}')">
+                <div class="song-item" onclick="searchTrack('${escapeHtml(song.artist.name).replace(/'/g, "\\'")}', '${escapeHtml(song.title).replace(/'/g, "\\'")}')">
                     <div class="song-item-info">
-                        <div class="song-item-title"><i class="fas fa-play-circle"></i> ${song.title}</div>
-                        <div class="song-item-artist">${song.artist.name}</div>
+                        <div class="song-item-title"><i class="fas fa-play-circle"></i> ${escapeHtml(song.title)}</div>
+                        <div class="song-item-artist">${escapeHtml(song.artist.name)}</div>
                     </div>
                     <div><i class="fas fa-chevron-right"></i></div>
                 </div>
@@ -779,9 +844,12 @@ document.addEventListener('DOMContentLoaded', function () {
         songsHTML += `</div></div>`;
         DOM.resultsDiv.innerHTML = songsHTML;
 
-        document.getElementById('backToSearch')?.addEventListener('click', () => {
-            DOM.titleInput.focus();
-        });
+        const backBtn = document.getElementById('backToSearch');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                DOM.titleInput.focus();
+            });
+        }
     }
 
     // Descargar letras como PDF
@@ -906,7 +974,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="error-icon">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <p>${errorMessage}</p>
+                <p>${escapeHtml(errorMessage)}</p>
                 <button onclick="window.location.reload()" class="retry-btn">
                     <i class="fas fa-sync-alt"></i> Intentar nuevamente
                 </button>
@@ -916,9 +984,14 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Función global para buscar desde la lista de canciones
-window.searchTrack = function (artist, title) {
-    document.getElementById('artist').value = artist;
-    document.getElementById('title').value = title;
-    document.dispatchEvent(new Event('DOMContentLoaded'));
-    document.querySelector('#searchBtn').click();
+window.searchTrack = function(artist, title) {
+    const artistInput = document.getElementById('artist');
+    const titleInput = document.getElementById('title');
+    const searchBtn = document.querySelector('#searchBtn');
+    
+    if (artistInput && titleInput && searchBtn) {
+        artistInput.value = artist;
+        titleInput.value = title;
+        searchBtn.click();
+    }
 };

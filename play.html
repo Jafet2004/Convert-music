@@ -79,6 +79,11 @@
             color: #4a6fa5;
         }
         
+        .shuffle-btn.active {
+            color: #4a6fa5;
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
         .is-favorite {
             color: #ff4081;
         }
@@ -106,6 +111,42 @@
         /* Ocultar reproductor inicialmente */
         .now-playing {
             display: none;
+        }
+
+        /* Estilos para el estado activo */
+        .active {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* Estilos para errores */
+        .error-message {
+            text-align: center;
+            padding: 2rem;
+            color: var(--danger-color);
+        }
+
+        .error-message i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Estilos para loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .loading-spinner {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -203,6 +244,9 @@
                         <button id="repeatBtn" class="control-btn" title="Repetir playlist" aria-label="Repetir playlist">
                             <i class="fas fa-redo"></i>
                         </button>
+                        <button id="shuffleBtn" class="control-btn shuffle-btn" title="Mezclar canciones del mismo artista" aria-label="Mezclar canciones del mismo artista">
+                            <i class="fas fa-random"></i>
+                        </button>
                     </div>
                     <div class="progress-container">
                         <span id="currentTime" aria-live="polite">0:00</span>
@@ -222,6 +266,9 @@
                         </button>
                         <button id="addToPlaylistBtn" class="action-btn" aria-label="Agregar a playlist">
                             <i class="fas fa-plus"></i> Playlist
+                        </button>
+                        <button id="addToQueueBtn" class="action-btn" aria-label="Agregar a cola">
+                            <i class="fas fa-list-ol"></i> Cola
                         </button>
                     </div>
                 </div>
@@ -319,7 +366,6 @@
 </body>
 
 <!-- Pie de página -->
-
 <footer class="bg-dark text-white py-4">
     <div class="container">
         <div class="row">
@@ -339,5 +385,4 @@
         </div>
     </div>
 </footer>
-
 </html>

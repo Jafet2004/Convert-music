@@ -2,20 +2,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Variables globales
     let ytPlayer;
     let ytPlayerReady = false;
+    let searchTimeout;
+    const API_BASE_URL = 'https://www.googleapis.com/youtube/v3';
     
+    // Configuración del reproductor
+    const config = {
+        apiKey: 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac', // Reemplazar con tu clave de API
+        maxResults: 15,
+        retryAttempts: 3,
+        retryDelay: 1000,
+        defaultVolume: 0.7,
+        playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
+    };
+
     // Estado del reproductor
     const playerState = {
         currentTrack: null,
         currentTrackIndex: -1,
         currentPlaylist: null,
         repeatPlaylist: false,
+        shufflePlaylist: false,
         isPlaying: false,
-        volume: 0.7,
+        volume: config.defaultVolume,
+        playbackRate: 1,
         searchResults: [],
         favoriteSongs: [],
         playlists: [],
+        queue: [],
         searchHistory: [],
-        searchCache: {}
+        searchCache: {},
+        retryCount: 0
     };
 
     // Elementos del DOM
@@ -25,18 +41,20 @@ document.addEventListener('DOMContentLoaded', function() {
         playBtn: document.getElementById('playBtn'),
         prevBtn: document.getElementById('prevBtn'),
         nextBtn: document.getElementById('nextBtn'),
+        shuffleBtn: document.getElementById('shuffleBtn'),
+        repeatBtn: document.getElementById('repeatBtn'),
         progressBar: document.getElementById('progressBar'),
         currentTimeDisplay: document.getElementById('currentTime'),
         durationDisplay: document.getElementById('duration'),
         volumeControl: document.getElementById('volumeControl'),
         favoriteBtn: document.getElementById('favoriteBtn'),
         addToPlaylistBtn: document.getElementById('addToPlaylistBtn'),
+        addToQueueBtn: document.getElementById('addToQueueBtn'),
         resultsDiv: document.getElementById('results'),
         albumArt: document.getElementById('albumArt'),
         songTitle: document.getElementById('currentSongTitle'),
         songArtist: document.getElementById('currentSongArtist'),
         currentPlaylistName: document.getElementById('currentPlaylistName'),
-        repeatBtn: document.getElementById('repeatBtn'),
         nowPlaying: document.querySelector('.now-playing')
     };
 
@@ -45,35 +63,89 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // LocalStorageManager
     const LocalStorageManager = {
+        getItem(key) {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_PREFIX + key));
+            } catch (error) {
+                console.error('Error al leer del localStorage:', error);
+                return null;
+            }
+        },
+        
+        setItem(key, value) {
+            try {
+                localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
+                return true;
+            } catch (error) {
+                console.error('Error al escribir en el localStorage:', error);
+                return false;
+            }
+        },
+        
         getFavoriteSongs() {
-            return JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'favoriteSongs')) || [];
+            return this.getItem('favoriteSongs') || [];
         },
+        
         setFavoriteSongs(songs) {
-            localStorage.setItem(STORAGE_PREFIX + 'favoriteSongs', JSON.stringify(songs));
+            return this.setItem('favoriteSongs', songs);
         },
+        
         getPlaylists() {
-            return JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'playlists')) || [];
+            return this.getItem('playlists') || [];
         },
+        
         setPlaylists(playlists) {
-            localStorage.setItem(STORAGE_PREFIX + 'playlists', JSON.stringify(playlists));
+            return this.setItem('playlists', playlists);
         },
+        
+        getQueue() {
+            return this.getItem('queue') || [];
+        },
+        
+        setQueue(queue) {
+            return this.setItem('queue', queue);
+        },
+        
         getSearchHistory() {
-            return JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'searchHistory')) || [];
+            return this.getItem('searchHistory') || [];
         },
+        
         setSearchHistory(history) {
-            localStorage.setItem(STORAGE_PREFIX + 'searchHistory', JSON.stringify(history));
+            return this.setItem('searchHistory', history);
         },
-        clearData() {
-            localStorage.removeItem(STORAGE_PREFIX + 'favoriteSongs');
-            localStorage.removeItem(STORAGE_PREFIX + 'playlists');
-            localStorage.removeItem(STORAGE_PREFIX + 'searchHistory');
+        
+        getVolume() {
+            const volume = this.getItem('volume');
+            return volume !== null ? volume : config.defaultVolume;
+        },
+        
+        setVolume(volume) {
+            return this.setItem('volume', volume);
+        },
+        
+        getPlaybackRate() {
+            const rate = this.getItem('playbackRate');
+            return rate !== null ? rate : 1;
+        },
+        
+        setPlaybackRate(rate) {
+            return this.setItem('playbackRate', rate);
         }
     };
 
     // Inicializar datos
-    playerState.favoriteSongs = LocalStorageManager.getFavoriteSongs();
-    playerState.playlists = LocalStorageManager.getPlaylists();
-    playerState.searchHistory = LocalStorageManager.getSearchHistory();
+    function initializePlayerState() {
+        playerState.favoriteSongs = LocalStorageManager.getFavoriteSongs();
+        playerState.playlists = LocalStorageManager.getPlaylists();
+        playerState.searchHistory = LocalStorageManager.getSearchHistory();
+        playerState.queue = LocalStorageManager.getQueue();
+        playerState.volume = LocalStorageManager.getVolume();
+        playerState.playbackRate = LocalStorageManager.getPlaybackRate();
+        
+        if (DOM.volumeControl) {
+            DOM.volumeControl.value = playerState.volume;
+        }
+    }
 
     // Cargar la API de YouTube Player
     function loadYouTubeAPI() {
@@ -108,11 +180,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 'onReady': function() { 
                     ytPlayerReady = true;
                     ytPlayer.setVolume(playerState.volume * 100);
-                    DOM.volumeControl.value = playerState.volume;
+                    ytPlayer.setPlaybackRate(playerState.playbackRate);
+                    
+                    if (DOM.volumeControl) {
+                        DOM.volumeControl.value = playerState.volume;
+                    }
                 },
-                'onStateChange': onPlayerStateChange
+                'onStateChange': onPlayerStateChange,
+                'onError': onPlayerError
             }
         });
+    }
+
+    // Manejar errores del reproductor
+    function onPlayerError(event) {
+        console.error('Error en el reproductor de YouTube:', event.data);
+        
+        if (playerState.retryCount < config.retryAttempts) {
+            playerState.retryCount++;
+            showNotification(`Error al reproducir. Reintentando (${playerState.retryCount}/${config.retryAttempts})`, 'error');
+            
+            setTimeout(() => {
+                if (playerState.currentTrack) {
+                    playTrackById(playerState.currentTrack.id);
+                }
+            }, config.retryDelay);
+        } else {
+            showError('Error al reproducir la canción. Intenta con otra.');
+            playerState.retryCount = 0;
+        }
     }
 
     // Manejar cambios de estado del reproductor
@@ -122,38 +218,58 @@ document.addEventListener('DOMContentLoaded', function() {
         switch (event.data) {
             case YT.PlayerState.PLAYING:
                 playerState.isPlaying = true;
-                DOM.playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                playerState.retryCount = 0;
+                if (DOM.playBtn) {
+                    DOM.playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    DOM.playBtn.setAttribute('aria-pressed', 'true');
+                }
                 hideBufferingIndicator();
                 break;
                 
             case YT.PlayerState.PAUSED:
                 playerState.isPlaying = false;
-                DOM.playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                if (DOM.playBtn) {
+                    DOM.playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    DOM.playBtn.setAttribute('aria-pressed', 'false');
+                }
                 break;
                 
             case YT.PlayerState.ENDED:
                 playerState.isPlaying = false;
-                DOM.playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                
-                // Repetir playlist si está activo
-                if (playerState.currentPlaylist) {
-                    if (playerState.currentTrackIndex < playerState.searchResults.length - 1) {
-                        playNext();
-                    } else if (playerState.repeatPlaylist) {
-                        playTrack(0); // Volver al inicio de la playlist
-                    }
-                } else {
-                    playNext();
+                if (DOM.playBtn) {
+                    DOM.playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    DOM.playBtn.setAttribute('aria-pressed', 'false');
                 }
+                
+                handlePlaybackEnd();
                 break;
                 
             case YT.PlayerState.BUFFERING:
                 showBufferingIndicator();
                 break;
-                
-            case YT.PlayerState.CUED:
-                // No hacer nada cuando el video está preparado
-                break;
+        }
+    }
+
+    // Manejar el final de la reproducción
+    function handlePlaybackEnd() {
+        if (playerState.queue.length > 0) {
+            playFromQueue(0);
+            return;
+        }
+        
+        if (playerState.currentPlaylist) {
+            if (playerState.currentTrackIndex < playerState.searchResults.length - 1) {
+                playNext();
+            } else if (playerState.repeatPlaylist) {
+                if (playerState.shufflePlaylist) {
+                    shufflePlaylist();
+                } else {
+                    playTrack(0);
+                }
+            }
+        } else if (playerState.searchResults.length > 0 && 
+                  playerState.currentTrackIndex < playerState.searchResults.length - 1) {
+            playNext();
         }
     }
 
@@ -179,40 +295,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicializar el reproductor
     function initPlayer() {
+        initializePlayerState();
         loadYouTubeAPI();
         
         // Event listeners
-        DOM.playBtn.addEventListener('click', togglePlay);
-        DOM.prevBtn.addEventListener('click', playPrevious);
-        DOM.nextBtn.addEventListener('click', playNext);
-        DOM.progressBar.addEventListener('input', seek);
-        DOM.volumeControl.addEventListener('input', setVolume);
-        DOM.favoriteBtn.addEventListener('click', toggleFavorite);
-        DOM.addToPlaylistBtn.addEventListener('click', showPlaylistModal);
-        DOM.searchBtn.addEventListener('click', searchMusic);
-        DOM.searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchMusic();
-        });
-        DOM.repeatBtn.addEventListener('click', toggleRepeat);
+        DOM.playBtn?.addEventListener('click', togglePlay);
+        DOM.prevBtn?.addEventListener('click', playPrevious);
+        DOM.nextBtn?.addEventListener('click', playNext);
+        DOM.shuffleBtn?.addEventListener('click', toggleShuffle);
+        DOM.repeatBtn?.addEventListener('click', toggleRepeat);
+        DOM.progressBar?.addEventListener('input', seek);
+        DOM.volumeControl?.addEventListener('input', setVolume);
+        DOM.favoriteBtn?.addEventListener('click', toggleFavorite);
+        DOM.addToPlaylistBtn?.addEventListener('click', showPlaylistModal);
+        DOM.addToQueueBtn?.addEventListener('click', addCurrentToQueue);
         
-        // Delegación de eventos
-        document.addEventListener('click', function(e) {
-            // Manejar clicks en items de canción
-            const songItem = e.target.closest('.song-item');
-            if (songItem) {
-                const songsList = songItem.closest('.songs-list');
-                if (songsList) {
-                    const items = songsList.querySelectorAll('.song-item');
-                    const index = Array.from(items).indexOf(songItem);
-                    if (index >= 0) playTrack(index);
-                }
-            }
-            
-            // Manejar clicks en tabs
-            if (e.target.classList.contains('tab')) {
-                const tabName = e.target.getAttribute('onclick').match(/'([^']+)'/)[1];
-                showTab(tabName);
-            }
+        // Evento de búsqueda con debounce
+        DOM.searchBtn?.addEventListener('click', searchMusic);
+        DOM.searchInput?.addEventListener('input', handleSearchInput);
+        DOM.searchInput?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchMusic();
         });
         
         // Limpiar input
@@ -231,6 +333,17 @@ document.addEventListener('DOMContentLoaded', function() {
         setInterval(updateProgressBar, 500);
     }
 
+    // Manejar entrada de búsqueda con debounce
+    function handleSearchInput() {
+        clearTimeout(searchTimeout);
+        
+        if (DOM.searchInput.value.trim().length > 2) {
+            searchTimeout = setTimeout(() => {
+                searchMusic();
+            }, 800);
+        }
+    }
+
     // Extraer ID de video de YouTube desde URL
     function extractVideoId(url) {
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -239,15 +352,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Buscar música
-    function searchMusic() {
-        const query = DOM.searchInput.value.trim();
+    async function searchMusic() {
+        const query = DOM.searchInput?.value.trim();
         if (!query) return;
         
         // Verificar si es una URL de YouTube
         const videoId = extractVideoId(query);
         if (videoId) {
-            // Es una URL de YouTube, buscar información del video
-            searchYouTubeVideoById(videoId);
+            await searchYouTubeVideoById(videoId);
             return;
         }
         
@@ -260,83 +372,133 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         showLoading();
-        const apiKey = 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac';
-        const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&key=${apiKey}&maxResults=10`;
         
-        fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) throw new Error('Error en la búsqueda');
-                return response.json();
-            })
-            .then(data => {
-                if (!data.items || data.items.length === 0) {
-                    showError('No se encontraron resultados');
-                    return;
-                }
-                
-                playerState.searchResults = data.items.map(item => ({
+        try {
+            const response = await fetch(`${API_BASE_URL}/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&key=${config.apiKey}&maxResults=${config.maxResults}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (!data.items || data.items.length === 0) {
+                showError('No se encontraron resultados');
+                return;
+            }
+            
+            // Obtener detalles de los videos para duraciones exactas
+            const videoIds = data.items.map(item => item.id.videoId).join(',');
+            const detailsResponse = await fetch(`${API_BASE_URL}/videos?part=snippet,contentDetails&id=${videoIds}&key=${config.apiKey}`);
+            
+            if (!detailsResponse.ok) {
+                throw new Error(`HTTP error! status: ${detailsResponse.status}`);
+            }
+            
+            const details = await detailsResponse.json();
+            
+            playerState.searchResults = data.items.map(item => {
+                const detail = details.items.find(d => d.id === item.id.videoId) || {};
+                return {
                     id: item.id.videoId,
                     title: cleanVideoTitle(item.snippet.title),
                     artist: item.snippet.channelTitle,
-                    thumbnail: item.snippet.thumbnails.medium?.url || 'https://via.placeholder.com/300'
-                }));
-                
-                // Guardar en caché
-                playerState.searchCache[query] = [...playerState.searchResults];
-                displaySearchResults();
-                addToHistory(query);
-            })
-            .catch(error => {
-                console.error('Error al buscar música:', error);
-                showError('Error al buscar música. Intenta nuevamente.');
+                    thumbnail: getBestThumbnail(item.snippet.thumbnails),
+                    duration: parseDuration(detail.contentDetails?.duration)
+                };
             });
+            
+            // Guardar en caché
+            playerState.searchCache[query] = [...playerState.searchResults];
+            displaySearchResults();
+            addToHistory(query);
+        } catch (error) {
+            console.error('Error al buscar música:', error);
+            showError(getErrorMessage(error));
+        }
+    }
+
+    // Obtener el mensaje de error adecuado
+    function getErrorMessage(error) {
+        if (error.message.includes('quota')) {
+            return 'Límite de búsquedas alcanzado. Intenta más tarde.';
+        }
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            return 'Problema de conexión. Verifica tu internet.';
+        }
+        return 'Error al buscar música. Intenta nuevamente.';
+    }
+
+    // Obtener la mejor miniatura disponible
+    function getBestThumbnail(thumbnails) {
+        return thumbnails?.maxres?.url || 
+               thumbnails?.standard?.url || 
+               thumbnails?.high?.url || 
+               thumbnails?.medium?.url || 
+               thumbnails?.default?.url || 
+               'https://via.placeholder.com/300';
+    }
+
+    // Parsear duración ISO 8601 a segundos
+    function parseDuration(duration) {
+        if (!duration) return 0;
+        
+        const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+        if (!match) return 0;
+        
+        const hours = parseInt(match[1]) || 0;
+        const minutes = parseInt(match[2]) || 0;
+        const seconds = parseInt(match[3]) || 0;
+        
+        return hours * 3600 + minutes * 60 + seconds;
     }
 
     // Buscar información de video por ID
-    function searchYouTubeVideoById(videoId) {
+    async function searchYouTubeVideoById(videoId) {
         showLoading();
-        const apiKey = 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac';
-        const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
         
-        fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) throw new Error('Error al obtener información del video');
-                return response.json();
-            })
-            .then(data => {
-                if (!data.items || data.items.length === 0) {
-                    showError('No se encontró el video');
-                    return;
-                }
-                
-                const item = data.items[0];
-                playerState.searchResults = [{
-                    id: item.id,
-                    title: cleanVideoTitle(item.snippet.title),
-                    artist: item.snippet.channelTitle,
-                    thumbnail: item.snippet.thumbnails.medium?.url || 'https://via.placeholder.com/300'
-                }];
-                
-                displaySearchResults();
-                playTrack(0); // Reproducir automáticamente
-            })
-            .catch(error => {
-                console.error('Error al obtener información del video:', error);
-                showError('Error al cargar el video de YouTube');
-            });
+        try {
+            const response = await fetch(`${API_BASE_URL}/videos?part=snippet,contentDetails&id=${videoId}&key=${config.apiKey}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (!data.items || data.items.length === 0) {
+                showError('No se encontró el video');
+                return;
+            }
+            
+            const item = data.items[0];
+            playerState.searchResults = [{
+                id: item.id,
+                title: cleanVideoTitle(item.snippet.title),
+                artist: item.snippet.channelTitle,
+                thumbnail: getBestThumbnail(item.snippet.thumbnails),
+                duration: parseDuration(item.contentDetails?.duration)
+            }];
+            
+            displaySearchResults();
+            playTrack(0); // Reproducir automáticamente
+        } catch (error) {
+            console.error('Error al obtener información del video:', error);
+            showError(getErrorMessage(error));
+        }
     }
 
     // Limpiar título del video
     function cleanVideoTitle(title) {
-        if (!title) return '';
+        if (!title) return 'Sin título';
         
         const patternsToRemove = [
-            /\(official\s*(video|music\s*video|audio)\)/i,
-            /\[official\s*(video|music\s*video|audio)\]/i,
-            /official\s*(video|music\s*video|audio)/i,
-            /\(lyrics\)/i,
-            /\[lyrics\]/i,
-            /lyrics/i,
+            /\(official\s*(video|music\s*video|audio|lyrics?)\)/i,
+            /\[official\s*(video|music\s*video|audio|lyrics?)\]/i,
+            /official\s*(video|music\s*video|audio|lyrics?)/i,
+            /\(lyrics?\)/i,
+            /\[lyrics?\]/i,
+            /lyrics?/i,
             /\([0-9]{4}\)/,
             /ft\.? .*$/i,
             /feat\.? .*$/i,
@@ -344,13 +506,18 @@ document.addEventListener('DOMContentLoaded', function() {
             /vs\.? .*$/i
         ];
         
+        let cleanedTitle = title;
         patternsToRemove.forEach(pattern => {
-            title = title.replace(pattern, '');
+            cleanedTitle = cleanedTitle.replace(pattern, '');
         });
         
-        title = title.replace(/\s+/g, ' ').trim();
-        title = title.replace(/[^\w\s()\-&]/g, '');
-        return title || 'Sin título';
+        // Limpiar caracteres especiales y espacios múltiples
+        cleanedTitle = cleanedTitle
+            .replace(/[^\w\s()\-&]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        return cleanedTitle || 'Sin título';
     }
 
     // Mostrar resultados de búsqueda
@@ -360,27 +527,33 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = `
             <div class="results-header">
                 <h2>Resultados de búsqueda</h2>
+                <div class="result-count">${playerState.searchResults.length} resultados</div>
             </div>
             <div class="songs-list">
         `;
         
         playerState.searchResults.forEach((track, index) => {
             html += `
-                <div class="song-item">
+                <div class="song-item" data-id="${track.id}" role="button" aria-label="Reproducir ${track.title}">
                     <div class="song-item-info">
                         <div class="song-item-title">
                             <i class="fas fa-music"></i>
-                            ${track.title || 'Sin título'}
+                            ${track.title}
                         </div>
                         <div class="song-item-artist">${track.artist || 'Artista desconocido'}</div>
                     </div>
-                    <div class="song-item-duration">3:30</div>
+                    <div class="song-item-duration">${formatTime(track.duration)}</div>
                 </div>
             `;
         });
         
         html += `</div>`;
         DOM.resultsDiv.innerHTML = html;
+        
+        // Agregar event listeners a los items de canción
+        document.querySelectorAll('.song-item').forEach((item, index) => {
+            item.addEventListener('click', () => playTrack(index));
+        });
         
         // Limpiar playlist actual si estamos mostrando resultados de búsqueda
         if (playerState.currentPlaylist) {
@@ -396,29 +569,46 @@ document.addEventListener('DOMContentLoaded', function() {
         playerState.currentTrackIndex = index;
         playerState.currentTrack = playerState.searchResults[index];
         
-        // Mostrar el reproductor si está oculto
+        // Mostrar el reproductor
         if (DOM.nowPlaying) {
             DOM.nowPlaying.style.display = 'block';
         }
         
         // Actualizar UI
-        if (DOM.songTitle) DOM.songTitle.textContent = playerState.currentTrack.title || 'Sin título';
+        if (DOM.songTitle) DOM.songTitle.textContent = playerState.currentTrack.title;
         if (DOM.songArtist) DOM.songArtist.textContent = playerState.currentTrack.artist || 'Artista desconocido';
-        if (DOM.albumArt) DOM.albumArt.src = playerState.currentTrack.thumbnail || 'https://via.placeholder.com/300';
+        if (DOM.albumArt) {
+            DOM.albumArt.src = playerState.currentTrack.thumbnail;
+            DOM.albumArt.onerror = () => {
+                DOM.albumArt.src = 'https://via.placeholder.com/300';
+            };
+        }
         
+        // Actualizar duración
+        if (DOM.durationDisplay) {
+            DOM.durationDisplay.textContent = formatTime(playerState.currentTrack.duration);
+        }
+        
+        playTrackById(playerState.currentTrack.id);
+        updateFavoriteButton();
+    }
+
+    // Reproducir por ID de video
+    function playTrackById(videoId) {
         if (ytPlayerReady && ytPlayer && ytPlayer.loadVideoById) {
             try {
-                ytPlayer.loadVideoById(playerState.currentTrack.id);
+                ytPlayer.loadVideoById(videoId);
                 ytPlayer.playVideo();
                 playerState.isPlaying = true;
-                if (DOM.playBtn) DOM.playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                if (DOM.playBtn) {
+                    DOM.playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    DOM.playBtn.setAttribute('aria-pressed', 'true');
+                }
             } catch (error) {
                 console.error('Error al reproducir video:', error);
                 showError('Error al reproducir la canción');
             }
         }
-        
-        updateFavoriteButton();
     }
 
     // Alternar reproducción/pausa
@@ -435,11 +625,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.ENDED || state === YT.PlayerState.CUED) {
                 ytPlayer.playVideo();
                 playerState.isPlaying = true;
-                if (DOM.playBtn) DOM.playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                if (DOM.playBtn) {
+                    DOM.playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    DOM.playBtn.setAttribute('aria-pressed', 'true');
+                }
             } else if (state === YT.PlayerState.PLAYING) {
                 ytPlayer.pauseVideo();
                 playerState.isPlaying = false;
-                if (DOM.playBtn) DOM.playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                if (DOM.playBtn) {
+                    DOM.playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    DOM.playBtn.setAttribute('aria-pressed', 'false');
+                }
             }
         } catch (error) {
             console.error('Error al alternar reproducción:', error);
@@ -462,13 +658,69 @@ document.addEventListener('DOMContentLoaded', function() {
             playTrack(playerState.currentTrackIndex + 1);
         } else if (playerState.currentPlaylist && playerState.repeatPlaylist) {
             // Si está en modo repetición, volver al inicio
-            playTrack(0);
+            if (playerState.shufflePlaylist) {
+                shufflePlaylist();
+            } else {
+                playTrack(0);
+            }
+        }
+    }
+
+    // Mezclar playlist
+    function shufflePlaylist() {
+        if (!playerState.currentPlaylist) return;
+        
+        // Copiar array sin el elemento actual
+        const shuffled = [...playerState.searchResults];
+        const currentItem = shuffled.splice(playerState.currentTrackIndex, 1)[0];
+        
+        // Fisher-Yates shuffle algorithm
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        
+        // Reinsertar el elemento actual al principio
+        shuffled.unshift(currentItem);
+        playerState.searchResults = shuffled;
+        playerState.currentTrackIndex = 0;
+        
+        // Actualizar UI
+        displaySearchResults();
+        showNotification('Playlist mezclada', 'success');
+    }
+
+    // Alternar mezcla
+    function toggleShuffle() {
+        playerState.shufflePlaylist = !playerState.shufflePlaylist;
+        if (DOM.shuffleBtn) {
+            if (playerState.shufflePlaylist) {
+                DOM.shuffleBtn.classList.add('active');
+                showNotification('Modo mezcla activado', 'success');
+            } else {
+                DOM.shuffleBtn.classList.remove('active');
+                showNotification('Modo mezcla desactivado', 'info');
+            }
+        }
+    }
+
+    // Alternar repetición
+    function toggleRepeat() {
+        playerState.repeatPlaylist = !playerState.repeatPlaylist;
+        if (DOM.repeatBtn) {
+            if (playerState.repeatPlaylist) {
+                DOM.repeatBtn.classList.add('active');
+                showNotification('Repetición activada', 'success');
+            } else {
+                DOM.repeatBtn.classList.remove('active');
+                showNotification('Repetición desactivada', 'info');
+            }
         }
     }
 
     // Actualizar la barra de progreso
     function updateProgressBar() {
-        if (!ytPlayerReady || !ytPlayer || !ytPlayer.getDuration || !DOM.progressBar || !DOM.currentTimeDisplay || !DOM.durationDisplay) return;
+        if (!ytPlayerReady || !ytPlayer || !ytPlayer.getDuration || !DOM.progressBar || !DOM.currentTimeDisplay) return;
         
         try {
             const duration = ytPlayer.getDuration();
@@ -478,7 +730,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const progress = (currentTime / duration) * 100;
                 DOM.progressBar.value = progress;
                 DOM.currentTimeDisplay.textContent = formatTime(currentTime);
-                DOM.durationDisplay.textContent = formatTime(duration);
             }
         } catch (error) {
             console.error('Error al actualizar la barra de progreso:', error);
@@ -487,7 +738,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Formatear tiempo (segundos a MM:SS)
     function formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
+        if (!seconds || isNaN(seconds)) return '0:00';
         
         const minutes = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
@@ -516,6 +767,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             playerState.volume = DOM.volumeControl.value;
             ytPlayer.setVolume(playerState.volume * 100);
+            LocalStorageManager.setVolume(playerState.volume);
         } catch (error) {
             console.error('Error al establecer volumen:', error);
         }
@@ -528,29 +780,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const index = playerState.favoriteSongs.findIndex(song => song.id === playerState.currentTrack.id);
         if (index === -1) {
             playerState.favoriteSongs.push(playerState.currentTrack);
-            showNotification('Canción agregada a favoritos');
+            showNotification('Canción agregada a favoritos', 'success');
         } else {
             playerState.favoriteSongs.splice(index, 1);
-            showNotification('Canción eliminada de favoritos');
+            showNotification('Canción eliminada de favoritos', 'info');
         }
         
         LocalStorageManager.setFavoriteSongs(playerState.favoriteSongs);
         updateFavoriteButton();
         showSearchHistory();
-    }
-
-    // Alternar repetición de playlist
-    function toggleRepeat() {
-        playerState.repeatPlaylist = !playerState.repeatPlaylist;
-        if (DOM.repeatBtn) {
-            if (playerState.repeatPlaylist) {
-                DOM.repeatBtn.classList.add('active');
-                showNotification('Repetición activada');
-            } else {
-                DOM.repeatBtn.classList.remove('active');
-                showNotification('Repetición desactivada');
-            }
-        }
     }
 
     // Actualizar el botón de favoritos
@@ -583,10 +821,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showPlaylistModal() {
         if (!playerState.currentTrack) return;
         
-        const playlistModalElement = document.getElementById('playlistModal');
-        if (!playlistModalElement) return;
-        
-        const playlistModal = new bootstrap.Modal(playlistModalElement);
+        const playlistModal = new bootstrap.Modal(document.getElementById('playlistModal'));
         const playlistSelect = document.getElementById('playlistSelect');
         if (!playlistSelect) return;
         
@@ -598,49 +833,37 @@ document.addEventListener('DOMContentLoaded', function() {
             playlistSelect.appendChild(option);
         });
         
-        const addToPlaylistConfirm = document.getElementById('addToPlaylistConfirm');
-        if (addToPlaylistConfirm) {
-            addToPlaylistConfirm.onclick = function() {
-                const playlistIndex = playlistSelect.value;
-                if (playlistIndex !== '') {
-                    addToPlaylist(parseInt(playlistIndex));
-                    playlistModal.hide();
-                }
-            };
-        }
-        
-        const createPlaylistBtn = document.getElementById('createPlaylistBtn');
-        if (createPlaylistBtn) {
-            createPlaylistBtn.onclick = function() {
+        document.getElementById('addToPlaylistConfirm').onclick = function() {
+            const playlistIndex = playlistSelect.value;
+            if (playlistIndex !== '') {
+                addToPlaylist(parseInt(playlistIndex));
                 playlistModal.hide();
-                showNewPlaylistModal();
-            };
-        }
+            }
+        };
+        
+        document.getElementById('createPlaylistBtn').onclick = function() {
+            playlistModal.hide();
+            showNewPlaylistModal();
+        };
         
         playlistModal.show();
     }
 
     // Mostrar modal de nueva playlist
     function showNewPlaylistModal() {
-        const newPlaylistModalElement = document.getElementById('newPlaylistModal');
-        if (!newPlaylistModalElement) return;
-        
-        const newPlaylistModal = new bootstrap.Modal(newPlaylistModalElement);
+        const newPlaylistModal = new bootstrap.Modal(document.getElementById('newPlaylistModal'));
         const playlistNameInput = document.getElementById('newPlaylistName');
         if (playlistNameInput) {
             playlistNameInput.value = '';
         }
         
-        const createPlaylistConfirm = document.getElementById('createPlaylistConfirm');
-        if (createPlaylistConfirm) {
-            createPlaylistConfirm.onclick = function() {
-                const name = playlistNameInput?.value.trim();
-                if (name) {
-                    createNewPlaylist(name);
-                    newPlaylistModal.hide();
-                }
-            };
-        }
+        document.getElementById('createPlaylistConfirm').onclick = function() {
+            const name = playlistNameInput?.value.trim();
+            if (name) {
+                createNewPlaylist(name);
+                newPlaylistModal.hide();
+            }
+        };
         
         newPlaylistModal.show();
     }
@@ -651,7 +874,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         playerState.playlists.push({ name: name, tracks: [] });
         LocalStorageManager.setPlaylists(playerState.playlists);
-        showNotification(`Playlist "${name}" creada`);
+        showNotification(`Playlist "${name}" creada`, 'success');
     }
 
     // Agregar canción a playlist
@@ -662,9 +885,37 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!exists) {
             playerState.playlists[playlistIndex].tracks.push(playerState.currentTrack);
             LocalStorageManager.setPlaylists(playerState.playlists);
-            showNotification(`Canción agregada a "${playerState.playlists[playlistIndex].name || 'la playlist'}"`);
+            showNotification(`Canción agregada a "${playerState.playlists[playlistIndex].name || 'la playlist'}"`, 'success');
         } else {
-            showNotification('Esta canción ya está en la playlist');
+            showNotification('Esta canción ya está en la playlist', 'info');
+        }
+    }
+
+    // Funcionalidad de cola de reproducción
+    function addCurrentToQueue() {
+        if (!playerState.currentTrack) return;
+        
+        playerState.queue.push(playerState.currentTrack);
+        LocalStorageManager.setQueue(playerState.queue);
+        showNotification('Canción agregada a la cola', 'success');
+    }
+
+    // Reproducir desde la cola
+    function playFromQueue(index) {
+        if (index < 0 || index >= playerState.queue.length) return;
+        
+        const track = playerState.queue[index];
+        playerState.queue.splice(index, 1);
+        LocalStorageManager.setQueue(playerState.queue);
+        
+        // Buscar el track en los resultados actuales
+        const existingIndex = playerState.searchResults.findIndex(t => t.id === track.id);
+        if (existingIndex >= 0) {
+            playTrack(existingIndex);
+        } else {
+            // Si no está en los resultados, agregarlo y reproducir
+            playerState.searchResults.unshift(track);
+            playTrack(0);
         }
     }
 
@@ -687,9 +938,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let html = `
             <div class="tabs">
-                <div class="tab active" onclick="showTab('history')">Historial</div>
-                <div class="tab" onclick="showTab('favorites')">Favoritos</div>
-                <div class="tab" onclick="showTab('playlists')">Playlists</div>
+                <div class="tab active" data-tab="history">Historial</div>
+                <div class="tab" data-tab="favorites">Favoritos</div>
+                <div class="tab" data-tab="playlists">Playlists</div>
             </div>
             <div id="historyTab" class="tab-content">
         `;
@@ -697,12 +948,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (playerState.searchHistory.length > 0) {
             html += `
                 <ul class="history-list">
-                    ${playerState.searchHistory.map(item => `
-                        <li onclick="searchFromHistory('${item.replace(/'/g, "\\'")}')">
-                            <span class="history-item">
+                    ${playerState.searchHistory.map((item, index) => `
+                        <li class="history-item" data-index="${index}">
+                            <span onclick="window.playerAPI.searchFromHistory('${item.replace(/'/g, "\\'")}')">
                                 <i class="fas fa-history"></i> ${item}
                             </span>
-                            <i class="fas fa-chevron-right"></i>
+                            <button class="btn btn-sm btn-outline-secondary remove-history-item" 
+                                    aria-label="Eliminar del historial">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </li>
                     `).join('')}
                 </ul>
@@ -719,13 +973,12 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <ul class="favorites-list">
                     ${playerState.favoriteSongs.map((song, index) => `
-                        <li onclick="playFavorite(${index})">
+                        <li onclick="window.playerAPI.playFavorite(${index})">
                             <span class="favorite-item">
                                 <i class="fas fa-heart"></i>
                                 <span class="favorite-title">${song.title || 'Sin título'}</span>
                                 <span class="favorite-artist">${song.artist || 'Artista desconocido'}</span>
                             </span>
-                            <i class="fas fa-chevron-right"></i>
                         </li>
                     `).join('')}
                 </ul>
@@ -742,13 +995,12 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <ul class="playlists-list">
                     ${playerState.playlists.map((playlist, index) => `
-                        <li onclick="showPlaylistTracks(${index})">
+                        <li onclick="window.playerAPI.showPlaylistTracks(${index})">
                             <span class="playlist-item">
                                 <i class="fas fa-list"></i>
                                 <span class="playlist-name">${playlist.name || `Playlist ${index + 1}`}</span>
                                 <span class="playlist-count">${playlist.tracks.length} canciones</span>
                             </span>
-                            <i class="fas fa-chevron-right"></i>
                         </li>
                     `).join('')}
                 </ul>
@@ -759,6 +1011,49 @@ document.addEventListener('DOMContentLoaded', function() {
         
         html += `</div>`;
         DOM.resultsDiv.innerHTML = html;
+        
+        // Agregar event listeners para las pestañas
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                showTab(tabName);
+            });
+        });
+        
+        // Agregar event listeners para eliminar del historial
+        document.querySelectorAll('.remove-history-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const item = btn.closest('.history-item');
+                if (item) {
+                    const index = parseInt(item.getAttribute('data-index'));
+                    removeFromHistory(index);
+                }
+            });
+        });
+    }
+
+    // Mostrar pestaña específica
+    function showTab(tabName) {
+        if (!tabName) return;
+        
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+        });
+        
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.style.display = content.id === `${tabName}Tab` ? 'block' : 'none';
+        });
+    }
+
+    // Eliminar elemento del historial
+    function removeFromHistory(index) {
+        if (index >= 0 && index < playerState.searchHistory.length) {
+            playerState.searchHistory.splice(index, 1);
+            LocalStorageManager.setSearchHistory(playerState.searchHistory);
+            showSearchHistory();
+            showNotification('Elemento eliminado del historial', 'info');
+        }
     }
 
     // Agregar a historial de búsqueda
@@ -797,22 +1092,42 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <p>${message}</p>
-                <button onclick="window.location.reload()" class="retry-btn">
+                <button class="retry-btn">
                     <i class="fas fa-sync-alt"></i> Intentar nuevamente
                 </button>
             </div>
         `;
+        
+        // Agregar event listener al botón de reintento
+        document.querySelector('.retry-btn')?.addEventListener('click', () => {
+            searchMusic();
+        });
     }
 
     // Mostrar notificación
-    function showNotification(message) {
+    function showNotification(message, type = 'info') {
         if (!message) return;
+        
+        const colors = {
+            info: '#4a6fa5',
+            success: '#4ad66d',
+            warning: '#f8961e',
+            error: '#f72585'
+        };
+        
+        const icon = {
+            info: 'fa-info-circle',
+            success: 'fa-check-circle',
+            warning: 'fa-exclamation-circle',
+            error: 'fa-times-circle'
+        }[type];
         
         const notification = document.createElement('div');
         notification.className = 'notification';
+        notification.style.backgroundColor = colors[type] || colors.info;
         notification.innerHTML = `
             <div class="notification-content">
-                <i class="fas fa-check-circle"></i>
+                <i class="fas ${icon}"></i>
                 <span>${message}</span>
             </div>
         `;
@@ -829,123 +1144,97 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 10);
     }
 
-    // Funciones globales
-    window.playTrack = function(index) { 
-        if (typeof index === 'number') playTrack(index); 
-    };
-    
-    window.playFavorite = function(index) {
-        if (typeof index === 'number' && index >= 0 && index < playerState.favoriteSongs.length) {
-            const track = playerState.favoriteSongs[index];
-            const existingIndex = playerState.searchResults.findIndex(t => t.id === track.id);
-            
-            if (existingIndex >= 0) {
-                playTrack(existingIndex);
-            } else {
-                if (DOM.searchInput) DOM.searchInput.value = `${track.artist || ''} - ${track.title || ''}`.trim();
+    // API pública para acceso desde HTML
+    window.playerAPI = {
+        searchFromHistory: function(query) {
+            if (DOM.searchInput && query) {
+                DOM.searchInput.value = query;
                 searchMusic();
-                setTimeout(() => {
-                    const newIndex = playerState.searchResults.findIndex(t => t.id === track.id);
-                    if (newIndex >= 0) {
-                        playTrack(newIndex);
-                    }
-                }, 1000);
             }
-        }
-    };
-    
-    window.searchFromHistory = function(query) {
-        if (DOM.searchInput && query) {
-            DOM.searchInput.value = query;
-            searchMusic();
-        }
-    };
-    
-    window.showTab = function(tabName) {
-        if (!tabName) return;
+        },
         
-        document.querySelectorAll('.tab').forEach(tab => {
-            if (tab) tab.classList.remove('active');
-        });
+        playFavorite: function(index) {
+            if (typeof index === 'number' && index >= 0 && index < playerState.favoriteSongs.length) {
+                const track = playerState.favoriteSongs[index];
+                const existingIndex = playerState.searchResults.findIndex(t => t.id === track.id);
+                
+                if (existingIndex >= 0) {
+                    playTrack(existingIndex);
+                } else {
+                    if (DOM.searchInput) DOM.searchInput.value = `${track.artist || ''} - ${track.title || ''}`.trim();
+                    searchMusic();
+                    setTimeout(() => {
+                        const newIndex = playerState.searchResults.findIndex(t => t.id === track.id);
+                        if (newIndex >= 0) {
+                            playTrack(newIndex);
+                        }
+                    }, 1000);
+                }
+            }
+        },
         
-        document.querySelectorAll('.tab-content').forEach(content => {
-            if (content) content.style.display = 'none';
-        });
-        
-        const tab = document.querySelector(`.tab[onclick="showTab('${tabName}')"]`);
-        if (tab) tab.classList.add('active');
-        
-        const content = document.getElementById(`${tabName}Tab`);
-        if (content) content.style.display = 'block';
-    };
-    
-    window.showPlaylistTracks = function(index) {
-        if (typeof index === 'number' && index >= 0 && index < playerState.playlists.length && DOM.resultsDiv) {
-            const playlist = playerState.playlists[index];
-            playerState.currentPlaylist = playlist;
-            updatePlayerUI();
-            
-            let html = `
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>${playlist.name || `Playlist ${index + 1}`}</h2>
-                    <div>
-                        <button onclick="playPlaylist(${index})" class="btn btn-sm btn-primary me-2">
-                            <i class="fas fa-play"></i> Reproducir todo
-                        </button>
-                        <button onclick="showSearchHistory()" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> Volver
-                        </button>
-                    </div>
-                </div>
-                <div class="songs-list">
-            `;
-            
-            if (playlist.tracks.length > 0) {
-                playlist.tracks.forEach((track, trackIndex) => {
-                    html += `
-                        <div class="song-item" onclick="playFromPlaylist(${index}, ${trackIndex})">
-                            <div class="song-item-info">
-                                <div class="song-item-title">
-                                    <i class="fas fa-music"></i>
-                                    ${track.title || 'Sin título'}
-                                </div>
-                                <div class="song-item-artist">${track.artist || 'Artista desconocido'}</div>
-                            </div>
-                            <div class="song-item-duration">3:30</div>
+        showPlaylistTracks: function(index) {
+            if (typeof index === 'number' && index >= 0 && index < playerState.playlists.length && DOM.resultsDiv) {
+                const playlist = playerState.playlists[index];
+                playerState.currentPlaylist = playlist;
+                playerState.searchResults = [...playlist.tracks];
+                updatePlayerUI();
+                
+                let html = `
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2>${playlist.name || `Playlist ${index + 1}`}</h2>
+                        <div>
+                            <button class="btn btn-sm btn-primary me-2" id="playPlaylistBtn">
+                                <i class="fas fa-play"></i> Reproducir todo
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" id="backToHistoryBtn">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </button>
                         </div>
-                    `;
+                    </div>
+                    <div class="songs-list">
+                `;
+                
+                if (playlist.tracks.length > 0) {
+                    playlist.tracks.forEach((track, trackIndex) => {
+                        html += `
+                            <div class="song-item" data-id="${track.id}">
+                                <div class="song-item-info">
+                                    <div class="song-item-title">
+                                        <i class="fas fa-music"></i>
+                                        ${track.title || 'Sin título'}
+                                    </div>
+                                    <div class="song-item-artist">${track.artist || 'Artista desconocido'}</div>
+                                </div>
+                                <div class="song-item-duration">${formatTime(track.duration)}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<p>Esta playlist está vacía</p>';
+                }
+                
+                html += `</div>`;
+                DOM.resultsDiv.innerHTML = html;
+                
+                // Agregar event listeners a los items de canción
+                document.querySelectorAll('.song-item').forEach((item, trackIndex) => {
+                    item.addEventListener('click', () => {
+                        playTrack(trackIndex);
+                    });
                 });
-            } else {
-                html += '<p>Esta playlist está vacía</p>';
+                
+                // Agregar event listeners a los botones
+                document.getElementById('playPlaylistBtn')?.addEventListener('click', () => {
+                    if (playerState.shufflePlaylist) {
+                        shufflePlaylist();
+                    } else {
+                        playTrack(0);
+                    }
+                });
+                
+                document.getElementById('backToHistoryBtn')?.addEventListener('click', showSearchHistory);
             }
-            
-            html += `</div>`;
-            DOM.resultsDiv.innerHTML = html;
-        }
-    };
-    
-    window.playFromPlaylist = function(playlistIndex, trackIndex) {
-        if (typeof playlistIndex === 'number' && typeof trackIndex === 'number' && 
-            playlistIndex >= 0 && playlistIndex < playerState.playlists.length) {
-            const playlist = playerState.playlists[playlistIndex];
-            playerState.currentPlaylist = playlist;
-            playerState.searchResults = [...playlist.tracks];
-            playTrack(trackIndex);
-            updatePlayerUI();
-        }
-    };
-    
-    window.playPlaylist = function(playlistIndex) {
-        if (typeof playlistIndex === 'number' && playlistIndex >= 0 && playlistIndex < playerState.playlists.length) {
-            const playlist = playerState.playlists[playlistIndex];
-            playerState.currentPlaylist = playlist;
-            playerState.searchResults = [...playlist.tracks];
-            
-            if (playlist.tracks.length > 0) {
-                playTrack(0);
-            }
-            
-            updatePlayerUI();
         }
     };
 

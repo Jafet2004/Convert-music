@@ -234,6 +234,11 @@ body {
     transform: scale(1.05);
 }
 
+.shuffle-btn.active {
+    color: var(--primary-color);
+    background: rgba(67, 97, 238, 0.1);
+}
+
 .progress-container {
     display: flex;
     align-items: center;
@@ -481,6 +486,32 @@ body {
 .notification.show {
     transform: translateY(0);
     opacity: 1;
+}
+
+.error-message {
+    text-align: center;
+    padding: 2rem;
+    color: var(--danger-color);
+}
+
+.error-message i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.retry-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.retry-btn:hover {
+    background: var(--secondary-color);
 }
 
 /* Modo oscuro */
