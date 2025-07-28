@@ -43,6 +43,7 @@ header.scrolled {
 .dark-mode .chords-container,
 .dark-mode .accordion-collapse, 
 .dark-mode .result,
+.dark-mode .result-card,
 .dark-mode .dropdown-menu,
 .dark-mode .input,
 .dark-mode .form-control,
@@ -260,16 +261,7 @@ header.scrolled {
     height: 200px;
 }
 
-/* ============================================= */
-/* FOOTER                                       */
-/* ============================================= */
 
-footer {
-    background-color: var(--dark-color);
-    color: white;
-    padding: 2rem 0;
-    text-align: center;
-}
 
 /* ============================================= */
 /* ESTILOS ESPECÍFICOS PARA EL AFINADOR         */

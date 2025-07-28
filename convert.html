@@ -76,133 +76,259 @@
     </div>
 </header>
 
-    <div class="container sax-container">
-        <h2>Convertidor para Sax</h2>
-        <label for="saxophone">Selecciona el tipo de saxofón:</label>
-        <select id="saxophone">
-            <option value="seleccione">Seleccione</option>
-            <option value="alto">Saxofón Alto</option>
-            <option value="soprano">Saxofón Soprano</option>
-        </select>
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Herramientas de Conversión Musical</h1>
+                <p class="page-subtitle">Convierte tonalidades, encuentra escalas y transporta melodías fácilmente</p>
+            </div>
 
-        <label for="original-tonality">Selecciona la tonalidad original:</label>
-        <select id="original-tonality">
-            <option value="seleccione">Seleccione</option>
-            <option value="C">C</option>
-            <option value="C#">C# / D♭</option>
-            <option value="D">D</option>
-            <option value="D#">D# / E♭</option>
-            <option value="E">E</option>
-            <option value="F">F</option>
-            <option value="F#">F# / G♭</option>
-            <option value="G">G</option>
-            <option value="G#">G# / A♭</option>
-            <option value="A">A</option>
-            <option value="A#">A# / B♭</option>
-            <option value="B">B</option>
-        </select>
+            <!-- Tools Grid -->
+            <div class="tools-grid">
+                <!-- Saxophone Converter -->
+                <section class="tool-section sax-container">
+                    <div class="tool-header">
+                        <h2 class="tool-title">
+                            <i class="fas fa-wind me-2"></i>Convertidor para Saxofón
+                        </h2>
+                        <p class="tool-description">Convierte tonalidades para diferentes tipos de saxofón</p>
+                    </div>
 
-        <div id="result" class="result">
-            <p><strong>Tonalidad para el saxofón:</strong> <span id="converted-tonality"></span></p>
+                    <form class="tool-form" id="sax-form">
+                        <div class="form-group">
+                            <label for="saxophone" class="form-label">
+                                <i class="fas fa-music me-1"></i>Tipo de saxofón
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="saxophone" class="form-select" required>
+                                    <option value="">Seleccione un saxofón</option>
+                                    <option value="alto">Saxofón Alto</option>
+                                    <option value="soprano">Saxofón Soprano</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="original-tonality" class="form-label">
+                                <i class="fas fa-key me-1"></i>Tonalidad original
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="original-tonality" class="form-select" required>
+                                    <option value="">Seleccione una tonalidad</option>
+                                    <option value="C">C</option>
+                                    <option value="C#">C# / D♭</option>
+                                    <option value="D">D</option>
+                                    <option value="D#">D# / E♭</option>
+                                    <option value="E">E</option>
+                                    <option value="F">F</option>
+                                    <option value="F#">F# / G♭</option>
+                                    <option value="G">G</option>
+                                    <option value="G#">G# / A♭</option>
+                                    <option value="A">A</option>
+                                    <option value="A#">A# / B♭</option>
+                                    <option value="B">B</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="results-container">
+                            <div id="result" class="result-card">
+                                <div class="result-icon">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div class="result-content">
+                                    <h4>Tonalidad para el saxofón</h4>
+                                    <p id="converted-tonality" class="result-value">-</p>
+                                </div>
+                            </div>
+                            
+                            <div id="result_tonality" class="result-card">
+                                <div class="result-icon">
+                                    <i class="fas fa-scale-balanced"></i>
+                                </div>
+                                <div class="result-content">
+                                    <h4>Escala</h4>
+                                    <p id="sax-scale" class="result-value">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Scale Finder -->
+                <section class="tool-section scale-container">
+                    <div class="tool-header">
+                        <h2 class="tool-title">
+                            <i class="fas fa-search me-2"></i>Buscador de Escalas
+                        </h2>
+                        <p class="tool-description">Encuentra diferentes tipos de escalas musicales</p>
+                    </div>
+
+                    <form class="tool-form" id="scale-form">
+                        <div class="form-group">
+                            <label for="escala" class="form-label">
+                                <i class="fas fa-key me-1"></i>Tonalidad base
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="escala" class="form-select" required>
+                                    <option value="">Seleccione una tonalidad</option>
+                                    <option value="C">C</option>
+                                    <option value="C#">C# / D♭</option>
+                                    <option value="D">D</option>
+                                    <option value="D#">D# / E♭</option>
+                                    <option value="E">E</option>
+                                    <option value="F">F</option>
+                                    <option value="F#">F# / G♭</option>
+                                    <option value="G">G</option>
+                                    <option value="G#">G# / A♭</option>
+                                    <option value="A">A</option>
+                                    <option value="A#">A# / B♭</option>
+                                    <option value="B">B</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="typeScale" class="form-label">
+                                <i class="fas fa-layer-group me-1"></i>Tipo de escala
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="typeScale" class="form-select" required>
+                                    <option value="">Seleccione una escala</option>
+                                    
+                                    <optgroup label="Modos Diatónicos">
+                                        <option value="mayor">Jónico (Mayor)</option>
+                                        <option value="dorico">Dórico</option>
+                                        <option value="frigio">Frigio</option>
+                                        <option value="lidio">Lidio</option>
+                                        <option value="mixolidio">Mixolidio</option>
+                                        <option value="eolico">Eólico (Menor natural)</option>
+                                        <option value="locrio">Locrio</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="Escalas Pentatónicas">
+                                        <option value="mayor_pent">Pentatónica Mayor</option>
+                                        <option value="menor_pent">Pentatónica Menor</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="results-container">
+                            <div id="result_Scale" class="result-card">
+                                <div class="result-icon">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                                <div class="result-content">
+                                    <h4>Escala resultante</h4>
+                                    <p id="scale-result" class="result-value">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Advanced Melody Transposer -->
+                <section class="tool-section converter-container">
+                    <div class="tool-header">
+                        <h2 class="tool-title">
+                            <i class="fas fa-arrows-up-down me-2"></i>Transportador de Melodías Avanzado
+                        </h2>
+                        <p class="tool-description">Transporta acordes y melodías a diferentes tonalidades</p>
+                    </div>
+
+                    <form class="tool-form" id="transposer-form">
+                        <div class="form-group">
+                            <label for="melody-input" class="form-label">
+                                <i class="fas fa-edit me-1"></i>Acordes y melodía
+                            </label>
+                            <textarea id="melody-input" class="form-control" rows="3" 
+                                      placeholder="Ejemplo: C, Am, F, G7 | C E G A"
+                                      aria-describedby="melody-help"></textarea>
+                            <div id="melody-help" class="text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Ingresa acordes separados por comas y melodía separada por | (opcional)
+                            </div>
+                        </div>
+
+                        <div class="transpose-controls">
+                            <label class="form-label">
+                                <i class="fas fa-sliders-h me-1"></i>Transponer
+                            </label>
+                            <div class="transpose-buttons">
+                                <div class="btn-group" role="group" aria-label="Controles de transposición">
+                                    <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-1" 
+                                            aria-label="Bajar medio tono">
+                                        <i class="fas fa-arrow-down"></i> ½T
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="1" 
+                                            aria-label="Subir medio tono">
+                                        <i class="fas fa-arrow-up"></i> ½T
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-2" 
+                                            aria-label="Bajar un tono">
+                                        <i class="fas fa-angle-double-down"></i> 1T
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="2" 
+                                            aria-label="Subir un tono">
+                                        <i class="fas fa-angle-double-up"></i> 1T
+                                    </button>
+                                </div>
+                                
+                                <button type="button" class="btn btn-outline-danger" id="reset-btn" 
+                                        aria-label="Reiniciar transposición">
+                                    <i class="fas fa-redo"></i> Reiniciar
+                                </button>
+                            </div>
+                            
+                            <div class="transpose-info">
+                                <span id="current-steps" class="badge bg-secondary">
+                                    <i class="fas fa-info-circle me-1"></i>0 semitonos
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="results-container">
+                            <div id="melody-result" class="result-card large">
+                                <div class="result-header">
+                                    <h4><i class="fas fa-chart-line me-2"></i>Resultado del Transporte</h4>
+                                </div>
+                                <div class="result-grid">
+                                    <div class="result-item">
+                                        <span class="result-label">Tonalidad original:</span>
+                                        <span id="estimated-key" class="result-value">-</span>
+                                        <span class="mode-badge" id="estimated-mode">-</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">Melodía original:</span>
+                                        <span id="original-melody" class="result-value">-</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">Nueva tonalidad:</span>
+                                        <span id="new-key" class="result-value">-</span>
+                                        <span class="mode-badge" id="transposed-mode">-</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">Melodía transportada:</span>
+                                        <span id="transposed-melody" class="result-value">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+            </div>
         </div>
-        <div id="result_tonality" class="result">
-            <p><strong>Escala:</strong> <span id="sax-scale"></span></p>
-        </div>
-    </div>
+    </main>
 
-    <div class="container scale-container">
-        <h2><label for="escala">Buscador de escalas</label></h2>
-        <select id="escala">
-            <option value="seleccione">Seleccione</option>
-            <option value="C">C</option>
-            <option value="C#">C# / D♭</option>
-            <option value="D">D</option>
-            <option value="D#">D# / E♭</option>
-            <option value="E">E</option>
-            <option value="F">F</option>
-            <option value="F#">F# / G♭</option>
-            <option value="G">G</option>
-            <option value="G#">G# / A♭</option>
-            <option value="A">A</option>
-            <option value="A#">A# / B♭</option>
-            <option value="B">B</option>
-        </select>
-
-        <label for="typeScale">Tipo de escala:</label>
-        <select id="typeScale">
-            <option value="seleccione">Seleccione una escala</option>
-
-            <!-- Modos diatónicos -->
-            <option value="mayor">Jónico (Mayor)</option>
-            <option value="dorico">Dórico</option>
-            <option value="frigio">Frigio</option>
-            <option value="lidio">Lidio</option>
-            <option value="mixolidio">Mixolidio</option>
-            <option value="eolico">Eólico (Menor natural)</option>
-            <option value="locrio">Locrio</option>
-
-            <!-- Escalas pentatónicas -->
-            <option value="mayor_pent">Pentatónica Mayor</option>
-            <option value="menor_pent">Pentatónica Menor</option>
-        </select>
-
-        <div id="result_Scale" class="result">
-            <p><strong>Resultado de escala:</strong> <span id="scale-result"></span></p>
-        </div>
-    </div>
-
-    <div class="container converter-container mt-5">
-    <h2>Transportador de Melodías Avanzado</h2>
-
-    <label for="melody-input">Ingresa acordes y melodía (ej: C, Dm, G7 | C E G A):</label>
-    <textarea id="melody-input" class="form-control" rows="3" 
-              placeholder="Ejemplo: C, Am, F, G7 | C E G A"></textarea>
-
-    <div class="transpose-controls mt-3">
-        <label class="mb-2">Transponer:</label>
-        <div class="btn-group" role="group">
-            <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-1">
-                <i class="fas fa-arrow-down"></i> 1/2 T
-            </button>
-            <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="1">
-                <i class="fas fa-arrow-up"></i> 1/2 T
-            </button>
-            <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="-2">
-                <i class="fas fa-angle-double-down"></i> 1 T
-            </button>
-            <button type="button" class="btn btn-outline-primary transpose-btn" data-steps="2">
-                <i class="fas fa-angle-double-up"></i> 1 T
-            </button>
-            <button type="button" class="btn btn-outline-danger" id="reset-btn">
-                <i class="fas fa-redo"></i> Reiniciar
-            </button>
-        </div>
-        <div class="mt-2">
-            <span id="current-steps" class="badge bg-secondary">0 semitonos</span>
-        </div>
-    </div>
-
-    <div id="melody-result" class="result mt-4">
-        <p><strong>Tonalidad original:</strong> 
-           <span id="estimated-key">-</span> 
-           <span class="mode-badge" id="estimated-mode">-</span></p>
-        <p><strong>Melodía original:</strong> <span id="original-melody">-</span></p>
-        <p><strong>Nueva tonalidad:</strong> 
-           <span id="new-key">-</span> 
-           <span class="mode-badge" id="transposed-mode">-</span></p>
-        <p><strong>Melodía transportada:</strong> <span id="transposed-melody">-</span></p>
-    </div>
-</div>
-
-</div>
-    
-<script src="/JS/dark_mode.js"></script>
-<script src="/JS/transport.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/JS/script.js"></script>
+    <!-- Scripts -->
+    <script src="/JS/dark_mode.js"></script>
+    <script src="/JS/transport.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/JS/script.js"></script>
 </body>
-
-
 
 <footer class="bg-dark text-white py-4">
     <div class="container">

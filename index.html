@@ -13,10 +13,45 @@
 </head>
 
 <body>
-    <!-- Welcome Animation -->
-    <div id="welcome-animation">
+    <!-- Welcome Animation - Day Version -->
+    <div id="welcome-animation-day" class="welcome-animation">
+        <div class="day-sky">
+            <div class="sun"></div>
+            <div class="cloud cloud-1"></div>
+            <div class="cloud cloud-2"></div>
+            <div class="cloud cloud-3"></div>
+        </div>
         <div class="welcome-content">
             <div class="logo-animation">Convert-Music</div>
+            <div class="welcome-message-day">
+                <i class="fas fa-sun me-2"></i>
+                <span id="day-welcome-text">¡Buenos días! Bienvenido a Convert Music</span>
+            </div>
+            <div class="loading-container">
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Animation - Night Version -->
+    <div id="welcome-animation-night" class="welcome-animation">
+        <div class="night-sky">
+            <div class="moon"></div>
+            <div class="star star-1"></div>
+            <div class="star star-2"></div>
+            <div class="star star-3"></div>
+            <div class="star star-4"></div>
+            <div class="star star-5"></div>
+            <div class="star star-6"></div>
+            <div class="star star-7"></div>
+            <div class="star star-8"></div>
+        </div>
+        <div class="welcome-content">
+            <div class="logo-animation">Convert-Music</div>
+            <div class="welcome-message-night">
+                <i class="fas fa-moon me-2"></i>
+                <span id="night-welcome-text">¡Buenas noches! Bienvenido a Convert Music</span>
+            </div>
             <div class="loading-container">
                 <div class="loading-bar"></div>
             </div>
@@ -29,6 +64,7 @@
         <span id="welcome-text">Bienvenido de nuevo!</span>
     </div>
 
+    <!-- Header Minimalista -->
     <header class="main-header">
         <div class="container">
             <nav class="navbar navbar-expand-lg">
@@ -57,6 +93,7 @@
                                     <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-2"></i> Creación de Partituras</a></li>
                                     <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-2"></i> Buscar Letras</a></li>
                                     <li><a class="dropdown-item" href="afinador.html"><i class="fas fa-sliders-h me-1"></i> Afinador Musical</a></li>
+                                    <li><a class="dropdown-item" href="play.html"><i class="fas fa-play-circle me-2"></i> Reproductor Musical</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -143,167 +180,200 @@
         </div>
     </div>
 
-    <!-- Hero Section -->
+    <!-- Hero Section Minimalista -->
     <section class="hero">
-        <div class="floating-element floating-element-1"></div>
-        <div class="floating-element floating-element-2"></div>
         <div class="container">
             <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-music"></i>
+                    <span>Plataforma Musical</span>
+                </div>
                 <h1>Transforma tu experiencia musical</h1>
-                <p>Descubre herramientas profesionales diseñadas para músicos, compositores y amantes de la música.
-                    Simplifica tu flujo de trabajo y lleva tu creatividad al siguiente nivel.</p>
-                <a href="#herramientas" class="btn btn-primary">
-                    Explorar herramientas <i class="fas fa-arrow-right ms-2"></i>
-                </a>
+                <p>Descubre herramientas profesionales diseñadas para músicos, compositores y amantes de la música. Simplifica tu flujo de trabajo y lleva tu creatividad al siguiente nivel.</p>
+                <div class="hero-actions">
+                    <a href="#herramientas" class="btn btn-primary">
+                        Explorar herramientas <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                    <a href="play.html" class="btn btn-outline-primary">
+                        <i class="fas fa-play me-2"></i>Reproductor
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="floating-card card-1">
+                <i class="fas fa-music"></i>
+            </div>
+            <div class="floating-card card-2">
+                <i class="fas fa-sliders-h"></i>
+            </div>
+            <div class="floating-card card-3">
+                <i class="fas fa-search"></i>
             </div>
         </div>
     </section>
 
-    <!-- Tools Section -->
+    <!-- Tools Section Rediseñada -->
     <section id="herramientas" class="section-tools">
         <div class="container">
-            <h2 class="section-title">Nuestras Herramientas</h2>
-            <p class="section-subtitle">Diseñadas para satisfacer todas tus necesidades musicales</p>
+            <div class="section-header">
+                <h2 class="section-title">Nuestras Herramientas</h2>
+                <p class="section-subtitle">Diseñadas para satisfacer todas tus necesidades musicales</p>
+            </div>
 
-            <div class="row g-4">
+            <div class="tools-grid">
                 <!-- Conversor de Tonalidades -->
-                <div class="col-lg-4 col-md-6">
-                    <div class="tool-card">
+                <div class="tool-card">
+                    <div class="tool-header">
                         <div class="tool-icon">
                             <i class="fas fa-exchange-alt"></i>
                         </div>
                         <h3 class="tool-title">Conversor de Tonalidades</h3>
-                        <p class="tool-description">Adapta fácilmente las tonalidades entre diferentes instrumentos y
-                            explora todas las escalas musicales disponibles.</p>
-                        <ul class="tool-features">
-                            <li>Soporte para múltiples instrumentos</li>
-                            <li>Visualización interactiva de escalas</li>
-                            <li>Historial de conversiones</li>
-                        </ul>
-                        <a href="convert.html" class="tool-link">
-                            Usar herramienta <i class="fas fa-arrow-right"></i>
-                        </a>
                     </div>
+                    <p class="tool-description">Adapta fácilmente las tonalidades entre diferentes instrumentos y explora todas las escalas musicales disponibles.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">Múltiples instrumentos</span>
+                        <span class="feature-tag">Escalas interactivas</span>
+                        <span class="feature-tag">Historial</span>
+                    </div>
+                    <a href="convert.html" class="tool-link">
+                        Usar herramienta <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
 
                 <!-- Editor de Partituras -->
-                <div class="col-lg-4 col-md-6">
-                    <div class="tool-card">
+                <div class="tool-card">
+                    <div class="tool-header">
                         <div class="tool-icon">
                             <i class="fas fa-music"></i>
                         </div>
                         <h3 class="tool-title">Editor de Partituras</h3>
-                        <p class="tool-description">Crea, edita y comparte partituras profesionales con nuestra interfaz
-                            intuitiva y potentes herramientas.</p>
-                        <ul class="tool-features">
-                            <li>Notación musical completa</li>
-                            <li>Exportación en múltiples formatos</li>
-                            <li>Colaboración en tiempo real</li>
-                        </ul>
-                        <a href="partitura.html" class="tool-link">
-                            Crear partitura <i class="fas fa-arrow-right"></i>
-                        </a>
                     </div>
+                    <p class="tool-description">Crea, edita y comparte partituras profesionales con nuestra interfaz intuitiva y potentes herramientas.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">Notación completa</span>
+                        <span class="feature-tag">Múltiples formatos</span>
+                        <span class="feature-tag">Colaboración</span>
+                    </div>
+                    <a href="partitura.html" class="tool-link">
+                        Crear partitura <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Reproductor Musical -->
+                <div class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <h3 class="tool-title">Reproductor Musical</h3>
+                    </div>
+                    <p class="tool-description">Reproduce tu música favorita con controles avanzados, gestión de playlists y sistema de favoritos integrado.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">Controles avanzados</span>
+                        <span class="feature-tag">Playlists</span>
+                        <span class="feature-tag">Favoritos</span>
+                    </div>
+                    <a href="play.html" class="tool-link">
+                        Reproducir música <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
 
                 <!-- Afinador Musical -->
-                <div class="col-lg-4 col-md-6">
-                    <div class="tool-card tuner-card">
+                <div class="tool-card tuner-card">
+                    <div class="tool-header">
                         <div class="tool-icon">
-                            <i class="fas fa-sliders-h me-1"></i>
+                            <i class="fas fa-sliders-h"></i>
                         </div>
                         <h3 class="tool-title">Afinador Musical</h3>
-                        <p class="tool-description">Afinación precisa para guitarra, violín y bajo con detección de
-                            frecuencia en tiempo real.</p>
-
-                        <div class="tuner-preview-content">
-                            <div class="tuner-note-preview">--</div>
-                            <div class="tuner-visual-preview">
-                                <div class="tuner-scale-preview"></div>
-                                <div class="tuner-needle-preview"></div>
-                            </div>
-                            <div class="tuner-accuracy-preview">
-                                <div class="tuner-accuracy-marker"></div>
-                            </div>
-
-                            <div class="tuner-strings-preview">
-                                <div class="tuner-string-preview">6ª <span class="tuner-string-note">E</span></div>
-                                <div class="tuner-string-preview">5ª <span class="tuner-string-note">A</span></div>
-                                <div class="tuner-string-preview">4ª <span class="tuner-string-note">D</span></div>
-                                <div class="tuner-string-preview">3ª <span class="tuner-string-note">G</span></div>
-                                <div class="tuner-string-preview">2ª <span class="tuner-string-note">B</span></div>
-                                <div class="tuner-string-preview">1ª <span class="tuner-string-note">E</span></div>
-                            </div>
-
-                            <div class="tuner-status-preview">Selecciona una cuerda para afinar</div>
-                        </div>
-
-                        <ul class="tool-features">
-                            <li>Precisión profesional (±0.5 Hz)</li>
-                            <li>Soporte para múltiples instrumentos</li>
-                            <li>Visualización intuitiva</li>
-                        </ul>
-                        <a href="afinador.html" class="tool-link">
-                            Usar afinador <i class="fas fa-arrow-right"></i>
-                        </a>
                     </div>
+                    <p class="tool-description">Afinación precisa para guitarra, violín y bajo con detección de frecuencia en tiempo real.</p>
+                    
+                    <div class="tuner-preview-content">
+                        <div class="tuner-note-preview">--</div>
+                        <div class="tuner-visual-preview">
+                            <div class="tuner-scale-preview"></div>
+                            <div class="tuner-needle-preview"></div>
+                        </div>
+                        <div class="tuner-accuracy-preview">
+                            <div class="tuner-accuracy-marker"></div>
+                        </div>
+                        <div class="tuner-strings-preview">
+                            <div class="tuner-string-preview">6ª <span class="tuner-string-note">E</span></div>
+                            <div class="tuner-string-preview">5ª <span class="tuner-string-note">A</span></div>
+                            <div class="tuner-string-preview">4ª <span class="tuner-string-note">D</span></div>
+                            <div class="tuner-string-preview">3ª <span class="tuner-string-note">G</span></div>
+                            <div class="tuner-string-preview">2ª <span class="tuner-string-note">B</span></div>
+                            <div class="tuner-string-preview">1ª <span class="tuner-string-note">E</span></div>
+                        </div>
+                        <div class="tuner-status-preview">Selecciona una cuerda para afinar</div>
+                    </div>
+
+                    <div class="tool-features">
+                        <span class="feature-tag">Precisión ±0.5 Hz</span>
+                        <span class="feature-tag">Múltiples instrumentos</span>
+                        <span class="feature-tag">Visualización</span>
+                    </div>
+                    <a href="afinador.html" class="tool-link">
+                        Usar afinador <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
 
                 <!-- Buscador de Letras -->
-                <div class="col-lg-4 col-md-6">
-                    <div class="tool-card">
+                <div class="tool-card">
+                    <div class="tool-header">
                         <div class="tool-icon">
                             <i class="fas fa-search"></i>
                         </div>
                         <h3 class="tool-title">Buscador de Letras</h3>
-                        <p class="tool-description">Encuentra las letras de tus canciones favoritas y descubre nueva
-                            música con nuestra extensa base de datos.</p>
-                        <ul class="tool-features">
-                            <li>Millones de canciones indexadas</li>
-                            <li>Búsqueda por artista o título</li>
-                            <li>Letras con acordes incluidos</li>
-                        </ul>
-                        <a href="Search_liryc.html" class="tool-link">
-                            Buscar letras <i class="fas fa-arrow-right"></i>
-                        </a>
                     </div>
+                    <p class="tool-description">Encuentra las letras de tus canciones favoritas y descubre nueva música con nuestra extensa base de datos.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">Millones de canciones</span>
+                        <span class="feature-tag">Búsqueda avanzada</span>
+                        <span class="feature-tag">Descargas incluidas</span>
+                    </div>
+                    <a href="Search_liryc.html" class="tool-link">
+                        Buscar letras <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-
-    <!-- Footer -->
-    <footer>
+    <!-- Footer Minimalista -->
+    <footer class="footer-minimal">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mb-5 mb-lg-0">
+            <div class="footer-content">
+                <div class="footer-brand">
                     <div class="footer-logo">ConvertMusic</div>
-                    <p class="footer-description">Tu plataforma integral para todas las herramientas musicales que
-                        necesitas, en un solo lugar.</p>
+                    <p class="footer-description">Tu plataforma integral para todas las herramientas musicales que necesitas, en un solo lugar.</p>
                 </div>
-                <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
-                    <h4 class="footer-links-title">Navegación</h4>
-                    <ul class="footer-links">
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Inicio</a></li>
-                        <li><a href="#herramientas"><i class="fas fa-chevron-right"></i> Herramientas</a></li>
-                        <li><a href="../HTML/about.html"><i class="fas fa-chevron-right"></i> Acerca de</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
-                    <h4 class="footer-links-title">Herramientas</h4>
-                    <ul class="footer-links">
-                        <li><a href="convert.html"><i class="fas fa-chevron-right"></i> Conversor</a></li>
-                        <li><a href="partitura.html"><i class="fas fa-chevron-right"></i> Partituras</a></li>
-                        <li><a href="afinador.html"><i class="fas fa-chevron-right"></i> Afinador</a></li>
-                        <li><a href="Search_liryc.html"><i class="fas fa-chevron-right"></i> Letras</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-2 col-md-4">
-                    <h4 class="footer-links-title">Contacto</h4>
-                    <ul class="footer-links">
-                        <li><a href="mailto:jafetalexander58@gmail.com"><i class="fas fa-envelope"></i> Email</a></li>
-                    </ul>
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Navegación</h4>
+                        <ul>
+                            <li><a href="#">Inicio</a></li>
+                            <li><a href="#herramientas">Herramientas</a></li>
+                            <li><a href="about.html">Acerca de</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Herramientas</h4>
+                        <ul>
+                            <li><a href="convert.html">Conversor</a></li>
+                            <li><a href="partitura.html">Partituras</a></li>
+                            <li><a href="play.html">Reproductor</a></li>
+                            <li><a href="afinador.html">Afinador</a></li>
+                            <li><a href="Search_liryc.html">Letras</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Contacto</h4>
+                        <ul>
+                            <li><a href="mailto:jafetalexander58@gmail.com">Email</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -316,6 +386,57 @@
     <script src="/JS/script_ind.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Función para determinar si es día o noche
+            function isDayTime() {
+                const hour = new Date().getHours();
+                return hour >= 6 && hour < 18; // Día: 6 AM - 6 PM
+            }
+
+            // Función para obtener el saludo según la hora
+            function getGreeting() {
+                const hour = new Date().getHours();
+                if (hour >= 5 && hour < 12) {
+                    return "¡Buenos días! Bienvenido a Convert Music";
+                } else if (hour >= 12 && hour < 18) {
+                    return "¡Buenas tardes! Bienvenido a Convert Music";
+                } else {
+                    return "¡Buenas noches! Bienvenido a Convert Music";
+                }
+            }
+
+            // Mostrar la animación correspondiente
+            function showWelcomeAnimation() {
+                const dayAnimation = document.getElementById('welcome-animation-day');
+                const nightAnimation = document.getElementById('welcome-animation-night');
+                const dayText = document.getElementById('day-welcome-text');
+                const nightText = document.getElementById('night-welcome-text');
+                
+                const greeting = getGreeting();
+                
+                if (isDayTime()) {
+                    dayAnimation.style.display = 'flex';
+                    nightAnimation.style.display = 'none';
+                    dayText.textContent = greeting;
+                } else {
+                    dayAnimation.style.display = 'none';
+                    nightAnimation.style.display = 'flex';
+                    nightText.textContent = greeting;
+                }
+
+                // Ocultar animación después de 3 segundos
+                setTimeout(() => {
+                    dayAnimation.style.opacity = '0';
+                    nightAnimation.style.opacity = '0';
+                    setTimeout(() => {
+                        dayAnimation.style.display = 'none';
+                        nightAnimation.style.display = 'none';
+                    }, 800);
+                }, 3000);
+            }
+
+            // Iniciar animación de bienvenida
+            showWelcomeAnimation();
+
             // 1. Simulación de afinador con soporte táctil
             const tunerCards = document.querySelectorAll('.tuner-card');
             tunerCards.forEach(card => {
