@@ -121,16 +121,13 @@ body {
     align-items: center;
     z-index: 99999;
     opacity: 1;
-    transition: opacity 0.5s ease;
-    pointer-events: none;
+    transition: opacity 0.8s ease;
 }
 
 .welcome-animation.hidden {
     opacity: 0;
     visibility: hidden;
     display: none;
-    z-index: -9999;
-    pointer-events: none;
 }
 
 /* Day Animation */
