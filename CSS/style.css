@@ -64,23 +64,6 @@ body {
     overflow-x: hidden;
 }
 
-body.loaded .main-header,
-body.loaded .hero,
-body.loaded .section-tools,
-body.loaded .footer-minimal {
-    opacity: 1;
-    visibility: visible;
-}
-
-.main-header,
-.hero,
-.section-tools,
-.footer-minimal {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
 /* Animations */
 @keyframes fadeInUp {
     from {
@@ -189,8 +172,8 @@ body.loaded .footer-minimal {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -199,9 +182,6 @@ body.loaded .footer-minimal {
     opacity: 1;
     transition: opacity 0.8s cubic-bezier(0.19, 1, 0.22, 1);
     will-change: opacity;
-    pointer-events: none;
-    min-height: 100vh;
-    min-width: 100vw;
 }
 
 /* Day Animation */
@@ -1346,7 +1326,7 @@ body.loaded .footer-minimal {
     }
     
     .card-3 {
-        top: 40%;
+        top: 45%;
         right: 10%;
     }
     
@@ -1699,13 +1679,13 @@ body.loaded .footer-minimal {
         min-height: 35px;
     }
     
-    /* Optimizaciones para el loading bar */
+    /* Optimizaciones para el loading bar en móviles pequeños */
     .loading-container {
         width: 200px;
         height: 3px;
     }
     
-    /* Mejoras para el welcome message */
+    /* Mejoras para el welcome message en móviles pequeños */
     .welcome-message {
         top: 5px;
         right: 5px;
@@ -1713,6 +1693,55 @@ body.loaded .footer-minimal {
         padding: 10px 15px;
         font-size: 0.85rem;
         border-radius: 6px;
+    }
+    
+    /* Optimizaciones para las animaciones en móviles pequeños */
+    @keyframes cardFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(1deg); }
+    }
+    
+    @keyframes sunRise {
+        0% { 
+            transform: translateY(80px) scale(0.7);
+            opacity: 0;
+        }
+        50% {
+            transform: translateY(-15px) scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(0) scale(0.9);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes moonGlow {
+        0%, 100% { 
+            transform: scale(0.9);
+            box-shadow: 0 0 15px rgba(240, 248, 255, 0.3);
+        }
+        50% { 
+            transform: scale(1);
+            box-shadow: 0 0 25px rgba(240, 248, 255, 0.5);
+        }
+    }
+    
+    @keyframes starTwinkle {
+        0%, 100% { 
+            opacity: 0.2;
+            transform: scale(0.8);
+        }
+        50% { 
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+    }
+    
+    @keyframes starFloat {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-8px) rotate(180deg); }
+        100% { transform: translateY(0px) rotate(360deg); }
     }
 }
 
@@ -1941,5 +1970,198 @@ body.loaded .footer-minimal {
     .logo-animation {
         background-clip: text;
         color: transparent;
+    }
+}
+
+/* Correcciones finales para animaciones de bienvenida */
+.welcome-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    will-change: opacity;
+    /* Asegurar que cubra toda la pantalla */
+    min-height: 100vh;
+    min-width: 100vw;
+}
+
+/* Mejoras para animaciones en móviles */
+@media (max-width: 768px) {
+    .welcome-animation {
+        /* Optimizar para pantallas pequeñas */
+        padding: 0;
+        margin: 0;
+    }
+    
+    .welcome-content {
+        /* Asegurar que el contenido sea visible en móviles */
+        max-width: 90vw;
+        padding: 0 1rem;
+    }
+    
+    .logo-animation {
+        /* Ajustar tamaño para móviles */
+        font-size: 2.5rem;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+    
+    .welcome-message-day,
+    .welcome-message-night {
+        /* Mejorar legibilidad en móviles */
+        font-size: 1rem;
+        line-height: 1.4;
+        padding: 0 0.5rem;
+    }
+    
+    .loading-container {
+        /* Ajustar tamaño para móviles */
+        width: 250px;
+        max-width: 80vw;
+    }
+}
+
+/* Correcciones para dispositivos con pantallas muy pequeñas */
+@media (max-width: 480px) {
+    .logo-animation {
+        font-size: 2rem;
+    }
+    
+    .welcome-message-day,
+    .welcome-message-night {
+        font-size: 0.9rem;
+    }
+    
+    .loading-container {
+        width: 200px;
+    }
+    
+    .sun {
+        width: 60px;
+        height: 60px;
+        top: 10%;
+        right: 10%;
+    }
+    
+    .moon {
+        width: 50px;
+        height: 50px;
+        top: 8%;
+        right: 8%;
+    }
+}
+
+/* Correcciones para orientación landscape en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+    .welcome-animation {
+        /* Optimizar para landscape */
+        padding: 1rem 0;
+    }
+    
+    .welcome-content {
+        /* Ajustar espaciado para landscape */
+        transform: translateY(10px);
+    }
+    
+    .logo-animation {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .welcome-message-day,
+    .welcome-message-night {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .loading-container {
+        width: 200px;
+    }
+}
+
+/* Correcciones para navegadores que no soportan CSS Grid o Flexbox */
+@supports not (display: flex) {
+    .welcome-animation {
+        display: block;
+        text-align: center;
+        padding-top: 20vh;
+    }
+    
+    .welcome-content {
+        display: inline-block;
+        text-align: center;
+    }
+}
+
+/* Correcciones para navegadores que no soportan will-change */
+@supports not (will-change: opacity) {
+    .welcome-animation,
+    .sun,
+    .moon,
+    .cloud,
+    .star,
+    .welcome-content,
+    .loading-bar {
+        /* Fallback para navegadores antiguos */
+        transform: translateZ(0);
+    }
+}
+
+/* Correcciones para navegadores que no soportan calc() */
+@supports not (width: calc(100vw + 100px)) {
+    .cloud {
+        /* Fallback para navegadores que no soportan calc */
+        animation: cloudFloatFallback 8s ease-in-out infinite;
+    }
+}
+
+@keyframes cloudFloatFallback {
+    0% { 
+        transform: translateX(-100px); 
+        opacity: 0; 
+    }
+    20% { 
+        opacity: 1; 
+    }
+    80% { 
+        opacity: 1; 
+    }
+    100% { 
+        transform: translateX(120vw); 
+        opacity: 0; 
+    }
+}
+
+/* Correcciones para modo oscuro en navegadores que no soportan CSS custom properties */
+@media (prefers-color-scheme: dark) {
+    .welcome-message-day,
+    .welcome-message-night {
+        color: #f8f9fa;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+    
+    .loading-container {
+        background: rgba(255, 255, 255, 0.15);
+    }
+}
+
+/* Correcciones para modo claro en navegadores que no soportan CSS custom properties */
+@media (prefers-color-scheme: light) {
+    .welcome-message-day,
+    .welcome-message-night {
+        color: #1a1a2e;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    
+    .loading-container {
+        background: rgba(255, 255, 255, 0.2);
     }
 }

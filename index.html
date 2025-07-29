@@ -125,6 +125,69 @@
         </div>
     </header>
 
+    <!-- Modal de Login -->
+    <div class="modal fade login-modal" id="loginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Iniciar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="loginUsername" class="form-label">Nombre de Usuario</label>
+                            <input type="text" class="form-control" id="loginUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-submit">
+                            <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                        </button>
+                        <div class="form-footer">
+                            <p>¿No tienes cuenta? <a href="#" id="showRegisterForm">Regístrate</a></p>
+                        </div>
+                    </form>
+
+                    <form id="registerForm" style="display: none;">
+                        <div class="mb-3">
+                            <label for="firstName" class="form-label">Primer Nombre</label>
+                            <input type="text" class="form-control" id="firstName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="lastName" class="form-label">Primer Apellido</label>
+                            <input type="text" class="form-control" id="lastName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Nombre de Usuario</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="birthDate" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="birthDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-submit">
+                            <i class="fas fa-user-plus me-2"></i>Registrarse
+                        </button>
+                        <div class="form-footer">
+                            <p>¿Ya tienes cuenta? <a href="#" id="showLoginForm">Inicia Sesión</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Hero Section Minimalista -->
     <section class="hero">
         <div class="container">
