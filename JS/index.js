@@ -26,39 +26,115 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const greeting = getGreeting();
         
-        // Asegurarse de que ambos estén ocultos inicialmente
-        dayAnimation.style.display = 'none';
-        nightAnimation.style.display = 'none';
-        
+        // Mostrar la animación correspondiente inmediatamente
         if (isDayTime()) {
-            dayAnimation.style.display = 'flex';
-            dayAnimation.style.opacity = '1';
-            nightAnimation.style.display = 'none';
-            dayText.textContent = greeting;
+            if (dayAnimation) {
+                dayAnimation.style.display = 'flex';
+                dayAnimation.style.visibility = 'visible';
+                dayAnimation.style.opacity = '1';
+                if (dayText) dayText.textContent = greeting;
+            }
+            if (nightAnimation) {
+                nightAnimation.style.display = 'none';
+            }
         } else {
-            dayAnimation.style.display = 'none';
-            nightAnimation.style.display = 'flex';
-            nightAnimation.style.opacity = '1';
-            nightText.textContent = greeting;
+            if (nightAnimation) {
+                nightAnimation.style.display = 'flex';
+                nightAnimation.style.visibility = 'visible';
+                nightAnimation.style.opacity = '1';
+                if (nightText) nightText.textContent = greeting;
+            }
+            if (dayAnimation) {
+                dayAnimation.style.display = 'none';
+            }
         }
 
-        // Forzar repintado para activar las animaciones
-        void dayAnimation.offsetWidth;
-        void nightAnimation.offsetWidth;
-
-        // Ocultar animación después del tiempo especificado
+        // Ocultar animación después de 3 segundos
         setTimeout(() => {
-            dayAnimation.style.opacity = '0';
-            nightAnimation.style.opacity = '0';
-            setTimeout(() => {
-                dayAnimation.style.display = 'none';
-                nightAnimation.style.display = 'none';
-            }, 800);
+            if (dayAnimation && dayAnimation.style.display === 'flex') {
+                dayAnimation.style.opacity = '0';
+                setTimeout(() => {
+                    dayAnimation.style.display = 'none';
+                }, 800);
+            }
+            if (nightAnimation && nightAnimation.style.display === 'flex') {
+                nightAnimation.style.opacity = '0';
+                setTimeout(() => {
+                    nightAnimation.style.display = 'none';
+                }, 800);
+            }
         }, 3000);
     }
 
     // Iniciar animación de bienvenida
     showWelcomeAnimation();
+    
+    // Función simple y directa para ocultar animaciones
+    function hideWelcomeAnimations() {
+        const dayAnimation = document.getElementById('welcome-animation-day');
+        const nightAnimation = document.getElementById('welcome-animation-night');
+        
+        // Ocultar ambas animaciones completamente
+        if (dayAnimation) {
+            dayAnimation.style.opacity = '0';
+            dayAnimation.style.display = 'none';
+            dayAnimation.style.visibility = 'hidden';
+            dayAnimation.style.zIndex = '-9999';
+            dayAnimation.style.pointerEvents = 'none';
+            dayAnimation.classList.add('hidden');
+            dayAnimation.remove();
+        }
+        if (nightAnimation) {
+            nightAnimation.style.opacity = '0';
+            nightAnimation.style.display = 'none';
+            nightAnimation.style.visibility = 'hidden';
+            nightAnimation.style.zIndex = '-9999';
+            nightAnimation.style.pointerEvents = 'none';
+            nightAnimation.classList.add('hidden');
+            nightAnimation.remove();
+        }
+    }
+    
+    // Ocultar animaciones después de 3 segundos
+    setTimeout(hideWelcomeAnimations, 3000);
+    
+    // Respaldo: ocultar después de 4 segundos
+    setTimeout(hideWelcomeAnimations, 4000);
+    
+    // Respaldo final: ocultar después de 5 segundos
+    setTimeout(hideWelcomeAnimations, 5000);
+    
+    // Función para limpiar completamente las animaciones
+    function completelyRemoveAnimations() {
+        const dayAnimation = document.getElementById('welcome-animation-day');
+        const nightAnimation = document.getElementById('welcome-animation-night');
+        
+        if (dayAnimation) {
+            dayAnimation.remove();
+        }
+        if (nightAnimation) {
+            nightAnimation.remove();
+        }
+    }
+    
+    // Función para verificar cuando la página está completamente cargada
+    window.addEventListener('load', function() {
+        // Ocultar animaciones después de que todo esté cargado
+        setTimeout(hideWelcomeAnimations, 2000);
+        // Remover completamente después de 6 segundos
+        setTimeout(completelyRemoveAnimations, 6000);
+    });
+    
+    // Función para verificar cuando el DOM está listo
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ocultar animaciones después de que el DOM esté listo
+        setTimeout(hideWelcomeAnimations, 2500);
+        // Remover completamente después de 6 segundos
+        setTimeout(completelyRemoveAnimations, 6000);
+    });
+    
+    // Respaldo final: remover completamente después de 7 segundos
+    setTimeout(completelyRemoveAnimations, 7000);
 
     // 1. Simulación de afinador
     const tunerCards = document.querySelectorAll('.tuner-card');

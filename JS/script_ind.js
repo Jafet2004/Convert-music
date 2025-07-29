@@ -1,17 +1,30 @@
-    // Welcome Animation
+            // Welcome Animation - Control de tiempo simplificado
         window.addEventListener('load', () => {
-            const welcomeAnimation = document.getElementById('welcome-animation');
-            const isMobile = window.innerWidth <= 768;
-            
-            // Ajustar duración de animación para móviles
-            const animationDuration = isMobile ? 1500 : 2000;
-            
+            // Ocultar animaciones después de 3 segundos
             setTimeout(() => {
-                welcomeAnimation.style.opacity = '0';
-                setTimeout(() => {
-                    welcomeAnimation.style.display = 'none';
-                }, 800);
-            }, animationDuration);
+                const dayAnimation = document.getElementById('welcome-animation-day');
+                const nightAnimation = document.getElementById('welcome-animation-night');
+                
+                // Ocultar ambas animaciones completamente
+                if (dayAnimation) {
+                    dayAnimation.style.opacity = '0';
+                    dayAnimation.style.display = 'none';
+                    dayAnimation.style.visibility = 'hidden';
+                    dayAnimation.style.zIndex = '-9999';
+                    dayAnimation.style.pointerEvents = 'none';
+                    dayAnimation.classList.add('hidden');
+                    dayAnimation.remove();
+                }
+                if (nightAnimation) {
+                    nightAnimation.style.opacity = '0';
+                    nightAnimation.style.display = 'none';
+                    nightAnimation.style.visibility = 'hidden';
+                    nightAnimation.style.zIndex = '-9999';
+                    nightAnimation.style.pointerEvents = 'none';
+                    nightAnimation.classList.add('hidden');
+                    nightAnimation.remove();
+                }
+            }, 3000);
         });
 
         // Dark Mode Toggle con optimizaciones móviles
@@ -29,10 +42,9 @@
             }
         }
         
-        // Función para detectar dispositivo móvil
+        // Función para detectar dispositivo móvil (solo para optimizaciones, no para restricciones)
         function isMobileDevice() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                   window.innerWidth <= 768;
+            return window.innerWidth <= 768;
         }
         
         darkModeToggle.addEventListener('click', () => {
