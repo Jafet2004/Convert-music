@@ -247,11 +247,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         users.push(userData);
         localStorage.setItem('users', JSON.stringify(users));
+        
         localStorage.setItem('currentUser', JSON.stringify(userData));
-
+        sessionStorage.setItem('justLoggedIn', 'true');
+        
         showWelcomeMessage(`Bienvenido, ${userData.firstName}!`);
         loginModal.hide();
         updateUserButton(userData);
+        
         resetForms();
         
         setTimeout(() => {
@@ -265,6 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
+
         const users = JSON.parse(localStorage.getItem('users')) || [];
         const user = users.find(u => u.username === username && u.password === password);
 
@@ -278,6 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showWelcomeMessage(`Bienvenido de nuevo, ${user.firstName}!`);
         loginModal.hide();
         updateUserButton(user);
+        
         resetForms();
         
         if (isAdmin(user.email)) {
@@ -384,18 +389,5 @@ document.addEventListener('DOMContentLoaded', function() {
     // Asegurar que las animaciones CSS se activen
     function forceReflow(element) {
         return element.offsetHeight;
-    }
-
-    // Registrar Service Worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(registration => {
-                    console.log('Service Worker registrado exitosamente:', registration.scope);
-                })
-                .catch(error => {
-                    console.log('Error al registrar Service Worker:', error);
-                });
-        });
     }
 });

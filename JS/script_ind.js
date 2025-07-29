@@ -1,5 +1,30 @@
         // Script para funcionalidades adicionales del index
 
+            // Welcome Animation - Asegurar visualización en todos los dispositivos
+        window.addEventListener('load', () => {
+            // Asegurar que la animación esté visible
+            const welcomeAnimation = document.getElementById('welcome-animation');
+            
+            if (welcomeAnimation) {
+                welcomeAnimation.style.display = 'flex';
+                welcomeAnimation.style.visibility = 'visible';
+                welcomeAnimation.style.opacity = '1';
+                welcomeAnimation.style.zIndex = '99999';
+            }
+            
+            // Ocultar animación después de 3 segundos
+            setTimeout(() => {
+                if (welcomeAnimation) {
+                    welcomeAnimation.style.opacity = '0';
+                    welcomeAnimation.style.transition = 'opacity 0.8s ease';
+                    setTimeout(() => {
+                        welcomeAnimation.style.display = 'none';
+                        welcomeAnimation.style.visibility = 'hidden';
+                    }, 800);
+                }
+            }, 3000);
+        });
+
         // Dark Mode Toggle con optimizaciones móviles
         const darkModeToggle = document.getElementById('darkModeToggle');
         const darkModeIcon = document.getElementById('darkModeIcon');
@@ -15,8 +40,25 @@
             }
         }
         
+        // Mostrar animación de bienvenida de forma natural
+        function showWelcomeAnimation() {
+            const welcomeAnimation = document.getElementById('welcome-animation');
+            
+            // Mostrar la animación de forma natural
+            if (welcomeAnimation) {
+                welcomeAnimation.style.display = 'flex';
+                welcomeAnimation.style.visibility = 'visible';
+                welcomeAnimation.style.opacity = '1';
+            }
+        }
+        
+        // Mostrar animación al cargar la página
+        showWelcomeAnimation();
+        
         darkModeToggle.addEventListener('click', () => {
             const currentTheme = document.body.getAttribute('data-theme');
+            
+            
             
             if (currentTheme === 'dark') {
                 document.body.removeAttribute('data-theme');
@@ -31,6 +73,9 @@
                 }
                 localStorage.setItem('theme', 'dark');
             }
+            
+            // Mostrar animación después del cambio de tema
+            setTimeout(showWelcomeAnimation, 100);
         });
 
         // Smooth scrolling for anchor links con optimizaciones móviles
@@ -43,8 +88,8 @@
                 
                 const targetElement = document.querySelector(targetId);
                 if (targetElement) {
-                    // Ajustar offset para scroll suave
-                    const offset = 60;
+                                    // Ajustar offset para scroll suave
+                const offset = 60;
                     
                     window.scrollTo({
                         top: targetElement.offsetTop - offset,
@@ -76,36 +121,50 @@
 
         // Optimizaciones para pantallas de alta densidad
         if (window.devicePixelRatio >= 2) {
-            // Ajustar estilos para pantallas Retina
-            const style = document.createElement('style');
-            style.textContent = `
-                .floating-card, .tool-card, .navbar {
-                    border-width: 0.5px !important;
-                }
-            `;
-            document.head.appendChild(style);
+            document.body.classList.add('high-dpi');
         }
 
-        // Mejoras para el manejo de memoria
-        window.addEventListener('beforeunload', function() {
-            // Limpiar event listeners y timeouts
-            clearTimeout(scrollTimeout);
-        });
+        // Optimizaciones para dispositivos táctiles
+        if ('ontouchstart' in window) {
+            document.body.classList.add('touch-device');
+        }
+
+        // Optimizaciones para dispositivos móviles
+        if (window.innerWidth <= 768) {
+            document.body.classList.add('mobile-device');
+        }
+
+        // Optimizaciones para dispositivos con poca memoria
+        if (navigator.deviceMemory && navigator.deviceMemory < 4) {
+            document.body.classList.add('low-memory');
+        }
 
         // Optimizaciones para conexiones lentas
-        if ('connection' in navigator) {
-            const connection = navigator.connection;
-            if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
-                // Reducir animaciones en conexiones lentas
-                const style = document.createElement('style');
-                style.textContent = `
-                    .floating-card, .sun, .moon, .cloud, .star {
-                        animation-duration: 0.5s !important;
-                    }
-                    .tool-card:hover {
-                        transform: none !important;
-                    }
-                `;
-                document.head.appendChild(style);
-            }
+        if (navigator.connection && navigator.connection.effectiveType === 'slow-2g') {
+            document.body.classList.add('slow-connection');
+        }
+
+        // Optimizaciones para dispositivos con preferencia de movimiento reducido
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.body.classList.add('reduced-motion');
+        }
+
+        // Optimizaciones para dispositivos con preferencia de contraste alto
+        if (window.matchMedia('(prefers-contrast: high)').matches) {
+            document.body.classList.add('high-contrast');
+        }
+
+        // Optimizaciones para dispositivos con preferencia de color invertido
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add('dark-scheme');
+        }
+
+        // Optimizaciones para dispositivos con preferencia de color invertido
+        if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+            document.body.classList.add('light-scheme');
+        }
+
+        // Optimizaciones para dispositivos con preferencia de color invertido
+        if (window.matchMedia('(prefers-color-scheme: no-preference)').matches) {
+            document.body.classList.add('no-color-scheme');
         }
