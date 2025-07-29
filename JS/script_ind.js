@@ -1,42 +1,4 @@
-            // Welcome Animation - Asegurar visualización en todos los dispositivos
-        window.addEventListener('load', () => {
-            // Asegurar que las animaciones estén visibles
-            const dayAnimation = document.getElementById('welcome-animation-day');
-            const nightAnimation = document.getElementById('welcome-animation-night');
-            
-            if (dayAnimation) {
-                dayAnimation.style.display = 'flex';
-                dayAnimation.style.visibility = 'visible';
-                dayAnimation.style.opacity = '1';
-                dayAnimation.style.zIndex = '99999';
-            }
-            if (nightAnimation) {
-                nightAnimation.style.display = 'flex';
-                nightAnimation.style.visibility = 'visible';
-                nightAnimation.style.opacity = '1';
-                nightAnimation.style.zIndex = '99999';
-            }
-            
-            // Ocultar animaciones después de 4 segundos
-            setTimeout(() => {
-                if (dayAnimation) {
-                    dayAnimation.style.opacity = '0';
-                    dayAnimation.style.transition = 'opacity 0.8s ease';
-                    setTimeout(() => {
-                        dayAnimation.style.display = 'none';
-                        dayAnimation.style.visibility = 'hidden';
-                    }, 800);
-                }
-                if (nightAnimation) {
-                    nightAnimation.style.opacity = '0';
-                    nightAnimation.style.transition = 'opacity 0.8s ease';
-                    setTimeout(() => {
-                        nightAnimation.style.display = 'none';
-                        nightAnimation.style.visibility = 'hidden';
-                    }, 800);
-                }
-            }, 4000);
-        });
+        // Script para funcionalidades adicionales del index
 
         // Dark Mode Toggle con optimizaciones móviles
         const darkModeToggle = document.getElementById('darkModeToggle');
@@ -53,35 +15,8 @@
             }
         }
         
-        // Mostrar animaciones de bienvenida de forma natural
-        function showWelcomeAnimations() {
-            const dayAnimation = document.getElementById('welcome-animation-day');
-            const nightAnimation = document.getElementById('welcome-animation-night');
-            
-            // Mostrar las animaciones de forma natural
-            if (dayAnimation) {
-                dayAnimation.style.display = 'flex';
-                dayAnimation.style.visibility = 'visible';
-                dayAnimation.style.opacity = '1';
-            }
-            if (nightAnimation) {
-                nightAnimation.style.display = 'flex';
-                nightAnimation.style.visibility = 'visible';
-                nightAnimation.style.opacity = '1';
-            }
-        }
-        
-        // Mostrar animaciones al cargar la página
-        showWelcomeAnimations();
-        
         darkModeToggle.addEventListener('click', () => {
             const currentTheme = document.body.getAttribute('data-theme');
-            
-            // Agregar feedback táctil
-            darkModeToggle.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                darkModeToggle.style.transform = 'scale(1)';
-            }, 150);
             
             if (currentTheme === 'dark') {
                 document.body.removeAttribute('data-theme');
@@ -96,9 +31,6 @@
                 }
                 localStorage.setItem('theme', 'dark');
             }
-            
-            // Mostrar animaciones después del cambio de tema
-            setTimeout(showWelcomeAnimations, 100);
         });
 
         // Smooth scrolling for anchor links con optimizaciones móviles
@@ -111,8 +43,8 @@
                 
                 const targetElement = document.querySelector(targetId);
                 if (targetElement) {
-                                    // Ajustar offset para scroll suave
-                const offset = 80;
+                    // Ajustar offset para scroll suave
+                    const offset = 60;
                     
                     window.scrollTo({
                         top: targetElement.offsetTop - offset,
@@ -137,63 +69,10 @@
                     header.style.background = 'var(--glass)';
                     header.style.boxShadow = 'none';
                 }
-            }, 10);
+            }, 50);
         }, { passive: true });
 
-        // Optimizaciones generales para mejor rendimiento
-        // Mejorar rendimiento de animaciones
-        const animatedElements = document.querySelectorAll('.floating-card, .sun, .moon, .cloud, .star');
-        animatedElements.forEach(element => {
-            element.style.willChange = 'transform';
-        });
 
-        // Optimizar eventos táctiles
-        const touchElements = document.querySelectorAll('.btn, .nav-link, .dropdown-item, .tool-link');
-        touchElements.forEach(element => {
-            element.addEventListener('touchstart', function() {
-                this.style.transform = 'scale(0.98)';
-            }, { passive: true });
-            
-            element.addEventListener('touchend', function() {
-                this.style.transform = 'scale(1)';
-            }, { passive: true });
-        });
-
-        // Prevenir zoom en inputs
-        const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            input.addEventListener('focus', function() {
-                // Scroll suave al input
-                setTimeout(() => {
-                    this.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center',
-                        inline: 'nearest'
-                    });
-                }, 300);
-            });
-        });
-
-        // Optimizar scroll para mejor rendimiento
-        let ticking = false;
-        function updateScroll() {
-            ticking = false;
-        }
-
-        window.addEventListener('scroll', function() {
-            if (!ticking) {
-                requestAnimationFrame(updateScroll);
-                ticking = true;
-            }
-        }, { passive: true });
-
-        // Mejorar manejo de orientación
-        window.addEventListener('orientationchange', function() {
-            // Recalcular posiciones después del cambio de orientación
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-            }, 500);
-        });
 
         // Optimizaciones para pantallas de alta densidad
         if (window.devicePixelRatio >= 2) {

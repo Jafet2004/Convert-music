@@ -126,35 +126,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Ocultar animaciones cuando la página esté completamente cargada
-    window.addEventListener('load', function() {
-        setTimeout(hideWelcomeAnimations, 4000);
-    });
+    // Ocultar animaciones después de 4 segundos
+    setTimeout(hideWelcomeAnimations, 4000);
     
-    // Ocultar animaciones cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(hideWelcomeAnimations, 4000);
-    });
-    
-    // Mostrar animaciones de forma natural
-    function showAnimations() {
-        const dayAnimation = document.getElementById('welcome-animation-day');
-        const nightAnimation = document.getElementById('welcome-animation-night');
-        
-        if (dayAnimation) {
-            dayAnimation.style.display = 'flex';
-            dayAnimation.style.visibility = 'visible';
-            dayAnimation.style.opacity = '1';
-        }
-        if (nightAnimation) {
-            nightAnimation.style.display = 'flex';
-            nightAnimation.style.visibility = 'visible';
-            nightAnimation.style.opacity = '1';
-        }
-    }
-    
-    // Mostrar animaciones al cargar
-    showAnimations();
+
 
     // 1. Simulación de afinador
     const tunerCards = document.querySelectorAll('.tuner-card');
@@ -409,5 +384,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Asegurar que las animaciones CSS se activen
     function forceReflow(element) {
         return element.offsetHeight;
+    }
+
+    // Registrar Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(registration => {
+                    console.log('Service Worker registrado exitosamente:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('Error al registrar Service Worker:', error);
+                });
+        });
     }
 });

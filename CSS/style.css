@@ -20,7 +20,7 @@
     --cloud-color: rgba(255, 255, 255, 0.8);
     --star-color: #FFFFFF;
     --outline-primary: rgba(67, 97, 238, 0.2);
-    --welcome-text-color: #2d3748;
+    --welcome-text-color: #1a1a2e;
     --welcome-text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --loading-bg: rgba(255, 255, 255, 0.2);
 }
@@ -121,13 +121,16 @@ body {
     align-items: center;
     z-index: 99999;
     opacity: 1;
-    transition: opacity 0.8s ease;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
 }
 
 .welcome-animation.hidden {
-    opacity: 0;
-    visibility: hidden;
-    display: none;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+    z-index: -9999 !important;
+    pointer-events: none !important;
 }
 
 /* Day Animation */
@@ -357,22 +360,11 @@ body {
     font-size: 1.2rem;
     color: var(--welcome-text-color);
     margin-bottom: 2rem;
-    font-weight: 600;
+    font-weight: 500;
     text-shadow: var(--welcome-text-shadow);
-    letter-spacing: 0.5px;
 }
 
-/* Mejorar visibilidad específica para modo claro */
-.welcome-message-day {
-    color: #2d3748;
-    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.1);
-}
 
-/* Mejorar visibilidad específica para modo oscuro */
-.welcome-message-night {
-    color: #f8f9fa;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(255, 255, 255, 0.1);
-}
 
 .loading-container {
     width: 300px;
