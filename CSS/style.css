@@ -20,7 +20,7 @@
     --cloud-color: rgba(255, 255, 255, 0.8);
     --star-color: #FFFFFF;
     --outline-primary: rgba(67, 97, 238, 0.2);
-    --welcome-text-color: #1a1a2e;
+    --welcome-text-color: #2d3748;
     --welcome-text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --loading-bg: rgba(255, 255, 255, 0.2);
 }
@@ -360,8 +360,21 @@ body {
     font-size: 1.2rem;
     color: var(--welcome-text-color);
     margin-bottom: 2rem;
-    font-weight: 500;
+    font-weight: 600;
     text-shadow: var(--welcome-text-shadow);
+    letter-spacing: 0.5px;
+}
+
+/* Mejorar visibilidad específica para modo claro */
+.welcome-message-day {
+    color: #2d3748;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Mejorar visibilidad específica para modo oscuro */
+.welcome-message-night {
+    color: #f8f9fa;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(255, 255, 255, 0.1);
 }
 
 .loading-container {
@@ -631,7 +644,6 @@ body {
     width: 100%;
     height: 100%;
     background: linear-gradient(135deg, var(--primary-light), var(--primary));
-    color: black;
     opacity: 0;
     transition: opacity 0.3s ease;
 }

@@ -1,30 +1,41 @@
-            // Welcome Animation - Control de tiempo simplificado
+            // Welcome Animation - Asegurar visualización en todos los dispositivos
         window.addEventListener('load', () => {
-            // Ocultar animaciones después de 3 segundos
+            // Asegurar que las animaciones estén visibles
+            const dayAnimation = document.getElementById('welcome-animation-day');
+            const nightAnimation = document.getElementById('welcome-animation-night');
+            
+            if (dayAnimation) {
+                dayAnimation.style.display = 'flex';
+                dayAnimation.style.visibility = 'visible';
+                dayAnimation.style.opacity = '1';
+                dayAnimation.style.zIndex = '99999';
+            }
+            if (nightAnimation) {
+                nightAnimation.style.display = 'flex';
+                nightAnimation.style.visibility = 'visible';
+                nightAnimation.style.opacity = '1';
+                nightAnimation.style.zIndex = '99999';
+            }
+            
+            // Ocultar animaciones después de 4 segundos
             setTimeout(() => {
-                const dayAnimation = document.getElementById('welcome-animation-day');
-                const nightAnimation = document.getElementById('welcome-animation-night');
-                
-                // Ocultar ambas animaciones completamente
                 if (dayAnimation) {
                     dayAnimation.style.opacity = '0';
-                    dayAnimation.style.display = 'none';
-                    dayAnimation.style.visibility = 'hidden';
-                    dayAnimation.style.zIndex = '-9999';
-                    dayAnimation.style.pointerEvents = 'none';
-                    dayAnimation.classList.add('hidden');
-                    dayAnimation.remove();
+                    dayAnimation.style.transition = 'opacity 0.8s ease';
+                    setTimeout(() => {
+                        dayAnimation.style.display = 'none';
+                        dayAnimation.style.visibility = 'hidden';
+                    }, 800);
                 }
                 if (nightAnimation) {
                     nightAnimation.style.opacity = '0';
-                    nightAnimation.style.display = 'none';
-                    nightAnimation.style.visibility = 'hidden';
-                    nightAnimation.style.zIndex = '-9999';
-                    nightAnimation.style.pointerEvents = 'none';
-                    nightAnimation.classList.add('hidden');
-                    nightAnimation.remove();
+                    nightAnimation.style.transition = 'opacity 0.8s ease';
+                    setTimeout(() => {
+                        nightAnimation.style.display = 'none';
+                        nightAnimation.style.visibility = 'hidden';
+                    }, 800);
                 }
-            }, 3000);
+            }, 4000);
         });
 
         // Dark Mode Toggle con optimizaciones móviles
@@ -44,8 +55,98 @@
         
         // Función para detectar dispositivo móvil (solo para optimizaciones, no para restricciones)
         function isMobileDevice() {
+            // Solo verificar ancho de pantalla, sin restricciones de user agent
             return window.innerWidth <= 768;
         }
+        
+        // Función para asegurar que las animaciones se muestren en todos los dispositivos
+        function ensureAnimationsForAllDevices() {
+            const dayAnimation = document.getElementById('welcome-animation-day');
+            const nightAnimation = document.getElementById('welcome-animation-night');
+            
+            // Forzar visualización en todos los dispositivos
+            [dayAnimation, nightAnimation].forEach(animation => {
+                if (animation) {
+                    animation.style.display = 'flex';
+                    animation.style.visibility = 'visible';
+                    animation.style.opacity = '1';
+                    animation.style.zIndex = '99999';
+                    animation.style.pointerEvents = 'none';
+                }
+            });
+        }
+        
+        // Ejecutar inmediatamente para asegurar visualización
+        ensureAnimationsForAllDevices();
+        
+        // Función para verificar y corregir problemas de visualización
+        function checkAndFixAnimationVisibility() {
+            const dayAnimation = document.getElementById('welcome-animation-day');
+            const nightAnimation = document.getElementById('welcome-animation-night');
+            
+            [dayAnimation, nightAnimation].forEach(animation => {
+                if (animation) {
+                    const computedStyle = window.getComputedStyle(animation);
+                    
+                    // Verificar si está oculta incorrectamente
+                    if (computedStyle.display === 'none' || 
+                        computedStyle.visibility === 'hidden' || 
+                        parseFloat(computedStyle.opacity) === 0) {
+                        
+                        // Forzar visualización
+                        animation.style.setProperty('display', 'flex', 'important');
+                        animation.style.setProperty('visibility', 'visible', 'important');
+                        animation.style.setProperty('opacity', '1', 'important');
+                        animation.style.setProperty('z-index', '99999', 'important');
+                    }
+                }
+            });
+        }
+        
+        // Verificar múltiples veces para asegurar visualización
+        setTimeout(checkAndFixAnimationVisibility, 100);
+        setTimeout(checkAndFixAnimationVisibility, 500);
+        setTimeout(checkAndFixAnimationVisibility, 1000);
+        setTimeout(checkAndFixAnimationVisibility, 2000);
+        
+        // Función para compatibilidad con diferentes navegadores
+        function ensureCrossBrowserCompatibility() {
+            const dayAnimation = document.getElementById('welcome-animation-day');
+            const nightAnimation = document.getElementById('welcome-animation-night');
+            
+            [dayAnimation, nightAnimation].forEach(animation => {
+                if (animation) {
+                    // Métodos específicos para diferentes navegadores
+                    animation.style.display = 'flex';
+                    animation.style.visibility = 'visible';
+                    animation.style.opacity = '1';
+                    animation.style.zIndex = '99999';
+                    
+                    // WebKit específico
+                    animation.style.webkitDisplay = 'flex';
+                    animation.style.webkitVisibility = 'visible';
+                    animation.style.webkitOpacity = '1';
+                    animation.style.webkitZIndex = '99999';
+                    
+                    // Mozilla específico
+                    animation.style.mozDisplay = 'flex';
+                    animation.style.mozVisibility = 'visible';
+                    animation.style.mozOpacity = '1';
+                    animation.style.mozZIndex = '99999';
+                    
+                    // MS específico
+                    animation.style.msDisplay = 'flex';
+                    animation.style.msVisibility = 'visible';
+                    animation.style.msOpacity = '1';
+                    animation.style.msZIndex = '99999';
+                }
+            });
+        }
+        
+        // Ejecutar compatibilidad cross-browser
+        ensureCrossBrowserCompatibility();
+        setTimeout(ensureCrossBrowserCompatibility, 100);
+        setTimeout(ensureCrossBrowserCompatibility, 500);
         
         darkModeToggle.addEventListener('click', () => {
             const currentTheme = document.body.getAttribute('data-theme');
@@ -71,6 +172,10 @@
                 }
                 localStorage.setItem('theme', 'dark');
             }
+            
+            // Asegurar que las animaciones se muestren correctamente después del cambio de tema
+            setTimeout(ensureAnimationsForAllDevices, 100);
+            setTimeout(checkAndFixAnimationVisibility, 200);
         });
 
         // Smooth scrolling for anchor links con optimizaciones móviles
