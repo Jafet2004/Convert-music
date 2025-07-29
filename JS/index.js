@@ -26,15 +26,25 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const greeting = getGreeting();
         
+        // Asegurarse de que ambos estén ocultos inicialmente
+        dayAnimation.style.display = 'none';
+        nightAnimation.style.display = 'none';
+        
         if (isDayTime()) {
             dayAnimation.style.display = 'flex';
+            dayAnimation.style.opacity = '1';
             nightAnimation.style.display = 'none';
             dayText.textContent = greeting;
         } else {
             dayAnimation.style.display = 'none';
             nightAnimation.style.display = 'flex';
+            nightAnimation.style.opacity = '1';
             nightText.textContent = greeting;
         }
+
+        // Forzar repintado para activar las animaciones
+        void dayAnimation.offsetWidth;
+        void nightAnimation.offsetWidth;
 
         // Ocultar animación después del tiempo especificado
         setTimeout(() => {
@@ -98,6 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
         strings.forEach(string => {
             string.addEventListener('mouseenter', handleTunerInteraction);
             string.addEventListener('click', handleTunerInteraction);
+            string.addEventListener('touchstart', handleTunerInteraction);
         });
     });
 
@@ -298,4 +309,9 @@ document.addEventListener('DOMContentLoaded', function() {
         registerForm.style.display = 'none';
         loginForm.style.display = 'block';
     });
+
+    // Asegurar que las animaciones CSS se activen
+    function forceReflow(element) {
+        return element.offsetHeight;
+    }
 });
