@@ -310,6 +310,20 @@ document.addEventListener('DOMContentLoaded', function() {
         DOM.addToPlaylistBtn?.addEventListener('click', showPlaylistModal);
         DOM.addToQueueBtn?.addEventListener('click', addCurrentToQueue);
         
+        // Event listeners para letra y cola
+        document.getElementById('showLyricsBtn')?.addEventListener('click', () => {
+            showSidePanel('lyrics');
+        });
+        
+        document.getElementById('showQueueBtn')?.addEventListener('click', () => {
+            showSidePanel('queue');
+        });
+        
+        // Event listener para cerrar panel lateral
+        document.getElementById('closePanel')?.addEventListener('click', () => {
+            toggleSidePanel();
+        });
+        
         // Evento de búsqueda con debounce
         DOM.searchBtn?.addEventListener('click', searchMusic);
         DOM.searchInput?.addEventListener('input', handleSearchInput);
@@ -591,6 +605,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         playTrackById(playerState.currentTrack.id);
         updateFavoriteButton();
+        
+        // Configurar control de velocidad
+        setupSpeedControl();
     }
 
     // Reproducir por ID de video
@@ -730,6 +747,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const progress = (currentTime / duration) * 100;
                 DOM.progressBar.value = progress;
                 DOM.currentTimeDisplay.textContent = formatTime(currentTime);
+                
+                // Actualizar buffer de progreso
+                updateProgressBuffer();
             }
         } catch (error) {
             console.error('Error al actualizar la barra de progreso:', error);
@@ -815,6 +835,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             DOM.currentPlaylistName.style.display = 'none';
         }
+        
+        // Actualizar estadísticas de la canción
+        updateSongStats();
     }
 
     // Mostrar modal de playlists
@@ -888,6 +911,23 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification(`Canción agregada a "${playerState.playlists[playlistIndex].name || 'la playlist'}"`, 'success');
         } else {
             showNotification('Esta canción ya está en la playlist', 'info');
+        }
+    }
+
+    // Eliminar canción de playlist
+    function removeFromPlaylist(playlistIndex, trackIndex) {
+        if (!playerState.playlists[playlistIndex] || !playerState.playlists[playlistIndex].tracks[trackIndex]) return;
+        
+        const removedTrack = playerState.playlists[playlistIndex].tracks[trackIndex];
+        playerState.playlists[playlistIndex].tracks.splice(trackIndex, 1);
+        LocalStorageManager.setPlaylists(playerState.playlists);
+        
+        showNotification(`Canción eliminada de "${playerState.playlists[playlistIndex].name || 'la playlist'}"`, 'info');
+        
+        // Si estamos mostrando la playlist actual, actualizar la vista
+        if (playerState.currentPlaylist && playerState.currentPlaylist === playerState.playlists[playlistIndex]) {
+            playerState.searchResults = [...playerState.playlists[playlistIndex].tracks];
+            displaySearchResults();
         }
     }
 
@@ -1105,43 +1145,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Mostrar notificación
-    function showNotification(message, type = 'info') {
+    function showNotification(message, type = 'info', duration = 3000) {
         if (!message) return;
         
-        const colors = {
-            info: '#4a6fa5',
-            success: '#4ad66d',
-            warning: '#f8961e',
-            error: '#f72585'
-        };
-        
-        const icon = {
-            info: 'fa-info-circle',
-            success: 'fa-check-circle',
-            warning: 'fa-exclamation-circle',
-            error: 'fa-times-circle'
-        }[type];
+        // Remover notificaciones existentes del mismo tipo
+        const existingNotifications = document.querySelectorAll(`.notification.${type}`);
+        existingNotifications.forEach(notification => notification.remove());
         
         const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.style.backgroundColor = colors[type] || colors.info;
+        notification.className = `notification ${type}`;
+        
+        const icons = {
+            'success': 'check-circle',
+            'error': 'times-circle', 
+            'warning': 'exclamation-triangle',
+            'info': 'info-circle'
+        };
+        
         notification.innerHTML = `
             <div class="notification-content">
-                <i class="fas ${icon}"></i>
+                <i class="fas fa-${icons[type] || 'info-circle'}"></i>
                 <span>${message}</span>
             </div>
+            <button class="notification-close" aria-label="Cerrar notificación">
+                <i class="fas fa-times"></i>
+            </button>
         `;
+        
         document.body.appendChild(notification);
         
+        // Animación de entrada
+        setTimeout(() => notification.classList.add('show'), 10);
+        
+        // Cerrar manualmente
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.addEventListener('click', () => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        });
+        
+        // Auto-cerrar
         setTimeout(() => {
-            notification.classList.add('show');
-            setTimeout(() => {
+            if (notification.parentNode) {
                 notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }, 10);
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, duration);
     }
 
     // API pública para acceso desde HTML
@@ -1198,7 +1247,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (playlist.tracks.length > 0) {
                     playlist.tracks.forEach((track, trackIndex) => {
                         html += `
-                            <div class="song-item" data-id="${track.id}">
+                            <div class="song-item" data-id="${track.id}" data-track-index="${trackIndex}">
                                 <div class="song-item-info">
                                     <div class="song-item-title">
                                         <i class="fas fa-music"></i>
@@ -1206,7 +1255,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                     <div class="song-item-artist">${track.artist || 'Artista desconocido'}</div>
                                 </div>
-                                <div class="song-item-duration">${formatTime(track.duration)}</div>
+                                <div class="song-item-actions">
+                                    <div class="song-item-duration">${formatTime(track.duration)}</div>
+                                    <button class="btn btn-sm btn-outline-danger remove-track-btn" 
+                                            data-playlist-index="${index}" 
+                                            data-track-index="${trackIndex}"
+                                            aria-label="Eliminar de la playlist">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
                         `;
                     });
@@ -1219,8 +1276,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Agregar event listeners a los items de canción
                 document.querySelectorAll('.song-item').forEach((item, trackIndex) => {
-                    item.addEventListener('click', () => {
-                        playTrack(trackIndex);
+                    item.addEventListener('click', (e) => {
+                        // No reproducir si se hace clic en el botón de eliminar
+                        if (!e.target.closest('.remove-track-btn')) {
+                            playTrack(trackIndex);
+                        }
+                    });
+                });
+                
+                // Agregar event listeners a los botones de eliminar
+                document.querySelectorAll('.remove-track-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const playlistIndex = parseInt(btn.dataset.playlistIndex);
+                        const trackIndex = parseInt(btn.dataset.trackIndex);
+                        removeFromPlaylist(playlistIndex, trackIndex);
                     });
                 });
                 
@@ -1240,4 +1310,535 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicializar el reproductor
     initPlayer();
+
+    // ========================================
+    // NUEVAS FUNCIONALIDADES AVANZADAS
+    // ========================================
+
+    // Estado para funcionalidades avanzadas
+    const advancedState = {
+        isSidePanelOpen: false,
+        currentSidePanel: null,
+        keyboardControlsEnabled: true,
+        speedControlEnabled: true,
+        muteEnabled: true,
+        lyricsEnabled: true,
+        queueEnabled: true,
+        searchFilters: {
+            duration: 'all',
+            quality: 'all',
+            type: 'all'
+        }
+    };
+
+    // Elementos DOM para funcionalidades avanzadas
+    const AdvancedDOM = {
+        sidePanel: document.getElementById('sidePanel'),
+        sidePanelContent: document.getElementById('panelContent'),
+        sidePanelToggle: document.getElementById('closePanel'),
+        speedControl: document.getElementById('speedBtn'),
+        muteBtn: document.getElementById('muteBtn'),
+        keyboardControlsBtn: document.getElementById('keyboardControlsBtn'),
+        lyricsBtn: document.getElementById('showLyricsBtn'),
+        queueBtn: document.getElementById('showQueueBtn'),
+        searchFilters: document.getElementById('searchFilters'),
+        durationFilter: document.getElementById('durationFilter'),
+        qualityFilter: document.getElementById('qualityFilter'),
+        typeFilter: document.getElementById('searchFilter'),
+        quickActions: document.getElementById('quickActions'),
+        songStats: document.getElementById('songStats'),
+        progressBuffer: document.getElementById('progressBuffer')
+    };
+
+    // Inicializar funcionalidades avanzadas
+    function initAdvancedFeatures() {
+        // Configurar controles de velocidad
+        if (AdvancedDOM.speedControl) {
+            AdvancedDOM.speedControl.addEventListener('change', (e) => {
+                const rate = parseFloat(e.target.value);
+                if (ytPlayer && ytPlayerReady) {
+                    ytPlayer.setPlaybackRate(rate);
+                    playerState.playbackRate = rate;
+                    LocalStorageManager.setPlaybackRate(rate);
+                    showNotification(`Velocidad: ${rate}x`, 'info');
+                }
+            });
+        }
+
+        // Configurar botón de mute
+        if (AdvancedDOM.muteBtn) {
+            AdvancedDOM.muteBtn.addEventListener('click', () => {
+                if (ytPlayer && ytPlayerReady) {
+                    const isMuted = ytPlayer.isMuted();
+                    if (isMuted) {
+                        ytPlayer.unMute();
+                        AdvancedDOM.muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                        showNotification('Sonido activado', 'success');
+                    } else {
+                        ytPlayer.mute();
+                        AdvancedDOM.muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                        showNotification('Sonido silenciado', 'info');
+                    }
+                }
+            });
+        }
+
+        // Configurar panel lateral
+        if (AdvancedDOM.sidePanelToggle) {
+            AdvancedDOM.sidePanelToggle.addEventListener('click', () => {
+                toggleSidePanel();
+            });
+        }
+
+        // Configurar botones del panel lateral
+        if (AdvancedDOM.lyricsBtn) {
+            AdvancedDOM.lyricsBtn.addEventListener('click', () => {
+                showSidePanel('lyrics');
+            });
+        }
+
+        if (AdvancedDOM.queueBtn) {
+            AdvancedDOM.queueBtn.addEventListener('click', () => {
+                showSidePanel('queue');
+            });
+        }
+
+        // Configurar filtros de búsqueda
+        if (AdvancedDOM.durationFilter) {
+            AdvancedDOM.durationFilter.addEventListener('change', applySearchFilters);
+        }
+        if (AdvancedDOM.qualityFilter) {
+            AdvancedDOM.qualityFilter.addEventListener('change', applySearchFilters);
+        }
+        if (AdvancedDOM.typeFilter) {
+            AdvancedDOM.typeFilter.addEventListener('change', applySearchFilters);
+        }
+
+        // Configurar controles de teclado
+        setupKeyboardControls();
+
+        // Configurar acciones rápidas
+        setupQuickActions();
+
+        // Configurar estadísticas de canción
+        setupSongStats();
+    }
+
+    // Controles de teclado
+    function setupKeyboardControls() {
+        document.addEventListener('keydown', (e) => {
+            if (!advancedState.keyboardControlsEnabled) return;
+            
+            // Evitar conflictos con inputs
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            switch(e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    if (e.ctrlKey) {
+                        seek(-10);
+                    } else {
+                        playPrevious();
+                    }
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    if (e.ctrlKey) {
+                        seek(10);
+                    } else {
+                        playNext();
+                    }
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (e.ctrlKey) {
+                        setVolume(Math.min(1, playerState.volume + 0.1));
+                    }
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (e.ctrlKey) {
+                        setVolume(Math.max(0, playerState.volume - 0.1));
+                    }
+                    break;
+                case 'KeyM':
+                    e.preventDefault();
+                    if (AdvancedDOM.muteBtn) {
+                        AdvancedDOM.muteBtn.click();
+                    }
+                    break;
+                case 'KeyL':
+                    e.preventDefault();
+                    if (AdvancedDOM.lyricsBtn) {
+                        AdvancedDOM.lyricsBtn.click();
+                    }
+                    break;
+                case 'KeyQ':
+                    e.preventDefault();
+                    if (AdvancedDOM.queueBtn) {
+                        AdvancedDOM.queueBtn.click();
+                    }
+                    break;
+                case 'KeyS':
+                    e.preventDefault();
+                    toggleShuffle();
+                    break;
+                case 'KeyR':
+                    e.preventDefault();
+                    toggleRepeat();
+                    break;
+                case 'KeyF':
+                    e.preventDefault();
+                    toggleFavorite();
+                    break;
+            }
+        });
+    }
+
+    // Control de velocidad
+    function setupSpeedControl() {
+        if (AdvancedDOM.speedControl && ytPlayer && ytPlayerReady) {
+            const currentRate = ytPlayer.getPlaybackRate();
+            AdvancedDOM.speedControl.value = currentRate;
+            playerState.playbackRate = currentRate;
+        }
+    }
+
+    // Panel lateral
+    function toggleSidePanel() {
+        const sidePanel = document.getElementById('sidePanel');
+        if (sidePanel) {
+            sidePanel.classList.toggle('open');
+        }
+    }
+
+    function showSidePanel(type) {
+        const sidePanel = document.getElementById('sidePanel');
+        const panelContent = document.getElementById('panelContent');
+        const panelTitle = document.getElementById('panelTitle');
+        
+        if (!sidePanel || !panelContent) return;
+
+        // Mostrar panel
+        sidePanel.classList.add('open');
+        
+        // Actualizar título del panel
+        if (panelTitle) {
+            panelTitle.textContent = type === 'lyrics' ? 'Letra de la Canción' : 'Cola de Reproducción';
+        }
+
+        if (type === 'lyrics') {
+            showLyricsPanel();
+        } else if (type === 'queue') {
+            showQueuePanel();
+        }
+    }
+
+    function showLyricsPanel() {
+        const panelContent = document.getElementById('panelContent');
+        if (!panelContent) return;
+
+        panelContent.innerHTML = `
+            <div class="lyrics-content">
+                <div class="lyrics-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Buscando letra...</p>
+                </div>
+            </div>
+        `;
+
+        // Buscar letra de la canción actual
+        if (playerState.currentTrack) {
+            fetchLyrics(playerState.currentTrack.artist, playerState.currentTrack.title);
+        }
+    }
+
+    function showQueuePanel() {
+        const panelContent = document.getElementById('panelContent');
+        if (!panelContent) return;
+
+        let html = '<div class="queue-content">';
+
+        if (playerState.queue.length > 0) {
+            playerState.queue.forEach((track, index) => {
+                const isCurrent = index === playerState.currentTrackIndex;
+                html += `
+                    <div class="queue-item ${isCurrent ? 'current' : ''}" data-index="${index}">
+                        <div class="queue-item-info">
+                            <div class="queue-item-title">${track.title || 'Sin título'}</div>
+                            <div class="queue-item-artist">${track.artist || 'Artista desconocido'}</div>
+                        </div>
+                        <div class="queue-item-actions">
+                            <button class="btn btn-sm btn-outline-danger" onclick="removeFromQueue(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            html += '<p class="text-muted">La cola está vacía</p>';
+        }
+
+        html += '</div>';
+        panelContent.innerHTML = html;
+    }
+
+    // Filtros de búsqueda
+    function applySearchFilters() {
+        if (!AdvancedDOM.durationFilter || !AdvancedDOM.qualityFilter || !AdvancedDOM.typeFilter) return;
+
+        advancedState.searchFilters = {
+            duration: AdvancedDOM.durationFilter.value,
+            quality: AdvancedDOM.qualityFilter.value,
+            type: AdvancedDOM.typeFilter.value
+        };
+
+        // Aplicar filtros a los resultados existentes
+        if (playerState.searchResults.length > 0) {
+            filterSearchResults();
+        }
+    }
+
+    function filterSearchResults() {
+        let filteredResults = [...playerState.searchResults];
+
+        // Filtro por duración
+        if (advancedState.searchFilters.duration !== 'all') {
+            const maxDuration = parseInt(advancedState.searchFilters.duration);
+            filteredResults = filteredResults.filter(track => 
+                track.duration <= maxDuration
+            );
+        }
+
+        // Filtro por calidad (basado en thumbnail)
+        if (advancedState.searchFilters.quality !== 'all') {
+            filteredResults = filteredResults.filter(track => {
+                if (advancedState.searchFilters.quality === 'hd') {
+                    return track.thumbnail && track.thumbnail.includes('hqdefault');
+                } else if (advancedState.searchFilters.quality === 'sd') {
+                    return track.thumbnail && track.thumbnail.includes('default');
+                }
+                return true;
+            });
+        }
+
+        // Filtro por tipo
+        if (advancedState.searchFilters.type !== 'all') {
+            filteredResults = filteredResults.filter(track => {
+                const title = track.title.toLowerCase();
+                const artist = track.artist.toLowerCase();
+                
+                if (advancedState.searchFilters.type === 'music') {
+                    return title.includes('music') || title.includes('song') || 
+                           artist.includes('music') || artist.includes('song');
+                } else if (advancedState.searchFilters.type === 'video') {
+                    return title.includes('video') || title.includes('clip') || 
+                           artist.includes('video') || artist.includes('clip');
+                }
+                return true;
+            });
+        }
+
+        // Actualizar display con resultados filtrados
+        const originalResults = [...playerState.searchResults];
+        playerState.searchResults = filteredResults;
+        displaySearchResults();
+        playerState.searchResults = originalResults; // Restaurar resultados originales
+    }
+
+    // Acciones rápidas
+    function setupQuickActions() {
+        if (!AdvancedDOM.quickActions) return;
+
+        AdvancedDOM.quickActions.innerHTML = `
+            <button class="quick-action-btn" onclick="toggleShuffle()" title="Mezclar (S)">
+                <i class="fas fa-random"></i>
+            </button>
+            <button class="quick-action-btn" onclick="toggleRepeat()" title="Repetir (R)">
+                <i class="fas fa-redo"></i>
+            </button>
+            <button class="quick-action-btn" onclick="toggleFavorite()" title="Favorito (F)">
+                <i class="fas fa-heart"></i>
+            </button>
+            <button class="quick-action-btn" onclick="addCurrentToQueue()" title="Agregar a cola">
+                <i class="fas fa-plus"></i>
+            </button>
+        `;
+    }
+
+    // Estadísticas de canción
+    function setupSongStats() {
+        if (!AdvancedDOM.songStats) return;
+        updateSongStats();
+    }
+
+    function updateSongStats() {
+        if (!AdvancedDOM.songStats || !playerState.currentTrack) return;
+
+        const track = playerState.currentTrack;
+        const stats = {
+            duration: formatTime(track.duration),
+            views: track.viewCount ? formatNumber(track.viewCount) : 'N/A',
+            likes: track.likeCount ? formatNumber(track.likeCount) : 'N/A',
+            published: track.publishedAt ? formatDate(track.publishedAt) : 'N/A'
+        };
+
+        AdvancedDOM.songStats.innerHTML = `
+            <div class="stat-item">
+                <i class="fas fa-clock"></i>
+                <span>${stats.duration}</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-eye"></i>
+                <span>${stats.views}</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-thumbs-up"></i>
+                <span>${stats.likes}</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-calendar"></i>
+                <span>${stats.published}</span>
+            </div>
+        `;
+    }
+
+    // Funciones auxiliares
+    function formatNumber(num) {
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1) + 'M';
+        } else if (num >= 1000) {
+            return (num / 1000).toFixed(1) + 'K';
+        }
+        return num.toString();
+    }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    function removeFromQueue(index) {
+        if (index >= 0 && index < playerState.queue.length) {
+            playerState.queue.splice(index, 1);
+            LocalStorageManager.setQueue(playerState.queue);
+            showNotification('Canción removida de la cola', 'info');
+            
+            if (advancedState.currentSidePanel === 'queue') {
+                showQueuePanel();
+            }
+        }
+    }
+
+    // Buscar letra de canción
+    async function fetchLyrics(artist, title) {
+        if (!artist || !title) {
+            showLyricsError('Información de canción insuficiente');
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`);
+            const data = await response.json();
+
+            if (data.lyrics) {
+                showLyrics(data.lyrics);
+            } else {
+                showLyricsError('Letra no encontrada');
+            }
+        } catch (error) {
+            console.error('Error al buscar letra:', error);
+            showLyricsError('Error al cargar la letra');
+        }
+    }
+
+    function showLyrics(lyrics) {
+        const panelContent = document.getElementById('panelContent');
+        if (!panelContent) return;
+
+        const lyricsElement = panelContent.querySelector('.lyrics-content');
+        if (lyricsElement) {
+            lyricsElement.innerHTML = `
+                <div class="lyrics-text">
+                    ${lyrics.replace(/\n/g, '<br>')}
+                </div>
+            `;
+        }
+    }
+
+    function showLyricsError(message) {
+        const panelContent = document.getElementById('panelContent');
+        if (!panelContent) return;
+
+        const lyricsElement = panelContent.querySelector('.lyrics-content');
+        if (lyricsElement) {
+            lyricsElement.innerHTML = `
+                <div class="lyrics-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+    }
+
+    // Actualizar buffer de progreso
+    function updateProgressBuffer() {
+        if (!AdvancedDOM.progressBuffer || !ytPlayer || !ytPlayerReady) return;
+
+        try {
+            const buffered = ytPlayer.getVideoLoadedFraction();
+            AdvancedDOM.progressBuffer.style.width = `${buffered * 100}%`;
+        } catch (error) {
+            console.error('Error al actualizar buffer:', error);
+        }
+    }
+
+    // Gestos táctiles para móviles
+    function setupTouchGestures() {
+        let startX = 0;
+        let startY = 0;
+        let startTime = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            startTime = Date.now();
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            const endTime = Date.now();
+            const duration = endTime - startTime;
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+
+            // Swipe horizontal para cambiar canción
+            if (Math.abs(deltaX) > 50 && Math.abs(deltaY) < 30 && duration < 300) {
+                if (deltaX > 0) {
+                    playPrevious();
+                } else {
+                    playNext();
+                }
+            }
+
+            // Tap doble para play/pause
+            if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10 && duration < 200) {
+                togglePlay();
+            }
+        });
+    }
+
+    // Inicializar funcionalidades avanzadas
+    initAdvancedFeatures();
+    setupTouchGestures();
 });

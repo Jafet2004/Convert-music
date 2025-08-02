@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MusicPlayer - Reproductor Musical</title>
+    <title>MusicPlayer - Reproductor Musical Avanzado</title>
     
     <!-- Metadatos -->
-    <meta name="description" content="Reproductor musical avanzado con gestión de playlists y favoritos">
+    <meta name="description" content="Reproductor musical avanzado con gestión de playlists, favoritos y controles avanzados">
     <meta name="theme-color" content="#4a6fa5">
     
     <!-- Favicon -->
@@ -23,132 +23,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="CSS/style_repro.css">
-    
-    <!-- Estilos adicionales -->
-    <style>
-        /* Estilos para el reproductor optimizado */
-        #currentPlaylistName {
-            background-color: rgba(0, 0, 0, 0.1);
-            padding: 5px 10px;
-            border-radius: 4px;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            display: none;
-        }
-        
-        #bufferingIndicator {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 3rem;
-            color: #4a6fa5;
-            z-index: 1000;
-            display: none;
-        }
-        
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #4a6fa5;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 1050;
-            display: flex;
-            align-items: center;
-        }
-        
-        .notification.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .notification i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
-        
-        .repeat-btn.active {
-            color: #4a6fa5;
-        }
-        
-        .shuffle-btn.active {
-            color: #4a6fa5;
-            background: rgba(67, 97, 238, 0.1);
-        }
-        
-        .is-favorite {
-            color: #ff4081;
-        }
-        
-        /* Mejoras de accesibilidad */
-        [role="button"], button, input[type="range"] {
-            cursor: pointer;
-        }
-        
-        input[type="range"] {
-            -webkit-appearance: none;
-            height: 5px;
-            background: #ddd;
-            border-radius: 5px;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 15px;
-            height: 15px;
-            background: #4a6fa5;
-            border-radius: 50%;
-        }
 
-        /* Ocultar reproductor inicialmente */
-        .now-playing {
-            display: none;
-        }
-
-        /* Estilos para el estado activo */
-        .active {
-            color: var(--primary-color);
-            font-weight: 500;
-        }
-
-        /* Estilos para errores */
-        .error-message {
-            text-align: center;
-            padding: 2rem;
-            color: var(--danger-color);
-        }
-
-        .error-message i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Estilos para loading */
-        .loading {
-            text-align: center;
-            padding: 3rem;
-        }
-
-        .loading-spinner {
-            font-size: 3rem;
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-            animation: spin 2s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
 </head>
 
 <body>
@@ -200,8 +75,8 @@
     <main class="main-content">
         <div class="container">
             <div class="search-hero">
-                <h1>Reproductor Musical</h1>
-                <p class="subtitle">Busca y reproduce tus canciones favoritas</p>
+                <h1>Reproductor Musical Avanzado</h1>
+                <p class="subtitle">Busca, reproduce y gestiona tu música favorita con controles avanzados</p>
 
                 <div class="search-box">
                     <div class="input-group">
@@ -214,62 +89,157 @@
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- Filtros de búsqueda -->
+                    <div class="search-filters mb-3">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <select id="searchFilter" class="form-select form-select-sm" aria-label="Filtrar por categoría">
+                                    <option value="all">Todas las categorías</option>
+                                    <option value="music">Solo música</option>
+                                    <option value="live">En vivo</option>
+                                    <option value="cover">Covers</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select id="durationFilter" class="form-select form-select-sm" aria-label="Filtrar por duración">
+                                    <option value="any">Cualquier duración</option>
+                                    <option value="short">Corta (< 4 min)</option>
+                                    <option value="medium">Media (4-10 min)</option>
+                                    <option value="long">Larga (> 10 min)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select id="qualityFilter" class="form-select form-select-sm" aria-label="Filtrar por calidad">
+                                    <option value="any">Cualquier calidad</option>
+                                    <option value="hd">HD (720p+)</option>
+                                    <option value="fullhd">Full HD (1080p+)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <button id="searchBtn" class="search-button" aria-label="Buscar">
                         <i class="fas fa-search"></i> Buscar
                     </button>
                 </div>
             </div>
 
-            <!-- Reproductor -->
+            <!-- Reproductor principal -->
             <div class="player-container">
                 <div class="now-playing">
-                    <div class="album-art">
-                        <img id="albumArt" src="https://via.placeholder.com/300" alt="Portada del álbum" aria-hidden="true">
+                    <div class="player-header">
+                        <div class="album-art-container">
+                            <div class="album-art">
+                                <img id="albumArt" src="https://via.placeholder.com/300" alt="Portada del álbum" aria-hidden="true">
+                                <div class="album-overlay">
+                                    <div class="play-overlay" id="playOverlay">
+                                        <i class="fas fa-play"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="album-info">
+                                <h2 id="currentSongTitle" aria-live="polite">No hay canción seleccionada</h2>
+                                <h3 id="currentSongArtist" aria-live="polite">Busca una canción para reproducir</h3>
+                                <div id="currentPlaylistName" aria-live="polite"></div>
+                                <div class="song-stats">
+                                    <span id="viewCount" class="stat-item">
+                                        <i class="fas fa-eye"></i> <span>0</span>
+                                    </span>
+                                    <span id="likeCount" class="stat-item">
+                                        <i class="fas fa-thumbs-up"></i> <span>0</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Controles principales -->
+                        <div class="player-controls">
+                            <button id="prevBtn" class="control-btn" title="Canción anterior" aria-label="Canción anterior">
+                                <i class="fas fa-step-backward"></i>
+                            </button>
+                            <button id="playBtn" class="control-btn play-btn" title="Reproducir/Pausar" aria-label="Reproducir/Pausar">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button id="nextBtn" class="control-btn" title="Siguiente canción" aria-label="Siguiente canción">
+                                <i class="fas fa-step-forward"></i>
+                            </button>
+                            <button id="repeatBtn" class="control-btn" title="Repetir playlist" aria-label="Repetir playlist">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                            <button id="shuffleBtn" class="control-btn shuffle-btn" title="Mezclar canciones" aria-label="Mezclar canciones">
+                                <i class="fas fa-random"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Barra de progreso -->
+                        <div class="progress-container">
+                            <span id="currentTime" aria-live="polite">0:00</span>
+                            <div class="progress-wrapper">
+                                <input type="range" id="progressBar" min="0" max="100" value="0" 
+                                       title="Barra de progreso" aria-label="Barra de progreso de la canción">
+                                <div class="progress-buffer" id="progressBuffer"></div>
+                            </div>
+                            <span id="duration">0:00</span>
+                        </div>
+                        
+                        <!-- Controles secundarios -->
+                        <div class="secondary-controls">
+                            <div class="volume-container">
+                                <button id="muteBtn" class="control-btn-sm" title="Silenciar" aria-label="Silenciar">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                                <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.7"
+                                    title="Control de volumen" aria-label="Control de volumen">
+                            </div>
+                            
+                            <div class="playback-controls">
+                                <button id="speedBtn" class="control-btn-sm" title="Velocidad de reproducción" aria-label="Velocidad de reproducción">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span id="speedText">1x</span>
+                                </button>
+                                <div class="speed-dropdown" id="speedDropdown">
+                                    <button class="speed-option" data-speed="0.5">0.5x</button>
+                                    <button class="speed-option" data-speed="0.75">0.75x</button>
+                                    <button class="speed-option active" data-speed="1">1x</button>
+                                    <button class="speed-option" data-speed="1.25">1.25x</button>
+                                    <button class="speed-option" data-speed="1.5">1.5x</button>
+                                    <button class="speed-option" data-speed="2">2x</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Acciones del reproductor -->
+                        <div class="player-actions">
+                            <button id="favoriteBtn" class="action-btn" aria-label="Agregar a favoritos">
+                                <i class="far fa-heart"></i> Favorito
+                            </button>
+                            <button id="addToPlaylistBtn" class="action-btn" aria-label="Agregar a playlist">
+                                <i class="fas fa-plus"></i> Playlist
+                            </button>
+                            <button id="addToQueueBtn" class="action-btn" aria-label="Agregar a cola">
+                                <i class="fas fa-list-ol"></i> Cola
+                            </button>
+                            <button id="showQueueBtn" class="action-btn" aria-label="Mostrar cola de reproducción">
+                                <i class="fas fa-queue"></i> Ver Cola
+                            </button>
+                            <button id="showLyricsBtn" class="action-btn" aria-label="Mostrar letra">
+                                <i class="fas fa-align-left"></i> Letra
+                            </button>
+                        </div>
                     </div>
-                    <div class="song-info">
-                        <h2 id="currentSongTitle" aria-live="polite">No hay canción seleccionada</h2>
-                        <h3 id="currentSongArtist" aria-live="polite">Busca una canción para reproducir</h3>
-                        <div id="currentPlaylistName" aria-live="polite"></div>
-                    </div>
-                    <div class="player-controls">
-                        <button id="prevBtn" class="control-btn" title="Canción anterior" aria-label="Canción anterior">
-                            <i class="fas fa-step-backward"></i>
-                        </button>
-                        <button id="playBtn" class="control-btn play-btn" title="Reproducir/Pausar" aria-label="Reproducir/Pausar">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        <button id="nextBtn" class="control-btn" title="Siguiente canción" aria-label="Siguiente canción">
-                            <i class="fas fa-step-forward"></i>
-                        </button>
-                        <button id="repeatBtn" class="control-btn" title="Repetir playlist" aria-label="Repetir playlist">
-                            <i class="fas fa-redo"></i>
-                        </button>
-                        <button id="shuffleBtn" class="control-btn shuffle-btn" title="Mezclar canciones del mismo artista" aria-label="Mezclar canciones del mismo artista">
-                            <i class="fas fa-random"></i>
+                </div>
+
+                <!-- Panel lateral con cola y letras -->
+                <div class="side-panel" id="sidePanel">
+                    <div class="panel-header">
+                        <h4 id="panelTitle">Cola de Reproducción</h4>
+                        <button class="close-panel" id="closePanel" aria-label="Cerrar panel">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <div class="progress-container">
-                        <span id="currentTime" aria-live="polite">0:00</span>
-                        <input type="range" id="progressBar" min="0" max="100" value="0" 
-                               title="Barra de progreso" aria-label="Barra de progreso de la canción">
-                        <span id="duration">0:00</span>
-                    </div>
-                    <div class="volume-container">
-                        <i class="fas fa-volume-down" aria-hidden="true"></i>
-                        <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.7"
-                            title="Control de volumen" aria-label="Control de volumen">
-                        <i class="fas fa-volume-up" aria-hidden="true"></i>
-                    </div>
-                    <div class="player-actions">
-                        <button id="favoriteBtn" class="action-btn" aria-label="Agregar a favoritos">
-                            <i class="far fa-heart"></i> Favorito
-                        </button>
-                        <button id="addToPlaylistBtn" class="action-btn" aria-label="Agregar a playlist">
-                            <i class="fas fa-plus"></i> Playlist
-                        </button>
-                        <button id="addToQueueBtn" class="action-btn" aria-label="Agregar a cola">
-                            <i class="fas fa-list-ol"></i> Cola
-                        </button>
+                    <div class="panel-content" id="panelContent">
+                        <!-- Contenido dinámico -->
                     </div>
                 </div>
 
@@ -280,6 +250,17 @@
                             <i class="fas fa-search"></i>
                             <h3>Busca tu música favorita</h3>
                             <p>Comienza escribiendo el nombre de una canción o artista, o pega una URL de YouTube</p>
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" data-query="top hits 2024">
+                                    <i class="fas fa-fire"></i> Top Hits 2024
+                                </button>
+                                <button class="quick-action-btn" data-query="classic rock">
+                                    <i class="fas fa-guitar"></i> Classic Rock
+                                </button>
+                                <button class="quick-action-btn" data-query="jazz instrumental">
+                                    <i class="fas fa-saxophone"></i> Jazz
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -330,10 +311,42 @@
                         <input type="text" class="form-control" id="newPlaylistName" required aria-required="true"
                             aria-label="Nombre de la nueva playlist">
                     </div>
+                    <div class="mb-3">
+                        <label for="newPlaylistDescription" class="form-label">Descripción (opcional)</label>
+                        <textarea class="form-control" id="newPlaylistDescription" rows="3" 
+                            aria-label="Descripción de la nueva playlist"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPlaylistPrivacy" class="form-label">Privacidad</label>
+                        <select class="form-select" id="newPlaylistPrivacy" aria-label="Privacidad de la playlist">
+                            <option value="private">Privada</option>
+                            <option value="public">Pública</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Cancelar">Cancelar</button>
                     <button type="button" class="btn btn-primary" id="createPlaylistConfirm" aria-label="Crear playlist">Crear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para letras -->
+    <div class="modal fade" id="lyricsModal" tabindex="-1" aria-labelledby="lyricsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="lyricsModalLabel">Letra de la canción</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="lyricsContent" class="lyrics-content">
+                        <div class="loading-lyrics">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Buscando letra...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
