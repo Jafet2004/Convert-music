@@ -189,7 +189,8 @@ header.scrolled {
 .dark-mode .form-select,
 .dark-mode input,
 .dark-mode .form-control,
-.dark-mode .chords-container {
+.dark-mode .chords-container,
+.dark-mode .play-container {
     background-color: #2d2d2d !important;
     color: #e0e0e0 !important;
     border-color: #444 !important;
@@ -339,6 +340,94 @@ body.dark-mode .scale-marker::after {
 .dark-mode body {
     background-color: var(--bg-color);
     color: var(--text-color);
+}
+/* style_dark.css - Metrónomo en modo oscuro */
+.dark-mode .metronome-card {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border-color: #4a5568;
+}
+
+.dark-mode .metronome-display {
+    background-color: #1a202c;
+    border-color: #4a5568;
+}
+
+.dark-mode .beat-indicator {
+    background-color: #4fc3f7;
+    color: #1a202c;
+}
+
+.dark-mode .beat-indicator.accent {
+    background-color: #f56565;
+}
+
+.dark-mode .bpm-display {
+    color: #e2e8f0;
+}
+
+.dark-mode .bpm-display span {
+    color: #4fc3f7;
+}
+
+.dark-mode .btn-metronome {
+    background-color: #4a5568;
+    color: #e2e8f0;
+    border-color: #718096;
+}
+
+.dark-mode .btn-metronome:hover {
+    background-color: #4fc3f7;
+    color: #1a202c;
+}
+
+.dark-mode #bpm-slider {
+    background: #4a5568;
+}
+
+.dark-mode #bpm-slider::-webkit-slider-thumb {
+    background: #4fc3f7;
+}
+
+.dark-mode .btn-signature {
+    background-color: #4a5568;
+    color: #e2e8f0;
+    border-color: #718096;
+}
+
+.dark-mode .btn-signature.active {
+    background-color: #4fc3f7;
+    color: #1a202c;
+    border-color: #4fc3f7;
+}
+
+.dark-mode .btn-signature:hover:not(.active) {
+    background-color: #718096;
+}
+
+.dark-mode .metronome-main-control .btn-primary {
+    background-color: #4fc3f7;
+    border-color: #4fc3f7;
+    color: #1a202c;
+}
+
+.dark-mode .metronome-main-control .btn-primary:hover {
+    background-color: #63d2ff;
+    border-color: #63d2ff;
+}
+
+.dark-mode .sound-options {
+    background-color: #1a202c;
+    border-color: #4a5568;
+}
+
+.dark-mode .form-check-label {
+    color: #e2e8f0;
+}
+
+.dark-mode .form-check-input:checked {
+    background-color: #4fc3f7;
+    border-color: #4fc3f7;
 }
 
 /* Contenedores en modo oscuro */

@@ -19,51 +19,51 @@
 </head>
 
 <body>
-<header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
-    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
-        <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span
-                style="color: #4fc3f7;">Music</span></div>
+    <header class="py-3" style="background: linear-gradient(135deg, #4a6fa5, #166088); color: white;">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div class="logo fs-3 fw-bold" style="font-family: 'Montserrat', sans-serif;">Convert<span
+                    style="color: #4fc3f7;">Music</span></div>
 
-        <div class="d-flex align-items-center">
-            <nav>
-                <ul class="nav">
-                    <li class="nav-item"><a class="nav-link text-white" href="index.html"><i
-                                class="fas fa-home me-1"></i> Inicio</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-white" href="#" role="button"
-                            data-bs-toggle="dropdown">
-                            <i class="fas fa-tools me-1"></i> Herramientas
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="convert.html"><i
-                                        class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
-                            <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i>
-                                    Creación de Partituras</a></li>
-                            <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i>
-                                    Buscar Letras</a></li>
-                            <li><a class="dropdown-item" href="afinador.html"><i class="fas fa-sliders-h me-1"></i> 
-                                Afinador Musical</a></li>
-                            <li><a class="dropdown-item" href="play.html"><i class="fas fa-play-circle me-2"></i> 
-                                Reproductor Musical</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </nav>
+            <div class="d-flex align-items-center">
+                <nav>
+                    <ul class="nav">
+                        <li class="nav-item"><a class="nav-link text-white" href="index.html"><i
+                                    class="fas fa-home me-1"></i> Inicio</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fas fa-tools me-1"></i> Herramientas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="convert.html"><i
+                                            class="fas fa-exchange-alt me-1"></i> Convertidor de Tonalidades</a></li>
+                                <li><a class="dropdown-item" href="partitura.html"><i class="fas fa-music me-1"></i>
+                                        Creación de Partituras</a></li>
+                                <li><a class="dropdown-item" href="Search_liryc.html"><i class="fas fa-search me-1"></i>
+                                        Buscar Letras</a></li>
+                                <li><a class="dropdown-item" href="afinador.html"><i class="fas fa-sliders-h me-1"></i>
+                                        Afinador Musical</a></li>
+                                <li><a class="dropdown-item" href="play.html"><i class="fas fa-play-circle me-2"></i>
+                                        Reproductor Musical</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
 
-            <div class="d-flex">
-                <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
-                    <i class="fas fa-moon" id="darkModeIcon"></i>
-                    <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
-                </button>
-                
-                <!-- Botón de usuario -->
-                <a href="perfil.html" class="btn btn-outline-light ms-2 ms-md-3" title="Perfil">
-                    <i class="fas fa-user"></i>
-                </a>
+                <div class="d-flex">
+                    <button id="darkModeToggle" class="btn btn-sm btn-outline-light ms-2 ms-md-3">
+                        <i class="fas fa-moon" id="darkModeIcon"></i>
+                        <span class="d-none d-md-inline" id="darkModeText">Modo Oscuro</span>
+                    </button>
+
+                    <!-- Botón de usuario -->
+                    <a href="perfil.html" class="btn btn-outline-light ms-2 ms-md-3" title="Perfil">
+                        <i class="fas fa-user"></i>
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-</header>
+    </header>
 
     <!-- Alerta para permisos de micrófono -->
     <div class="alert alert-warning alert-dismissible fade show permission-alert" role="alert">
@@ -345,22 +345,79 @@
                     </ul>
                 </div>
             </div>
+        </div>
 
-<!-- Link to Library Section -->
-<div class="container text-center mt-5">
-    <div class="py-4">
-        <h3>¿Necesitas ayuda con acordes?</h3>
-        <p class="text mb-4">Visita nuestra biblioteca musical para aprender acordes de guitarra y piano</p>
-        <a href="biblioteca.html" class="btn btn-primary btn-lg">
-            <i class="fas fa-book-open me-2"></i> Biblioteca Musical
-        </a>
-    </div>
-</div>
+        <!-- Link to Library Section -->
+        <div class="container text-center mt-5">
+            <div class="py-4">
+                <h3>¿Necesitas ayuda con acordes?</h3>
+                <p class="text mb-4">Visita nuestra biblioteca musical para aprender acordes de guitarra y piano</p>
+                <a href="biblioteca.html" class="btn btn-primary btn-lg">
+                    <i class="fas fa-book-open me-2"></i> Biblioteca Musical
+                </a>
+            </div>
+        </div>
+
+        <!-- Sección de Metrónomo -->
+        <div class="container metronome-container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="metronome-card">
+                        <h3 class="text-center mb-4"><i class="fas fa-tachometer-alt me-2"></i> Metrónomo Digital</h3>
+                        
+                        <div class="metronome-display">
+                            <div class="beat-indicator" id="beat-indicator"></div>
+                            <div class="bpm-display">
+                                <span id="current-bpm">120</span> BPM
+                            </div>
+                        </div>
+                        
+                        <div class="metronome-controls">
+                            <div class="btn btn-metronome" id="decrease-bpm">
+                                <i class="fas fa-minus"></i>
+                            </div>
+                            <div class="bpm-slider-container">
+                                <input type="range" id="bpm-slider" min="40" max="240" value="120">
+                            </div>
+                            <div class="btn btn-metronome" id="increase-bpm">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="time-signature">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-signature active" data-beats="4">4/4</button>
+                                <button type="button" class="btn btn-signature" data-beats="3">3/4</button>
+                                <button type="button" class="btn btn-signature" data-beats="6">6/8</button>
+                            </div>
+                        </div>
+                        
+                        <div class="metronome-main-control">
+                            <button class="btn btn-primary btn-lg" id="toggle-metronome">
+                                <i class="fas fa-play" id="metronome-icon"></i>
+                                <span id="metronome-text">Iniciar</span>
+                            </button>
+                        </div>
+                        
+                        <div class="sound-options mt-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="accent-beat" checked>
+                                <label class="form-check-label" for="accent-beat">Acento en primer tiempo</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="visual-mode" checked>
+                                <label class="form-check-label" for="visual-mode">Indicador visual</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/JS/afi.js"></script>
+    <script src="/JS/metron.js"></script>
     <script src="/JS/dark_mode.js"></script>
 </body>
 <footer class="bg-dark text-white py-4 mt-auto">
