@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Configuración del reproductor
     const config = {
-        apiKey: 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac', // Reemplazar con tu clave de API
+        apiKey: 'AIzaSyASUw8ilgowQR5_qVf9MkCcSNx-z1vfXac',
         maxResults: 15,
         retryAttempts: 3,
         retryDelay: 1000,
@@ -55,7 +55,21 @@ document.addEventListener('DOMContentLoaded', function() {
         songTitle: document.getElementById('currentSongTitle'),
         songArtist: document.getElementById('currentSongArtist'),
         currentPlaylistName: document.getElementById('currentPlaylistName'),
-        nowPlaying: document.querySelector('.now-playing')
+        nowPlaying: document.querySelector('.now-playing'),
+        songStats: document.getElementById('songStats'),
+        songDuration: document.getElementById('songDuration'),
+        viewCount: document.getElementById('viewCount'),
+        likeCount: document.getElementById('likeCount'),
+        publishedDate: document.getElementById('publishedDate'),
+        sidePanel: document.getElementById('sidePanel'),
+        panelContent: document.getElementById('panelContent'),
+        panelTitle: document.getElementById('panelTitle'),
+        closePanel: document.getElementById('closePanel'),
+        showQueueBtn: document.getElementById('showQueueBtn'),
+        showLyricsBtn: document.getElementById('showLyricsBtn'),
+        speedBtn: document.getElementById('speedBtn'),
+        speedText: document.getElementById('speedText'),
+        speedDropdown: document.getElementById('speedDropdown')
     };
 
     // Prefijo para el localStorage
@@ -310,19 +324,10 @@ document.addEventListener('DOMContentLoaded', function() {
         DOM.addToPlaylistBtn?.addEventListener('click', showPlaylistModal);
         DOM.addToQueueBtn?.addEventListener('click', addCurrentToQueue);
         
-        // Event listeners para letra y cola
-        document.getElementById('showLyricsBtn')?.addEventListener('click', () => {
-            showSidePanel('lyrics');
-        });
-        
-        document.getElementById('showQueueBtn')?.addEventListener('click', () => {
-            showSidePanel('queue');
-        });
-        
-        // Event listener para cerrar panel lateral
-        document.getElementById('closePanel')?.addEventListener('click', () => {
-            toggleSidePanel();
-        });
+        // Event listeners para panel lateral
+        DOM.showLyricsBtn?.addEventListener('click', () => showSidePanel('lyrics'));
+        DOM.showQueueBtn?.addEventListener('click', () => showSidePanel('queue'));
+        DOM.closePanel?.addEventListener('click', toggleSidePanel);
         
         // Evento de búsqueda con debounce
         DOM.searchBtn?.addEventListener('click', searchMusic);
@@ -343,15 +348,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        // Búsquedas rápidas
+        document.querySelectorAll('.quick-action-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const query = btn.getAttribute('data-query');
+                if (query && DOM.searchInput) {
+                    DOM.searchInput.value = query;
+                    searchMusic();
+                }
+            });
+        });
+        
+        // Control de velocidad
+        DOM.speedBtn?.addEventListener('click', toggleSpeedDropdown);
+        
         showSearchHistory();
         setInterval(updateProgressBar, 500);
+    }
+
+    // Alternar dropdown de velocidad
+    function toggleSpeedDropdown() {
+        if (!DOM.speedDropdown) return;
+        
+        if (DOM.speedDropdown.classList.contains('show')) {
+            DOM.speedDropdown.classList.remove('show');
+            setTimeout(() => {
+                DOM.speedDropdown.style.display = 'none';
+            }, 300);
+        } else {
+            DOM.speedDropdown.style.display = 'flex';
+            setTimeout(() => {
+                DOM.speedDropdown.classList.add('show');
+            }, 10);
+        }
     }
 
     // Manejar entrada de búsqueda con debounce
     function handleSearchInput() {
         clearTimeout(searchTimeout);
         
-        if (DOM.searchInput.value.trim().length > 2) {
+        if (DOM.searchInput && DOM.searchInput.value.trim().length > 2) {
             searchTimeout = setTimeout(() => {
                 searchMusic();
             }, 800);
@@ -403,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Obtener detalles de los videos para duraciones exactas
             const videoIds = data.items.map(item => item.id.videoId).join(',');
-            const detailsResponse = await fetch(`${API_BASE_URL}/videos?part=snippet,contentDetails&id=${videoIds}&key=${config.apiKey}`);
+            const detailsResponse = await fetch(`${API_BASE_URL}/videos?part=snippet,contentDetails,statistics&id=${videoIds}&key=${config.apiKey}`);
             
             if (!detailsResponse.ok) {
                 throw new Error(`HTTP error! status: ${detailsResponse.status}`);
@@ -418,7 +454,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: cleanVideoTitle(item.snippet.title),
                     artist: item.snippet.channelTitle,
                     thumbnail: getBestThumbnail(item.snippet.thumbnails),
-                    duration: parseDuration(detail.contentDetails?.duration)
+                    duration: parseDuration(detail.contentDetails?.duration),
+                    viewCount: detail.statistics?.viewCount ? parseInt(detail.statistics.viewCount) : 0,
+                    likeCount: detail.statistics?.likeCount ? parseInt(detail.statistics.likeCount) : 0,
+                    publishedAt: detail.snippet?.publishedAt || ''
                 };
             });
             
@@ -472,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading();
         
         try {
-            const response = await fetch(`${API_BASE_URL}/videos?part=snippet,contentDetails&id=${videoId}&key=${config.apiKey}`);
+            const response = await fetch(`${API_BASE_URL}/videos?part=snippet,contentDetails,statistics&id=${videoId}&key=${config.apiKey}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -491,7 +530,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: cleanVideoTitle(item.snippet.title),
                 artist: item.snippet.channelTitle,
                 thumbnail: getBestThumbnail(item.snippet.thumbnails),
-                duration: parseDuration(item.contentDetails?.duration)
+                duration: parseDuration(item.contentDetails?.duration),
+                viewCount: item.statistics?.viewCount ? parseInt(item.statistics.viewCount) : 0,
+                likeCount: item.statistics?.likeCount ? parseInt(item.statistics.likeCount) : 0,
+                publishedAt: item.snippet?.publishedAt || ''
             }];
             
             displaySearchResults();
@@ -589,6 +631,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Actualizar UI
+        updatePlayerUI();
+        
+        playTrackById(playerState.currentTrack.id);
+        updateFavoriteButton();
+        
+        // Configurar control de velocidad
+        setupSpeedControl();
+    }
+
+    // Actualizar la UI del reproductor
+    function updatePlayerUI() {
+        if (!playerState.currentTrack) return;
+        
+        // Actualizar información básica
         if (DOM.songTitle) DOM.songTitle.textContent = playerState.currentTrack.title;
         if (DOM.songArtist) DOM.songArtist.textContent = playerState.currentTrack.artist || 'Artista desconocido';
         if (DOM.albumArt) {
@@ -602,12 +658,30 @@ document.addEventListener('DOMContentLoaded', function() {
         if (DOM.durationDisplay) {
             DOM.durationDisplay.textContent = formatTime(playerState.currentTrack.duration);
         }
+        if (DOM.songDuration) {
+            DOM.songDuration.textContent = formatTime(playerState.currentTrack.duration);
+        }
         
-        playTrackById(playerState.currentTrack.id);
-        updateFavoriteButton();
+        // Actualizar estadísticas
+        if (DOM.viewCount) {
+            DOM.viewCount.textContent = playerState.currentTrack.viewCount ? formatNumber(playerState.currentTrack.viewCount) : 'N/A';
+        }
+        if (DOM.likeCount) {
+            DOM.likeCount.textContent = playerState.currentTrack.likeCount ? formatNumber(playerState.currentTrack.likeCount) : 'N/A';
+        }
+        if (DOM.publishedDate) {
+            DOM.publishedDate.textContent = playerState.currentTrack.publishedAt ? formatDate(playerState.currentTrack.publishedAt) : 'N/A';
+        }
         
-        // Configurar control de velocidad
-        setupSpeedControl();
+        // Actualizar nombre de playlist
+        if (DOM.currentPlaylistName) {
+            if (playerState.currentPlaylist) {
+                DOM.currentPlaylistName.textContent = `Playlist: ${playerState.currentPlaylist.name || 'Sin nombre'}`;
+                DOM.currentPlaylistName.style.display = 'block';
+            } else {
+                DOM.currentPlaylistName.style.display = 'none';
+            }
+        }
     }
 
     // Reproducir por ID de video
@@ -765,6 +839,30 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
+    // Formatear número (vistas, likes)
+    function formatNumber(num) {
+        if (!num) return '0';
+        
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1) + 'M';
+        } else if (num >= 1000) {
+            return (num / 1000).toFixed(1) + 'K';
+        }
+        return num.toString();
+    }
+
+    // Formatear fecha
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
     // Buscar en la canción
     function seek() {
         if (!ytPlayerReady || !ytPlayer || !DOM.progressBar) return;
@@ -823,21 +921,6 @@ document.addEventListener('DOMContentLoaded', function() {
             DOM.favoriteBtn.innerHTML = '<i class="far fa-heart"></i> Favorito';
             DOM.favoriteBtn.classList.remove('is-favorite');
         }
-    }
-
-    // Actualizar la UI del reproductor
-    function updatePlayerUI() {
-        if (!DOM.currentPlaylistName) return;
-        
-        if (playerState.currentPlaylist) {
-            DOM.currentPlaylistName.textContent = `Playlist: ${playerState.currentPlaylist.name || 'Sin nombre'}`;
-            DOM.currentPlaylistName.style.display = 'block';
-        } else {
-            DOM.currentPlaylistName.style.display = 'none';
-        }
-        
-        // Actualizar estadísticas de la canción
-        updateSongStats();
     }
 
     // Mostrar modal de playlists
@@ -970,6 +1053,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="fas fa-search"></i>
                         <h3>Busca tu música favorita</h3>
                         <p>Comienza escribiendo el nombre de una canción o artista, o pega una URL de YouTube</p>
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" data-query="top hits 2024">
+                                <i class="fas fa-fire"></i> Top Hits 2024
+                            </button>
+                            <button class="quick-action-btn" data-query="classic rock">
+                                <i class="fas fa-guitar"></i> Classic Rock
+                            </button>
+                            <button class="quick-action-btn" data-query="jazz instrumental">
+                                <i class="fas fa-saxophone"></i> Jazz
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1193,6 +1287,208 @@ document.addEventListener('DOMContentLoaded', function() {
         }, duration);
     }
 
+    // Panel lateral
+    function toggleSidePanel() {
+        if (DOM.sidePanel) {
+            DOM.sidePanel.classList.toggle('open');
+        }
+    }
+
+    function showSidePanel(type) {
+        if (!DOM.sidePanel || !DOM.panelContent || !DOM.panelTitle) return;
+
+        // Mostrar panel
+        DOM.sidePanel.classList.add('open');
+        
+        // Actualizar título del panel
+        DOM.panelTitle.textContent = type === 'lyrics' ? 'Letra de la Canción' : 'Cola de Reproducción';
+
+        if (type === 'lyrics') {
+            showLyricsPanel();
+        } else if (type === 'queue') {
+            showQueuePanel();
+        }
+    }
+
+    function showLyricsPanel() {
+        if (!DOM.panelContent) return;
+
+        DOM.panelContent.innerHTML = `
+            <div class="lyrics-content">
+                <div class="lyrics-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Buscando letra...</p>
+                </div>
+            </div>
+        `;
+
+        // Buscar letra de la canción actual
+        if (playerState.currentTrack) {
+            fetchLyrics(playerState.currentTrack.artist, playerState.currentTrack.title);
+        }
+    }
+
+    function showQueuePanel() {
+        if (!DOM.panelContent) return;
+
+        let html = '<div class="queue-content">';
+
+        if (playerState.queue.length > 0) {
+            playerState.queue.forEach((track, index) => {
+                const isCurrent = playerState.currentTrack && track.id === playerState.currentTrack.id;
+                html += `
+                    <div class="queue-item ${isCurrent ? 'current' : ''}" data-index="${index}">
+                        <div class="queue-item-info">
+                            <div class="queue-item-title">${track.title || 'Sin título'}</div>
+                            <div class="queue-item-artist">${track.artist || 'Artista desconocido'}</div>
+                        </div>
+                        <div class="queue-item-actions">
+                            <button class="btn btn-sm btn-outline-danger remove-from-queue" 
+                                    data-index="${index}" aria-label="Eliminar de la cola">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            html += '<p class="text-muted">La cola está vacía</p>';
+        }
+
+        html += '</div>';
+        DOM.panelContent.innerHTML = html;
+        
+        // Agregar event listeners a los botones de eliminar
+        document.querySelectorAll('.remove-from-queue').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.getAttribute('data-index'));
+                removeFromQueue(index);
+            });
+        });
+        
+        // Agregar event listeners a los items de la cola
+        document.querySelectorAll('.queue-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                // No hacer nada si se hizo clic en el botón de eliminar
+                if (!e.target.closest('.remove-from-queue')) {
+                    const index = parseInt(item.getAttribute('data-index'));
+                    playFromQueue(index);
+                }
+            });
+        });
+    }
+
+    function removeFromQueue(index) {
+        if (index >= 0 && index < playerState.queue.length) {
+            playerState.queue.splice(index, 1);
+            LocalStorageManager.setQueue(playerState.queue);
+            showNotification('Canción removida de la cola', 'info');
+            
+            // Actualizar panel si está abierto
+            if (DOM.sidePanel.classList.contains('open') && DOM.panelTitle.textContent.includes('Cola')) {
+                showQueuePanel();
+            }
+        }
+    }
+
+    // Buscar letra de canción
+    async function fetchLyrics(artist, title) {
+        if (!artist || !title) {
+            showLyricsError('Información de canción insuficiente');
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`);
+            const data = await response.json();
+
+            if (data.lyrics) {
+                showLyrics(data.lyrics);
+            } else {
+                showLyricsError('Letra no encontrada');
+            }
+        } catch (error) {
+            console.error('Error al buscar letra:', error);
+            showLyricsError('Error al cargar la letra');
+        }
+    }
+
+    function showLyrics(lyrics) {
+        if (!DOM.panelContent) return;
+
+        const lyricsElement = DOM.panelContent.querySelector('.lyrics-content');
+        if (lyricsElement) {
+            lyricsElement.innerHTML = `
+                <div class="lyrics-text">
+                    ${lyrics.replace(/\n/g, '<br>')}
+                </div>
+            `;
+        }
+    }
+
+    function showLyricsError(message) {
+        if (!DOM.panelContent) return;
+
+        const lyricsElement = DOM.panelContent.querySelector('.lyrics-content');
+        if (lyricsElement) {
+            lyricsElement.innerHTML = `
+                <div class="lyrics-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+    }
+
+    // Control de velocidad
+    function setupSpeedControl() {
+        const speedControl = document.getElementById('speedBtn');
+        const speedText = document.getElementById('speedText');
+        const speedDropdown = document.getElementById('speedDropdown');
+        
+        if (speedControl && speedText && speedDropdown && ytPlayer && ytPlayerReady) {
+            const currentRate = ytPlayer.getPlaybackRate();
+            playerState.playbackRate = currentRate;
+            speedText.textContent = `${currentRate}x`;
+            
+            // Actualizar opción activa
+            document.querySelectorAll('.speed-option').forEach(option => {
+                option.classList.toggle('active', parseFloat(option.dataset.speed) === currentRate);
+            });
+            
+            // Event listeners para opciones de velocidad
+            document.querySelectorAll('.speed-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const rate = parseFloat(option.dataset.speed);
+                    ytPlayer.setPlaybackRate(rate);
+                    playerState.playbackRate = rate;
+                    speedText.textContent = `${rate}x`;
+                    LocalStorageManager.setPlaybackRate(rate);
+                    
+                    // Actualizar clase activa
+                    document.querySelectorAll('.speed-option').forEach(opt => {
+                        opt.classList.toggle('active', parseFloat(opt.dataset.speed) === rate);
+                    });
+                    
+                    showNotification(`Velocidad de reproducción: ${rate}x`, 'info');
+                });
+            });
+        }
+    }
+
+    // Actualizar buffer de progreso
+    function updateProgressBuffer() {
+        if (!ytPlayerReady || !ytPlayer || !document.getElementById('progressBuffer')) return;
+
+        try {
+            const buffered = ytPlayer.getVideoLoadedFraction();
+            document.getElementById('progressBuffer').style.width = `${buffered * 100}%`;
+        } catch (error) {
+            console.error('Error al actualizar buffer:', error);
+        }
+    }
+
     // API pública para acceso desde HTML
     window.playerAPI = {
         searchFromHistory: function(query) {
@@ -1310,535 +1606,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicializar el reproductor
     initPlayer();
-
-    // ========================================
-    // NUEVAS FUNCIONALIDADES AVANZADAS
-    // ========================================
-
-    // Estado para funcionalidades avanzadas
-    const advancedState = {
-        isSidePanelOpen: false,
-        currentSidePanel: null,
-        keyboardControlsEnabled: true,
-        speedControlEnabled: true,
-        muteEnabled: true,
-        lyricsEnabled: true,
-        queueEnabled: true,
-        searchFilters: {
-            duration: 'all',
-            quality: 'all',
-            type: 'all'
-        }
-    };
-
-    // Elementos DOM para funcionalidades avanzadas
-    const AdvancedDOM = {
-        sidePanel: document.getElementById('sidePanel'),
-        sidePanelContent: document.getElementById('panelContent'),
-        sidePanelToggle: document.getElementById('closePanel'),
-        speedControl: document.getElementById('speedBtn'),
-        muteBtn: document.getElementById('muteBtn'),
-        keyboardControlsBtn: document.getElementById('keyboardControlsBtn'),
-        lyricsBtn: document.getElementById('showLyricsBtn'),
-        queueBtn: document.getElementById('showQueueBtn'),
-        searchFilters: document.getElementById('searchFilters'),
-        durationFilter: document.getElementById('durationFilter'),
-        qualityFilter: document.getElementById('qualityFilter'),
-        typeFilter: document.getElementById('searchFilter'),
-        quickActions: document.getElementById('quickActions'),
-        songStats: document.getElementById('songStats'),
-        progressBuffer: document.getElementById('progressBuffer')
-    };
-
-    // Inicializar funcionalidades avanzadas
-    function initAdvancedFeatures() {
-        // Configurar controles de velocidad
-        if (AdvancedDOM.speedControl) {
-            AdvancedDOM.speedControl.addEventListener('change', (e) => {
-                const rate = parseFloat(e.target.value);
-                if (ytPlayer && ytPlayerReady) {
-                    ytPlayer.setPlaybackRate(rate);
-                    playerState.playbackRate = rate;
-                    LocalStorageManager.setPlaybackRate(rate);
-                    showNotification(`Velocidad: ${rate}x`, 'info');
-                }
-            });
-        }
-
-        // Configurar botón de mute
-        if (AdvancedDOM.muteBtn) {
-            AdvancedDOM.muteBtn.addEventListener('click', () => {
-                if (ytPlayer && ytPlayerReady) {
-                    const isMuted = ytPlayer.isMuted();
-                    if (isMuted) {
-                        ytPlayer.unMute();
-                        AdvancedDOM.muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-                        showNotification('Sonido activado', 'success');
-                    } else {
-                        ytPlayer.mute();
-                        AdvancedDOM.muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                        showNotification('Sonido silenciado', 'info');
-                    }
-                }
-            });
-        }
-
-        // Configurar panel lateral
-        if (AdvancedDOM.sidePanelToggle) {
-            AdvancedDOM.sidePanelToggle.addEventListener('click', () => {
-                toggleSidePanel();
-            });
-        }
-
-        // Configurar botones del panel lateral
-        if (AdvancedDOM.lyricsBtn) {
-            AdvancedDOM.lyricsBtn.addEventListener('click', () => {
-                showSidePanel('lyrics');
-            });
-        }
-
-        if (AdvancedDOM.queueBtn) {
-            AdvancedDOM.queueBtn.addEventListener('click', () => {
-                showSidePanel('queue');
-            });
-        }
-
-        // Configurar filtros de búsqueda
-        if (AdvancedDOM.durationFilter) {
-            AdvancedDOM.durationFilter.addEventListener('change', applySearchFilters);
-        }
-        if (AdvancedDOM.qualityFilter) {
-            AdvancedDOM.qualityFilter.addEventListener('change', applySearchFilters);
-        }
-        if (AdvancedDOM.typeFilter) {
-            AdvancedDOM.typeFilter.addEventListener('change', applySearchFilters);
-        }
-
-        // Configurar controles de teclado
-        setupKeyboardControls();
-
-        // Configurar acciones rápidas
-        setupQuickActions();
-
-        // Configurar estadísticas de canción
-        setupSongStats();
-    }
-
-    // Controles de teclado
-    function setupKeyboardControls() {
-        document.addEventListener('keydown', (e) => {
-            if (!advancedState.keyboardControlsEnabled) return;
-            
-            // Evitar conflictos con inputs
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-            switch(e.code) {
-                case 'Space':
-                    e.preventDefault();
-                    togglePlay();
-                    break;
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    if (e.ctrlKey) {
-                        seek(-10);
-                    } else {
-                        playPrevious();
-                    }
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    if (e.ctrlKey) {
-                        seek(10);
-                    } else {
-                        playNext();
-                    }
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    if (e.ctrlKey) {
-                        setVolume(Math.min(1, playerState.volume + 0.1));
-                    }
-                    break;
-                case 'ArrowDown':
-                    e.preventDefault();
-                    if (e.ctrlKey) {
-                        setVolume(Math.max(0, playerState.volume - 0.1));
-                    }
-                    break;
-                case 'KeyM':
-                    e.preventDefault();
-                    if (AdvancedDOM.muteBtn) {
-                        AdvancedDOM.muteBtn.click();
-                    }
-                    break;
-                case 'KeyL':
-                    e.preventDefault();
-                    if (AdvancedDOM.lyricsBtn) {
-                        AdvancedDOM.lyricsBtn.click();
-                    }
-                    break;
-                case 'KeyQ':
-                    e.preventDefault();
-                    if (AdvancedDOM.queueBtn) {
-                        AdvancedDOM.queueBtn.click();
-                    }
-                    break;
-                case 'KeyS':
-                    e.preventDefault();
-                    toggleShuffle();
-                    break;
-                case 'KeyR':
-                    e.preventDefault();
-                    toggleRepeat();
-                    break;
-                case 'KeyF':
-                    e.preventDefault();
-                    toggleFavorite();
-                    break;
-            }
-        });
-    }
-
-    // Control de velocidad
-    function setupSpeedControl() {
-        if (AdvancedDOM.speedControl && ytPlayer && ytPlayerReady) {
-            const currentRate = ytPlayer.getPlaybackRate();
-            AdvancedDOM.speedControl.value = currentRate;
-            playerState.playbackRate = currentRate;
-        }
-    }
-
-    // Panel lateral
-    function toggleSidePanel() {
-        const sidePanel = document.getElementById('sidePanel');
-        if (sidePanel) {
-            sidePanel.classList.toggle('open');
-        }
-    }
-
-    function showSidePanel(type) {
-        const sidePanel = document.getElementById('sidePanel');
-        const panelContent = document.getElementById('panelContent');
-        const panelTitle = document.getElementById('panelTitle');
-        
-        if (!sidePanel || !panelContent) return;
-
-        // Mostrar panel
-        sidePanel.classList.add('open');
-        
-        // Actualizar título del panel
-        if (panelTitle) {
-            panelTitle.textContent = type === 'lyrics' ? 'Letra de la Canción' : 'Cola de Reproducción';
-        }
-
-        if (type === 'lyrics') {
-            showLyricsPanel();
-        } else if (type === 'queue') {
-            showQueuePanel();
-        }
-    }
-
-    function showLyricsPanel() {
-        const panelContent = document.getElementById('panelContent');
-        if (!panelContent) return;
-
-        panelContent.innerHTML = `
-            <div class="lyrics-content">
-                <div class="lyrics-loading">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Buscando letra...</p>
-                </div>
-            </div>
-        `;
-
-        // Buscar letra de la canción actual
-        if (playerState.currentTrack) {
-            fetchLyrics(playerState.currentTrack.artist, playerState.currentTrack.title);
-        }
-    }
-
-    function showQueuePanel() {
-        const panelContent = document.getElementById('panelContent');
-        if (!panelContent) return;
-
-        let html = '<div class="queue-content">';
-
-        if (playerState.queue.length > 0) {
-            playerState.queue.forEach((track, index) => {
-                const isCurrent = index === playerState.currentTrackIndex;
-                html += `
-                    <div class="queue-item ${isCurrent ? 'current' : ''}" data-index="${index}">
-                        <div class="queue-item-info">
-                            <div class="queue-item-title">${track.title || 'Sin título'}</div>
-                            <div class="queue-item-artist">${track.artist || 'Artista desconocido'}</div>
-                        </div>
-                        <div class="queue-item-actions">
-                            <button class="btn btn-sm btn-outline-danger" onclick="removeFromQueue(${index})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-        } else {
-            html += '<p class="text-muted">La cola está vacía</p>';
-        }
-
-        html += '</div>';
-        panelContent.innerHTML = html;
-    }
-
-    // Filtros de búsqueda
-    function applySearchFilters() {
-        if (!AdvancedDOM.durationFilter || !AdvancedDOM.qualityFilter || !AdvancedDOM.typeFilter) return;
-
-        advancedState.searchFilters = {
-            duration: AdvancedDOM.durationFilter.value,
-            quality: AdvancedDOM.qualityFilter.value,
-            type: AdvancedDOM.typeFilter.value
-        };
-
-        // Aplicar filtros a los resultados existentes
-        if (playerState.searchResults.length > 0) {
-            filterSearchResults();
-        }
-    }
-
-    function filterSearchResults() {
-        let filteredResults = [...playerState.searchResults];
-
-        // Filtro por duración
-        if (advancedState.searchFilters.duration !== 'all') {
-            const maxDuration = parseInt(advancedState.searchFilters.duration);
-            filteredResults = filteredResults.filter(track => 
-                track.duration <= maxDuration
-            );
-        }
-
-        // Filtro por calidad (basado en thumbnail)
-        if (advancedState.searchFilters.quality !== 'all') {
-            filteredResults = filteredResults.filter(track => {
-                if (advancedState.searchFilters.quality === 'hd') {
-                    return track.thumbnail && track.thumbnail.includes('hqdefault');
-                } else if (advancedState.searchFilters.quality === 'sd') {
-                    return track.thumbnail && track.thumbnail.includes('default');
-                }
-                return true;
-            });
-        }
-
-        // Filtro por tipo
-        if (advancedState.searchFilters.type !== 'all') {
-            filteredResults = filteredResults.filter(track => {
-                const title = track.title.toLowerCase();
-                const artist = track.artist.toLowerCase();
-                
-                if (advancedState.searchFilters.type === 'music') {
-                    return title.includes('music') || title.includes('song') || 
-                           artist.includes('music') || artist.includes('song');
-                } else if (advancedState.searchFilters.type === 'video') {
-                    return title.includes('video') || title.includes('clip') || 
-                           artist.includes('video') || artist.includes('clip');
-                }
-                return true;
-            });
-        }
-
-        // Actualizar display con resultados filtrados
-        const originalResults = [...playerState.searchResults];
-        playerState.searchResults = filteredResults;
-        displaySearchResults();
-        playerState.searchResults = originalResults; // Restaurar resultados originales
-    }
-
-    // Acciones rápidas
-    function setupQuickActions() {
-        if (!AdvancedDOM.quickActions) return;
-
-        AdvancedDOM.quickActions.innerHTML = `
-            <button class="quick-action-btn" onclick="toggleShuffle()" title="Mezclar (S)">
-                <i class="fas fa-random"></i>
-            </button>
-            <button class="quick-action-btn" onclick="toggleRepeat()" title="Repetir (R)">
-                <i class="fas fa-redo"></i>
-            </button>
-            <button class="quick-action-btn" onclick="toggleFavorite()" title="Favorito (F)">
-                <i class="fas fa-heart"></i>
-            </button>
-            <button class="quick-action-btn" onclick="addCurrentToQueue()" title="Agregar a cola">
-                <i class="fas fa-plus"></i>
-            </button>
-        `;
-    }
-
-    // Estadísticas de canción
-    function setupSongStats() {
-        if (!AdvancedDOM.songStats) return;
-        updateSongStats();
-    }
-
-    function updateSongStats() {
-        if (!AdvancedDOM.songStats || !playerState.currentTrack) return;
-
-        const track = playerState.currentTrack;
-        const stats = {
-            duration: formatTime(track.duration),
-            views: track.viewCount ? formatNumber(track.viewCount) : 'N/A',
-            likes: track.likeCount ? formatNumber(track.likeCount) : 'N/A',
-            published: track.publishedAt ? formatDate(track.publishedAt) : 'N/A'
-        };
-
-        AdvancedDOM.songStats.innerHTML = `
-            <div class="stat-item">
-                <i class="fas fa-clock"></i>
-                <span>${stats.duration}</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-eye"></i>
-                <span>${stats.views}</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-thumbs-up"></i>
-                <span>${stats.likes}</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-calendar"></i>
-                <span>${stats.published}</span>
-            </div>
-        `;
-    }
-
-    // Funciones auxiliares
-    function formatNumber(num) {
-        if (num >= 1000000) {
-            return (num / 1000000).toFixed(1) + 'M';
-        } else if (num >= 1000) {
-            return (num / 1000).toFixed(1) + 'K';
-        }
-        return num.toString();
-    }
-
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    }
-
-    function removeFromQueue(index) {
-        if (index >= 0 && index < playerState.queue.length) {
-            playerState.queue.splice(index, 1);
-            LocalStorageManager.setQueue(playerState.queue);
-            showNotification('Canción removida de la cola', 'info');
-            
-            if (advancedState.currentSidePanel === 'queue') {
-                showQueuePanel();
-            }
-        }
-    }
-
-    // Buscar letra de canción
-    async function fetchLyrics(artist, title) {
-        if (!artist || !title) {
-            showLyricsError('Información de canción insuficiente');
-            return;
-        }
-
-        try {
-            const response = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`);
-            const data = await response.json();
-
-            if (data.lyrics) {
-                showLyrics(data.lyrics);
-            } else {
-                showLyricsError('Letra no encontrada');
-            }
-        } catch (error) {
-            console.error('Error al buscar letra:', error);
-            showLyricsError('Error al cargar la letra');
-        }
-    }
-
-    function showLyrics(lyrics) {
-        const panelContent = document.getElementById('panelContent');
-        if (!panelContent) return;
-
-        const lyricsElement = panelContent.querySelector('.lyrics-content');
-        if (lyricsElement) {
-            lyricsElement.innerHTML = `
-                <div class="lyrics-text">
-                    ${lyrics.replace(/\n/g, '<br>')}
-                </div>
-            `;
-        }
-    }
-
-    function showLyricsError(message) {
-        const panelContent = document.getElementById('panelContent');
-        if (!panelContent) return;
-
-        const lyricsElement = panelContent.querySelector('.lyrics-content');
-        if (lyricsElement) {
-            lyricsElement.innerHTML = `
-                <div class="lyrics-error">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>${message}</p>
-                </div>
-            `;
-        }
-    }
-
-    // Actualizar buffer de progreso
-    function updateProgressBuffer() {
-        if (!AdvancedDOM.progressBuffer || !ytPlayer || !ytPlayerReady) return;
-
-        try {
-            const buffered = ytPlayer.getVideoLoadedFraction();
-            AdvancedDOM.progressBuffer.style.width = `${buffered * 100}%`;
-        } catch (error) {
-            console.error('Error al actualizar buffer:', error);
-        }
-    }
-
-    // Gestos táctiles para móviles
-    function setupTouchGestures() {
-        let startX = 0;
-        let startY = 0;
-        let startTime = 0;
-
-        document.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            startTime = Date.now();
-        });
-
-        document.addEventListener('touchend', (e) => {
-            const endX = e.changedTouches[0].clientX;
-            const endY = e.changedTouches[0].clientY;
-            const endTime = Date.now();
-            const duration = endTime - startTime;
-            const deltaX = endX - startX;
-            const deltaY = endY - startY;
-
-            // Swipe horizontal para cambiar canción
-            if (Math.abs(deltaX) > 50 && Math.abs(deltaY) < 30 && duration < 300) {
-                if (deltaX > 0) {
-                    playPrevious();
-                } else {
-                    playNext();
-                }
-            }
-
-            // Tap doble para play/pause
-            if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10 && duration < 200) {
-                togglePlay();
-            }
-        });
-    }
-
-    // Inicializar funcionalidades avanzadas
-    initAdvancedFeatures();
-    setupTouchGestures();
 });
