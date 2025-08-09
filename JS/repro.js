@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
         retryAttempts: 3,
         retryDelay: 1000,
         defaultVolume: 0.7,
-        playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
+        playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+        notificationDuration: 3000
     };
 
     // Estado del reproductor
@@ -69,7 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
         showLyricsBtn: document.getElementById('showLyricsBtn'),
         speedBtn: document.getElementById('speedBtn'),
         speedText: document.getElementById('speedText'),
-        speedDropdown: document.getElementById('speedDropdown')
+        speedDropdown: document.getElementById('speedDropdown'),
+        notificationsContainer: document.getElementById('notificationsContainer')
     };
 
     // Prefijo para el localStorage
@@ -305,6 +307,384 @@ document.addEventListener('DOMContentLoaded', function() {
         if (indicator) {
             indicator.style.display = 'none';
         }
+    }
+
+    // Mostrar notificaciones mejoradas
+    function showNotification(message, type = 'info') {
+        if (!DOM.notificationsContainer) {
+            DOM.notificationsContainer = document.createElement('div');
+            DOM.notificationsContainer.id = 'notificationsContainer';
+            DOM.notificationsContainer.className = 'notifications-container';
+            document.body.appendChild(DOM.notificationsContainer);
+        }
+
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 
+                                  type === 'success' ? 'fa-check-circle' : 
+                                  'fa-info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <div class="notification-progress"></div>
+        `;
+
+        DOM.notificationsContainer.appendChild(notification);
+
+        // Animación de entrada
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+
+        // Animación de progreso
+        const progressBar = notification.querySelector('.notification-progress');
+        progressBar.style.animation = `progress ${config.notificationDuration}ms linear`;
+
+        // Eliminar después de un tiempo
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, config.notificationDuration);
+    }
+
+    // Mostrar error
+    function showError(message) {
+        showNotification(message, 'error');
+    }
+
+    // Mostrar éxito
+    function showSuccess(message) {
+        showNotification(message, 'success');
+    }
+
+    // Mostrar información
+    function showInfo(message) {
+        showNotification(message, 'info');
+    }
+
+    // Mostrar historial de búsqueda
+    function showSearchHistory() {
+        if (!DOM.searchInput || playerState.searchHistory.length === 0) return;
+        
+        const historyContainer = document.createElement('div');
+        historyContainer.className = 'search-history-container';
+        historyContainer.innerHTML = `
+            <div class="search-history-header">
+                <h4>Historial de búsqueda</h4>
+                <button class="clear-history-btn">Limpiar</button>
+            </div>
+            <ul class="search-history-list">
+                ${playerState.searchHistory.map(item => `
+                    <li>
+                        <button class="history-item-btn">
+                            <i class="fas fa-history"></i>
+                            <span>${item}</span>
+                        </button>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+        
+        // Insertar después del input de búsqueda
+        DOM.searchInput.parentNode.insertBefore(historyContainer, DOM.searchInput.nextSibling);
+        
+        // Event listeners para los elementos del historial
+        historyContainer.querySelectorAll('.history-item-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const query = btn.querySelector('span').textContent;
+                DOM.searchInput.value = query;
+                searchMusic();
+                historyContainer.remove();
+            });
+        });
+        
+        // Limpiar historial
+        historyContainer.querySelector('.clear-history-btn').addEventListener('click', () => {
+            playerState.searchHistory = [];
+            LocalStorageManager.setSearchHistory(playerState.searchHistory);
+            historyContainer.remove();
+            showSuccess('Historial de búsqueda limpiado');
+        });
+        
+        // Ocultar historial al hacer clic fuera
+        document.addEventListener('click', function outsideClickHandler(e) {
+            if (!historyContainer.contains(e.target) && e.target !== DOM.searchInput) {
+                historyContainer.remove();
+                document.removeEventListener('click', outsideClickHandler);
+            }
+        });
+    }
+
+    // Mostrar playlists en el panel lateral
+    function showPlaylistsInPanel() {
+        if (!DOM.panelContent) return;
+        
+        DOM.panelTitle.textContent = 'Tus Playlists';
+        DOM.panelContent.innerHTML = '';
+        
+        if (playerState.playlists.length === 0) {
+            DOM.panelContent.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-music"></i>
+                    <p>No tienes playlists creadas</p>
+                    <button class="btn create-playlist-btn">Crear playlist</button>
+                </div>
+            `;
+            
+            DOM.panelContent.querySelector('.create-playlist-btn').addEventListener('click', createNewPlaylist);
+            return;
+        }
+        
+        const playlistsContainer = document.createElement('div');
+        playlistsContainer.className = 'playlists-container';
+        
+        playerState.playlists.forEach((playlist, index) => {
+            const playlistElement = document.createElement('div');
+            playlistElement.className = 'playlist-item';
+            playlistElement.innerHTML = `
+                <div class="playlist-info">
+                    <div class="playlist-cover">
+                        ${playlist.tracks.length > 0 ? 
+                            `<img src="${playlist.tracks[0].thumbnail}" alt="${playlist.name}">` : 
+                            `<i class="fas fa-music"></i>`}
+                    </div>
+                    <div class="playlist-details">
+                        <h4>${playlist.name}</h4>
+                        <span>${playlist.tracks.length} canción${playlist.tracks.length !== 1 ? 'es' : ''}</span>
+                    </div>
+                </div>
+                <div class="playlist-actions">
+                    <button class="btn-icon play-playlist-btn" data-index="${index}">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="btn-icon edit-playlist-btn" data-index="${index}">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+            `;
+            
+            playlistsContainer.appendChild(playlistElement);
+        });
+        
+        // Botón para crear nueva playlist
+        const newPlaylistBtn = document.createElement('button');
+        newPlaylistBtn.className = 'btn new-playlist-btn';
+        newPlaylistBtn.innerHTML = '<i class="fas fa-plus"></i> Crear nueva playlist';
+        newPlaylistBtn.addEventListener('click', createNewPlaylist);
+        
+        DOM.panelContent.appendChild(playlistsContainer);
+        DOM.panelContent.appendChild(newPlaylistBtn);
+        
+        // Event listeners para los botones de las playlists
+        playlistsContainer.querySelectorAll('.play-playlist-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt(btn.getAttribute('data-index'));
+                playPlaylist(index);
+                toggleSidePanel();
+            });
+        });
+        
+        playlistsContainer.querySelectorAll('.edit-playlist-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt(btn.getAttribute('data-index'));
+                showPlaylistOptions(index);
+            });
+        });
+    }
+
+    // Mostrar opciones de playlist
+    function showPlaylistOptions(index) {
+        const playlist = playerState.playlists[index];
+        
+        const optionsMenu = document.createElement('div');
+        optionsMenu.className = 'dropdown-menu playlist-options-menu';
+        optionsMenu.innerHTML = `
+            <ul>
+                <li>
+                    <button class="dropdown-item rename-playlist-btn">
+                        <i class="fas fa-pencil-alt"></i> Renombrar
+                    </button>
+                </li>
+                <li>
+                    <button class="dropdown-item delete-playlist-btn">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </li>
+            </ul>
+        `;
+        
+        document.body.appendChild(optionsMenu);
+        
+        // Posicionar el menú
+        const btn = document.querySelector(`.edit-playlist-btn[data-index="${index}"]`);
+        const rect = btn.getBoundingClientRect();
+        optionsMenu.style.top = `${rect.bottom}px`;
+        optionsMenu.style.left = `${rect.left - optionsMenu.offsetWidth + btn.offsetWidth}px`;
+        
+        // Event listeners
+        optionsMenu.querySelector('.rename-playlist-btn').addEventListener('click', () => {
+            renamePlaylist(index);
+            optionsMenu.remove();
+        });
+        
+        optionsMenu.querySelector('.delete-playlist-btn').addEventListener('click', () => {
+            deletePlaylist(index);
+            optionsMenu.remove();
+        });
+        
+        // Cerrar al hacer clic fuera
+        document.addEventListener('click', function outsideClickHandler(e) {
+            if (!optionsMenu.contains(e.target) && e.target !== btn) {
+                optionsMenu.remove();
+                document.removeEventListener('click', outsideClickHandler);
+            }
+        });
+    }
+
+    // Renombrar playlist
+    function renamePlaylist(index) {
+        const playlist = playerState.playlists[index];
+        const newName = prompt('Nuevo nombre para la playlist:', playlist.name);
+        
+        if (newName && newName.trim() !== '' && newName !== playlist.name) {
+            playlist.name = newName.trim();
+            LocalStorageManager.setPlaylists(playerState.playlists);
+            showPlaylistsInPanel();
+            showSuccess('Playlist renombrada');
+        }
+    }
+
+    // Eliminar playlist
+    function deletePlaylist(index) {
+        if (confirm(`¿Estás seguro de que quieres eliminar la playlist "${playerState.playlists[index].name}"?`)) {
+            playerState.playlists.splice(index, 1);
+            LocalStorageManager.setPlaylists(playerState.playlists);
+            showPlaylistsInPanel();
+            showSuccess('Playlist eliminada');
+        }
+    }
+
+    // Crear nueva playlist
+    function createNewPlaylist() {
+        const playlistName = prompt('Nombre de la nueva playlist:');
+        
+        if (playlistName && playlistName.trim() !== '') {
+            const newPlaylist = {
+                id: Date.now().toString(),
+                name: playlistName.trim(),
+                tracks: []
+            };
+            
+            playerState.playlists.push(newPlaylist);
+            LocalStorageManager.setPlaylists(playerState.playlists);
+            showPlaylistsInPanel();
+            showSuccess('Playlist creada');
+            
+            // Si hay una canción actual, ofrecer añadirla
+            if (playerState.currentTrack) {
+                if (confirm(`¿Quieres añadir la canción actual a "${newPlaylist.name}"?`)) {
+                    addToPlaylist(newPlaylist.id);
+                }
+            }
+        }
+    }
+
+    // Mostrar panel lateral
+    function showSidePanel(contentType) {
+        if (!DOM.sidePanel) return;
+        
+        switch (contentType) {
+            case 'queue':
+                DOM.panelTitle.textContent = 'Cola de reproducción';
+                renderQueueInPanel();
+                break;
+                
+            case 'playlists':
+                showPlaylistsInPanel();
+                break;
+                
+            case 'lyrics':
+                DOM.panelTitle.textContent = 'Letra de la canción';
+                DOM.panelContent.innerHTML = '<p class="loading-text">Buscando letra...</p>';
+                fetchLyrics();
+                break;
+        }
+        
+        DOM.sidePanel.classList.add('open');
+    }
+
+    // Renderizar cola de reproducción en el panel
+    function renderQueueInPanel() {
+        if (!DOM.panelContent) return;
+        
+        DOM.panelContent.innerHTML = '';
+        
+        if (playerState.queue.length === 0) {
+            DOM.panelContent.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-list-ol"></i>
+                    <p>No hay canciones en la cola</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const queueList = document.createElement('ul');
+        queueList.className = 'queue-list';
+        
+        playerState.queue.forEach((track, index) => {
+            const queueItem = document.createElement('li');
+            queueItem.className = 'queue-item';
+            queueItem.innerHTML = `
+                <div class="queue-item-info">
+                    <div class="queue-item-img">
+                        <img src="${track.thumbnail}" alt="${track.title}">
+                    </div>
+                    <div class="queue-item-details">
+                        <h4>${track.title}</h4>
+                        <p>${track.channelTitle}</p>
+                    </div>
+                </div>
+                <div class="queue-item-actions">
+                    <button class="btn-icon play-queue-item-btn" data-index="${index}">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="btn-icon remove-queue-item-btn" data-index="${index}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            queueList.appendChild(queueItem);
+        });
+        
+        DOM.panelContent.appendChild(queueList);
+        
+        // Event listeners para los botones de la cola
+        queueList.querySelectorAll('.play-queue-item-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const index = parseInt(btn.getAttribute('data-index'));
+                playFromQueue(index);
+                toggleSidePanel();
+            });
+        });
+        
+        queueList.querySelectorAll('.remove-queue-item-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const index = parseInt(btn.getAttribute('data-index'));
+                removeFromQueue(index);
+                renderQueueInPanel();
+            });
+        });
+    }
+
+    // Alternar panel lateral
+    function toggleSidePanel() {
+        if (!DOM.sidePanel) return;
+        DOM.sidePanel.classList.toggle('open');
     }
 
     // Inicializar el reproductor
