@@ -1042,250 +1042,131 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // En la función showSearchHistory, agregaremos la sección de sugerencias
-function showSearchHistory() {
-    if (!DOM.resultsDiv) return;
-    
-    if (playerState.searchHistory.length === 0 && playerState.favoriteSongs.length === 0 && playerState.playlists.length === 0) {
-        DOM.resultsDiv.innerHTML = `
-            <div class="welcome-message">
-                <div class="welcome-content">
-                    <i class="fas fa-search"></i>
-                    <h3>Busca tu música favorita</h3>
-                    <p>Comienza escribiendo el nombre de una canción o artista, o pega una URL de YouTube</p>
-                    <div class="quick-actions">
-                        <button class="quick-action-btn" data-query="top hits 2024">
-                            <i class="fas fa-fire"></i> Top Hits 2024
-                        </button>
-                        <button class="quick-action-btn" data-query="classic rock">
-                            <i class="fas fa-guitar"></i> Classic Rock
-                        </button>
-                        <button class="quick-action-btn" data-query="jazz instrumental">
-                            <i class="fas fa-saxophone"></i> Jazz
-                        </button>
+    // Mostrar historial de búsqueda y favoritos
+    function showSearchHistory() {
+        if (!DOM.resultsDiv) return;
+        
+        if (playerState.searchHistory.length === 0 && playerState.favoriteSongs.length === 0 && playerState.playlists.length === 0) {
+            DOM.resultsDiv.innerHTML = `
+                <div class="welcome-message">
+                    <div class="welcome-content">
+                        <i class="fas fa-search"></i>
+                        <h3>Busca tu música favorita</h3>
+                        <p>Comienza escribiendo el nombre de una canción o artista, o pega una URL de YouTube</p>
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" data-query="top hits 2024">
+                                <i class="fas fa-fire"></i> Top Hits 2024
+                            </button>
+                            <button class="quick-action-btn" data-query="classic rock">
+                                <i class="fas fa-guitar"></i> Classic Rock
+                            </button>
+                            <button class="quick-action-btn" data-query="jazz instrumental">
+                                <i class="fas fa-saxophone"></i> Jazz
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
-        return;
-    }
-    
-    let html = `
-        <div class="tabs">
-            <div class="tab active" data-tab="history">Historial</div>
-            <div class="tab" data-tab="favorites">Favoritos</div>
-            <div class="tab" data-tab="playlists">Playlists</div>
-        </div>
-        <div id="historyTab" class="tab-content">
-    `;
-    
-    if (playerState.searchHistory.length > 0) {
-        html += `
-            <ul class="history-list">
-                ${playerState.searchHistory.map((item, index) => `
-                    <li class="history-item" data-index="${index}">
-                        <span onclick="window.playerAPI.searchFromHistory('${item.replace(/'/g, "\\'")}')">
-                            <i class="fas fa-history"></i> ${item}
-                        </span>
-                        <button class="btn btn-sm btn-outline-secondary remove-history-item" 
-                                aria-label="Eliminar del historial">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </li>
-                `).join('')}
-            </ul>
-            
-            <!-- Sección de sugerencias basadas en historial -->
-            <div class="suggestions-section">
-                <h4 class="suggestions-title">Basado en tu historial</h4>
-                <div class="suggestions-container">
-                    ${generateSuggestions()}
-                </div>
-            </div>
-        `;
-    } else {
-        html += '<p>No hay historial de búsqueda</p>';
-    }
-    
-    // Resto del código permanece igual...
-    html += `</div>
-        <div id="favoritesTab" class="tab-content" style="display:none;">
-    `;
-    
-    if (playerState.favoriteSongs.length > 0) {
-        html += `
-            <ul class="favorites-list">
-                ${playerState.favoriteSongs.map((song, index) => `
-                    <li onclick="window.playerAPI.playFavorite(${index})">
-                        <span class="favorite-item">
-                            <i class="fas fa-heart"></i>
-                            <span class="favorite-title">${song.title || 'Sin título'}</span>
-                            <span class="favorite-artist">${song.artist || 'Artista desconocido'}</span>
-                        </span>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
-    } else {
-        html += '<p>No tienes canciones favoritas aún</p>';
-    }
-    
-    html += `</div>
-        <div id="playlistsTab" class="tab-content" style="display:none;">
-    `;
-    
-    if (playerState.playlists.length > 0) {
-        html += `
-            <ul class="playlists-list">
-                ${playerState.playlists.map((playlist, index) => `
-                    <li onclick="window.playerAPI.showPlaylistTracks(${index})">
-                        <span class="playlist-item">
-                            <i class="fas fa-list"></i>
-                            <span class="playlist-name">${playlist.name || `Playlist ${index + 1}`}</span>
-                            <span class="playlist-count">${playlist.tracks.length} canciones</span>
-                        </span>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
-    } else {
-        html += '<p>No tienes playlists creadas</p>';
-    }
-    
-    html += `</div>`;
-    DOM.resultsDiv.innerHTML = html;
-    
-    // Resto de los event listeners permanece igual...
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabName = tab.getAttribute('data-tab');
-            showTab(tabName);
-        });
-    });
-    
-    document.querySelectorAll('.remove-history-item').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const item = btn.closest('.history-item');
-            if (item) {
-                const index = parseInt(item.getAttribute('data-index'));
-                removeFromHistory(index);
-            }
-        });
-    });
-}
-
-// Nueva función para generar sugerencias basadas en el historial
-function generateSuggestions() {
-    if (playerState.searchHistory.length === 0) return '';
-    
-    // Analizar el historial para encontrar patrones
-    const history = playerState.searchHistory.slice(0, 20); // Últimas 20 búsquedas
-    const frequencyMap = {};
-    
-    // Contar frecuencia de términos
-    history.forEach(query => {
-        const terms = query.toLowerCase().split(/\s+/);
-        terms.forEach(term => {
-            if (term.length > 3) { // Ignorar palabras muy cortas
-                frequencyMap[term] = (frequencyMap[term] || 0) + 1;
-            }
-        });
-    });
-    
-    // Ordenar términos por frecuencia
-    const sortedTerms = Object.entries(frequencyMap)
-        .sort((a, b) => b[1] - a[1])
-        .map(entry => entry[0]);
-    
-    // Generar 4-5 sugerencias basadas en los términos más frecuentes
-    const suggestions = [];
-    const usedTerms = new Set();
-    
-    // Sugerir mix de géneros
-    if (sortedTerms.length >= 2) {
-        const term1 = sortedTerms[0];
-        const term2 = sortedTerms[1];
-        suggestions.push({
-            type: 'mix',
-            title: `Mix: ${term1} + ${term2}`,
-            query: `${term1} ${term2} mix`
-        });
-        usedTerms.add(term1);
-        usedTerms.add(term2);
-    }
-    
-    // Sugerir playlists populares
-    const playlistTerms = sortedTerms.filter(term => 
-        !usedTerms.has(term) && 
-        (term.includes('playlist') || term.includes('lista') || term.includes('mix'))
-    );
-    
-    if (playlistTerms.length > 0 && suggestions.length < 5) {
-        const term = playlistTerms[0];
-        suggestions.push({
-            type: 'playlist',
-            title: `Playlist de ${term.replace('playlist', '').trim() || 'música'}`,
-            query: `${term} playlist`
-        });
-        usedTerms.add(term);
-    }
-    
-    // Sugerir canciones/artistas populares
-    sortedTerms.forEach(term => {
-        if (!usedTerms.has(term) && suggestions.length < 5) {
-            // Si el término parece un artista (primera letra mayúscula)
-            if (term[0] === term[0].toUpperCase() && term === term.toLowerCase()) {
-                suggestions.push({
-                    type: 'artist',
-                    title: `Canciones de ${term}`,
-                    query: term
-                });
-            } else {
-                suggestions.push({
-                    type: 'song',
-                    title: `Canciones como ${term}`,
-                    query: term
-                });
-            }
-            usedTerms.add(term);
+            `;
+            return;
         }
-    });
-    
-    // Si no hay suficientes sugerencias, agregar algunas genéricas
-    const defaultSuggestions = [
-        { type: 'trending', title: 'Tendencias musicales', query: 'top hits 2024' },
-        { type: 'genre', title: 'Pop internacional', query: 'pop internacional' },
-        { type: 'genre', title: 'Rock clásico', query: 'classic rock' },
-        { type: 'genre', title: 'Música relajante', query: 'música relajante' }
-    ];
-    
-    while (suggestions.length < 4 && defaultSuggestions.length > 0) {
-        suggestions.push(defaultSuggestions.shift());
-    }
-    
-    // Generar HTML para las sugerencias
-    let suggestionsHTML = '';
-    suggestions.forEach((suggestion, index) => {
-        let icon = 'fa-music';
-        if (suggestion.type === 'mix') icon = 'fa-random';
-        if (suggestion.type === 'playlist') icon = 'fa-list';
-        if (suggestion.type === 'artist') icon = 'fa-user';
         
-        suggestionsHTML += `
-            <div class="suggestion-item" onclick="window.playerAPI.searchFromHistory('${suggestion.query.replace(/'/g, "\\'")}')">
-                <div class="suggestion-icon">
-                    <i class="fas ${icon}"></i>
-                </div>
-                <div class="suggestion-text">
-                    ${suggestion.title}
-                </div>
+        let html = `
+            <div class="tabs">
+                <div class="tab active" data-tab="history">Historial</div>
+                <div class="tab" data-tab="favorites">Favoritos</div>
+                <div class="tab" data-tab="playlists">Playlists</div>
             </div>
+            <div id="historyTab" class="tab-content">
         `;
-    });
-    
-    return suggestionsHTML;
-}
+        
+        if (playerState.searchHistory.length > 0) {
+            html += `
+                <ul class="history-list">
+                    ${playerState.searchHistory.map((item, index) => `
+                        <li class="history-item" data-index="${index}">
+                            <span onclick="window.playerAPI.searchFromHistory('${item.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-history"></i> ${item}
+                            </span>
+                            <button class="btn btn-sm btn-outline-secondary remove-history-item" 
+                                    aria-label="Eliminar del historial">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        } else {
+            html += '<p>No hay historial de búsqueda</p>';
+        }
+        
+        html += `</div>
+            <div id="favoritesTab" class="tab-content" style="display:none;">
+        `;
+        
+        if (playerState.favoriteSongs.length > 0) {
+            html += `
+                <ul class="favorites-list">
+                    ${playerState.favoriteSongs.map((song, index) => `
+                        <li onclick="window.playerAPI.playFavorite(${index})">
+                            <span class="favorite-item">
+                                <i class="fas fa-heart"></i>
+                                <span class="favorite-title">${song.title || 'Sin título'}</span>
+                                <span class="favorite-artist">${song.artist || 'Artista desconocido'}</span>
+                            </span>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        } else {
+            html += '<p>No tienes canciones favoritas aún</p>';
+        }
+        
+        html += `</div>
+            <div id="playlistsTab" class="tab-content" style="display:none;">
+        `;
+        
+        if (playerState.playlists.length > 0) {
+            html += `
+                <ul class="playlists-list">
+                    ${playerState.playlists.map((playlist, index) => `
+                        <li onclick="window.playerAPI.showPlaylistTracks(${index})">
+                            <span class="playlist-item">
+                                <i class="fas fa-list"></i>
+                                <span class="playlist-name">${playlist.name || `Playlist ${index + 1}`}</span>
+                                <span class="playlist-count">${playlist.tracks.length} canciones</span>
+                            </span>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        } else {
+            html += '<p>No tienes playlists creadas</p>';
+        }
+        
+        html += `</div>`;
+        DOM.resultsDiv.innerHTML = html;
+        
+        // Agregar event listeners para las pestañas
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                showTab(tabName);
+            });
+        });
+        
+        // Agregar event listeners para eliminar del historial
+        document.querySelectorAll('.remove-history-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const item = btn.closest('.history-item');
+                if (item) {
+                    const index = parseInt(item.getAttribute('data-index'));
+                    removeFromHistory(index);
+                }
+            });
+        });
+    }
+
     // Mostrar pestaña específica
     function showTab(tabName) {
         if (!tabName) return;
