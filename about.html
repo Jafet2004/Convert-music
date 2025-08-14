@@ -298,6 +298,33 @@
             font-weight: bold;
         }
 
+        /* Botón de descarga APK */
+        .download-apk-btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.8rem 1.8rem;
+            background: linear-gradient(to right, var(--electric-purple), var(--electric-blue));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .download-apk-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, var(--electric-blue), var(--electric-purple));
+        }
+
+        .download-apk-btn:active {
+            transform: translateY(0);
+        }
+
         /* Animaciones */
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -396,9 +423,12 @@
                     <p>Con más de 8 años de experiencia en música y tecnología, Jafet ha combinado sus dos pasiones para crear ConvertMusic. Como director de alabanza, entendió las necesidades prácticas de los músicos, y como ingeniero de sistemas, desarrolló las soluciones técnicas.</p>
                     <p>Cada función en ConvertMusic ha sido personalmente diseñada e implementada por Jafet, asegurando que cumpla con los más altos estándares tanto musicales como tecnológicos.</p>
                 </div>
+               
             </div>
         </div>
     </section>
+
+    
 
     <section class="values-section">
         <div class="container">
@@ -418,6 +448,10 @@
                     <p>Somos músicos antes que desarrolladores, y eso se refleja en cada función que creamos.</p>
                 </div>
             </div>
+             <!-- Botón de descarga APK -->
+                <a href="APK/app-release.apk" download="ConvertMusic.apk" class="download-apk-btn">
+                    Descargar APK
+                </a>
         </div>
     </section>
 </body>
